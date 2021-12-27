@@ -1,0 +1,48 @@
+{
+  "name": "gatewayiot",
+  "version": "1.0.0",
+  "description": "Gateway IOT",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon --inspect index.js"
+  },
+  "author": "Phuc Truong",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "body-parser": "^1.19.0",
+    "bootstrap": "^5.1.1",
+    "cookie-parser": "^1.4.5",
+    "dotenv": "^8.2.0",
+    "ejs": "^3.1.3",
+    "ejs-locals": "^1.0.2",
+    "express": "^4.17.1",
+    "express-group-routes": "^1.1.0",
+    "git-rev-sync": "^2.0.0",
+    "ip": "^1.1.5",
+    "moment": "^2.27.0",
+    "mongoose": "^5.9.25",
+    "mosca": "^2.8.3",
+    "mqtt": "^4.1.0",
+    "net": "^1.0.2",
+    "node-excel-export": "^1.4.4",
+    "node-opcua": "^2.60.2",
+    "node-windows": "^1.0.0-beta.5",
+    "nodemailer": "^6.4.10",
+    "normalize-port": "^1.0.0",
+    "serialport": "^9.2.4",
+    "socket.io": "^2.3.0",
+    "socket.io-client": "^2.4.0",
+    "sqlite3": "^5.0.0"
+  },
+  "devDependencies": {
+    "fs": "^0.0.1-security",
+    "jsmodbus": "^4.0.6",
+    "json2csv": "^5.0.6",
+    "modbus-serial": "^8.0.4",
+    "nodemon": "^2.0.12",
+    "objects-to-csv": "^1.3.6",
+    "serve-favicon": "^2.5.0"
+  }
+}

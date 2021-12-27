@@ -1,0 +1,137 @@
+<% layout('../../layout/index') %> <% block('css', `
+
+<!-- DataTables -->
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" />
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" />
+<link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/css/bootstrap-datetimepicker.min.css"
+/>
+
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+
+`) %>
+
+<!-- Content Header (Page header) -->
+<div class="container">
+    <section class="content-header">
+        <h1 style="font-weight: 600">Modbus RTU</h1>
+        <small>TAG</small>
+
+        <ol class="breadcrumb">
+            <li>
+                <a href="/"><i class="fas fa-home"></i> Home</a>
+            </li>
+            <li class="active">Tag</li>
+        </ol>
+    </section>
+
+    <!-- Main content -->
+    <section class="content container-fluid">
+        <div>
+            <div class="box-header" style="text-align: center; margin-bottom: 15px">
+                <h3 class="box-title" style="font-size: 25px">Manage Tag</h3>
+            </div>
+            <div class="panel-heading">
+                <a
+                    class="btn"
+                    href="/modbus-rtu/tag/add"
+                    style="background-color: rgb(60 141 188); color: white; margin-left: -14px"
+                >
+                    Add new tag
+                </a>
+            </div>
+            <!-- /.box-header -->
+            <div>
+                <div>
+                    <table class="table table-bordered table-striped">
+                        <thead style="background-color: #3c8dbc; color: white">
+                            <tr>
+                                <th>Name</th>
+                                <th>Tag</th>
+                                <th>Address</th>
+                                <th>Unit</th>
+                                <th>Device</th>
+                                <th>Value Type</th>
+                                <th style="text-align: center">Value</th>
+                                <th style="text-align: center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% tags.forEach(function(val) { %>
+                            <tr>
+                                <td style="line-height: 2.5"><%= val.tagname %></td>
+                                <td style="line-height: 2.5"><%= val.tag %></td>
+                                <td style="line-height: 2.5"><%= val.address %></td>
+                                <td style="line-height: 2.5"><%= val.unit %></td>
+                                <td style="line-height: 2.5"><%= val.devicename %></td>
+                                <% if (val.value_type == 1) {%>
+                                <td style="line-height: 2.5"><%='AB CD'%></td>
+                                <%} else {%>
+                                <td style="line-height: 2.5"><%='CD AB'%></td>
+                                <%} %>
+                                <td class="text-center">
+                                    <div
+                                        id="<%= val.deviceid %>_<%= val.tagid %>"
+                                        style="
+                                            display: inline;
+                                            padding: 0.6em 0.7em 0.6em;
+                                            line-height: 2.5;
+                                            color: #fff;
+                                            text-align: center;
+                                            white-space: nowrap;
+                                            vertical-align: baseline;
+                                            border-radius: 0.25em;
+                                            font-size: 92%;
+                                        "
+                                        class="label-primary"
+                                    ></div>
+                                </td>
+                                <td class="text-center">
+                                    <a class="btn" href="/modbus-rtu/tag/edit/<%= val.tagid %>">
+                                        <span style="color: rgb(60 141 188)">
+                                            <i class="fas fa-edit" style="margin-right: 3px"></i>
+                                            Edit
+                                        </span>
+                                    </a>
+                                    <a href="/modbus-rtu/tag/delete/<%= val.tagid %>" class="btn">
+                                        <span style="color: rgb(246 18 18)">
+                                            <i class="fas fa-trash-alt" style="margin-right: 3px"></i>
+                                            Delete
+                                        </span>
+                                    </a>
+                                </td>
+                            </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <% block('script', ` `) -%>
+
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+
+    <script type="text/javascript">
+        var ip = '<%= process.env.IP %>'
+        var socket = io(ip + ':4001')
+        socket.on('connect', function (data) {
+            console.log(data + 'connected to socket')
+        })
+
+        socket.on('modbus_rtu', function (data) {
+            data.value.forEach(function (tag) {
+                console.log(data.device_id + ' ' + tag.id)
+                $('#' + data.device_id + '_' + tag.id).html(tag.value)
+            })
+        })
+    </script>
+</div>

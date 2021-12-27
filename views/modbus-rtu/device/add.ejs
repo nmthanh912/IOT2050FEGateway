@@ -1,0 +1,120 @@
+<% layout('../../layout/index') %> <% block('css', ` `) %>
+
+<!-- Content Header (Page header) -->
+<div class="container">
+    <section class="content-header">
+        <ol class="breadcrumb">
+            <li>
+                <a href="/"><i class="fas fa-home"></i> Home</a>
+            </li>
+            <li class="active">Device</li>
+        </ol>
+    </section>
+
+    <!-- Main content -->
+    <!-- Main content -->
+    <section class="content container-fluid">
+        <div>
+            <div class="box-header" style="margin-bottom: 15px; margin-left: -10px">
+                <h3 class="box-title" style="font-size: 25px; font-weight: bold">Add New Device</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box">
+                <div class="no-padding box-body">
+                    <div class="col-md-9" style="margin-bottom: 20px; margin-top: 10px">
+                        <form method="post" action="/modbus-rtu/device/add">
+                            <div class="form-row">
+                                <div class="col-md-6 mb-6 col-sm-6">
+                                    <label>Name</label>
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        name="name"
+                                        placeholder="Name..."
+                                        value=""
+                                    />
+                                </div>
+                                <div class="col-md-6 mb-6 col-sm-6">
+                                    <label>Com Port Number</label>
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        name="com_port_num"
+                                        placeholder="COM..."
+                                        value=""
+                                    />
+                                </div>
+
+                                <div class="col-md-6 mb-6 col-sm-6">
+                                    <label style="margin-top: 20px">BaudRate</label>
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        name="baudrate"
+                                        placeholder="BaudRate..."
+                                        value="9600"
+                                        required
+                                    />
+                                </div>
+                                <div class="col-md-6 mb-6 col-sm-6">
+                                    <label style="margin-top: 20px">Databits</label>
+                                    <select class="form-control" name="databits">
+                                        <option value="8">8 Data bits</option>
+                                        <option value="7">7 Data bits</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6 mb-6 col-sm-6">
+                                    <label style="margin-top: 20px">Parity</label>
+                                    <select class="form-control" name="parity">
+                                        <option value="none">None Parity</option>
+                                        <option value="odd">Odd Parity</option>
+                                        <option value="even">Even Parity</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-6 col-sm-6">
+                                    <label style="margin-top: 20px">Stopbits</label>
+                                    <select class="form-control" name="stopbits">
+                                        <option value="1">1 Bit</option>
+                                        <option value="2">2 Bits</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-6 col-sm-6">
+                                    <label style="margin-top: 20px">Slave ID</label>
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        name="slave"
+                                        placeholder="slave..."
+                                        value=""
+                                    />
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="col-md-12 mb-3 col-sm-6">
+                                    <br />
+                                    <button
+                                        class="btn"
+                                        type="submit"
+                                        style="background-color: #3c8dbc; color: white; margin-right: 10px"
+                                    >
+                                        Add new
+                                    </button>
+                                    <a style="background-color: #717887" class="btn" href="/modbus-rtu/device">
+                                        <span style="color: white"> Cancel </span>
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-md-3" style="margin-bottom: 20px; margin-top: 10px">
+                        <img src="/img/s71200.jpg" width="200px" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<% block('script', ` `) -%>

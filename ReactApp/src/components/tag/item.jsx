@@ -70,8 +70,8 @@ const Header = props => {
 Item.Header = Header
 
 const Body = props => {
-	return !props.expand ? null :
-		<div className='px-3 py-2 mx-1 bg-white rounded-bottom border border-top-0'>
+	return <div className='px-3 py-2 mx-1 bg-white rounded-bottom border border-top-0'
+			style={{display: props.expand ? 'block' : 'none'}}>
 			{props.children}
 		</div>
 }

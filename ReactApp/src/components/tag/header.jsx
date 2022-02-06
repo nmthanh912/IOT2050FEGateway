@@ -20,7 +20,7 @@ export default function Header({ addItem }) {
 	return <div className='row mb-2'>
 		<div className="col-4">
 			<InputGroup>
-				<InputGroup.Text>Add tag</InputGroup.Text>
+				<InputGroup.Text>Add</InputGroup.Text>
 				<FormControl
 					type="text"
 					placeholder="Name (required)"

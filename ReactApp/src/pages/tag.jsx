@@ -12,7 +12,9 @@ export default function Tag() {
     {
       id: uid(),
       name: 'Tag đo nhiệt độ',
-      attribute: {}
+      attribute: {
+        temp: 273
+      }
     },
     {
       id: uid(),
@@ -24,8 +26,9 @@ export default function Tag() {
   const updateItemAttr = (id, newItem) => {
     let newList = [...list];
     let item = newList.find(value => value.id === id);
-    Object.assign(item, newItem)
+    Object.assign(item.attribute, newItem)
     setList(newList)
+    setTimeout(() => console.log(list), 2000)
   }
 
   const updateItemName = (itemId, newName) => {
@@ -66,17 +69,9 @@ export default function Tag() {
             onEdit={edit => updateItemAttr(item.id, edit.updated_src)}
             onDelete={del => updateItemAttr(item.id, del.updated_src)}
             onAdd={add => updateItemAttr(item.id, add.updated_src)}
-            displayDataTypes={false}
-            displayObjectSize={false}
+            displayDataTypes={true}
+            displayObjectSize={true}
           />
-          {/* <div className="mt-2">
-            <Badge bg='secondary' className="me-2 hover">
-              <ArrowLeft size={16} />
-            </Badge>
-            <Badge bg='success' className="hover">
-              <Save size={16} />
-            </Badge>
-          </div> */}
         </Item.Body>
       </Item>
     })}

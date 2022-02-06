@@ -1,9 +1,6 @@
 import { InputGroup, FormControl, Button } from "react-bootstrap"
 import { NodePlus, Search } from 'react-bootstrap-icons'
 import { useState } from "react"
-import ShortUniqueId from "short-unique-id";
-
-const uid = new ShortUniqueId({ length: 7 });
 
 export default function Header({ addItem }) {
 	const [name, setName] = useState('');

@@ -1,8 +1,7 @@
-import { Badge } from "react-bootstrap"
+// import { Badge } from "react-bootstrap"
 import ShortUniqueId from "short-unique-id";
 import { useState } from 'react'
 import ReactJson from "react-json-view";
-import { ArrowLeft, Save } from "react-bootstrap-icons";
 import Header from "../components/tag/header";
 import Item from "../components/tag/item";
 
@@ -70,14 +69,14 @@ export default function Tag() {
             displayDataTypes={false}
             displayObjectSize={false}
           />
-          <div className="mt-2">
+          {/* <div className="mt-2">
             <Badge bg='secondary' className="me-2 hover">
               <ArrowLeft size={16} />
             </Badge>
             <Badge bg='success' className="hover">
               <Save size={16} />
             </Badge>
-          </div>
+          </div> */}
         </Item.Body>
       </Item>
     })}

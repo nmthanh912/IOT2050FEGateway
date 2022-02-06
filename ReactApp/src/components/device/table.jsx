@@ -7,10 +7,10 @@ const DeviceItem = styled(Card)`
   padding: 0;
 `;
 DeviceItem.Body = styled(Card.Body)`
-  padding: .7rem;
+  padding: .5rem;
 `;
 const Title = styled.div`
-  padding: 0 .7rem;
+  padding: 0 .5rem;
   font-weight: 600;
 `;
 const ActionBtn = styled(Badge)`

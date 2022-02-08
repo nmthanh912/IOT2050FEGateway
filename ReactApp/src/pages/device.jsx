@@ -3,7 +3,10 @@ import Table from '../components/device/table'
 import { useState } from 'react'
 import ShortUniqueId from "short-unique-id";
 
-const uid = new ShortUniqueId({ length: 7 });
+const uid = new ShortUniqueId({
+    length: 7,
+    dictionary: 'number'
+});
 const dStatus = ['Configured', 'Unconfigured']
 
 export default function Device() {

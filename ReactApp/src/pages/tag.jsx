@@ -5,23 +5,23 @@ import ReactJson from "react-json-view";
 import Header from "../components/tag/header";
 import Item from "../components/tag/item";
 
-const uid = new ShortUniqueId({ length: 7 });
+const uid = new ShortUniqueId({
+  length: 7,
+  dictionary: 'number'
+});
 
 export default function Tag() {
-  const [list, setList] = useState([
-    {
-      id: uid(),
-      name: 'Tag đo nhiệt độ',
-      attribute: {
-        temp: 273
-      }
-    },
-    {
-      id: uid(),
-      name: 'Tag đo nồng độ CO2',
-      attribute: {}
+  const [list, setList] = useState([{
+    id: uid(),
+    name: 'Tag đo nhiệt độ',
+    attribute: {
+      temp: 273
     }
-  ])
+  }, {
+    id: uid(),
+    name: 'Tag đo nồng độ CO2',
+    attribute: {}
+  }])
 
   const updateItemAttr = (id, newItem) => {
     let newList = [...list];
@@ -48,16 +48,19 @@ export default function Tag() {
   const addItem = name => {
     setList([...list, {
       id: uid(),
-      name: name, 
+      name: name,
       attribute: {}
     }])
   }
-  
+
   return <div>
-    <Header addItem={addItem}/>
+    <Header addItem={addItem} />
     <hr />
     {list.map(item => {
-      return <Item key={item.id} remove={removeItem} editName={updateItemName}>
+      return <Item key={item.id}
+        remove={removeItem}
+        editName={updateItemName}
+      >
         <Item.Header>
           <u className="text-primary me-5">#{item.id}</u>
           <b>{item.name}</b>

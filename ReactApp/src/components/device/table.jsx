@@ -79,7 +79,7 @@ export default function Table({ list, setList }) {
       </div>
     </Title>
     {list.map(item => {
-      return <DeviceItem className="mb-2" key={item.id}>
+      return <DeviceItem className="mb-2 shadow-sm" key={item.id}>
         <DeviceItem.Body>
           <div className="row">
             <div className="col-2 text-primary">

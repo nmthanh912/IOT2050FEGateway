@@ -1,0 +1,29 @@
+{
+  "name": "iotbackend",
+  "version": "1.0.0",
+  "description": "iotgateway",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon --inspect index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nmthanh912/IOT2050FEGateway.git"
+  },
+  "author": "Minh Thanh",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nmthanh912/IOT2050FEGateway/issues"
+  },
+  "homepage": "https://github.com/nmthanh912/IOT2050FEGateway#readme",
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express-group-routes": "^1.1.0",
+    "normalize-port": "^1.0.0",
+    "serve-favicon": "^2.5.0",
+    "sqlite3": "^5.0.2"
+  }
+}

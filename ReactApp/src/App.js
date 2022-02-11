@@ -26,7 +26,7 @@ function App() {
       <Sidebar collapse={sidebarCollapse} />
       <MainContent expand={!sidebarCollapse} className="bg-light">
         <Navbar setExpand={setSidebarCollapse} expand={!sidebarCollapse} />
-        <div className='container-fluid px-4 py-3 flex-grow-1'>
+        <div className='container px-4 py-3 flex-grow-1'>
           <Routes>
             <Route path='/' element={<Device />} />
             <Route path='/device' element={<Device />} />

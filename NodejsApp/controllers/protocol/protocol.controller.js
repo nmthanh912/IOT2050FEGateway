@@ -1,4 +1,5 @@
 var db = require('../../models/database.js')
+const ShortUniqueId = require('short-unique-id')
 
 module.exports.getProtocol = function (req, res) {
     try {
@@ -33,8 +34,15 @@ module.exports.getProtocol = function (req, res) {
 
 module.exports.postProtocol = function (req, res) {
     try {
-        const sql = 'INSERT INTO protocol (name, attrList) VALUES (?, ?)'
-        var params = [req.body.name, JSON.stringify(req.body.attrList)]
+        const uid = new ShortUniqueId({
+            dictionary: 'hex',
+            length: 8,
+        })
+
+        const id = uid()
+
+        const sql = 'INSERT INTO protocol (ID, name, attrList) VALUES (?, ?, ?)'
+        var params = [id, req.body.name, JSON.stringify(req.body.attrList)]
 
         db.run(sql, params, (err) => {
             if (err) {
@@ -45,7 +53,7 @@ module.exports.postProtocol = function (req, res) {
             }
 
             res.json({
-                key: '12345',
+                key: id,
             })
         })
     } catch (err) {

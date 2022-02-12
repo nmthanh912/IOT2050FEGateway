@@ -1,4 +1,5 @@
 var db = require('../../models/database.js')
+const ShortUniqueId = require('short-unique-id')
 
 module.exports.getDevice = function (req, res) {
     try {
@@ -21,9 +22,16 @@ module.exports.getDevice = function (req, res) {
 
 module.exports.postDevice = function (req, res) {
     try {
+        const uid = new ShortUniqueId({
+            dictionary: 'hex',
+            length: 8,
+        })
+
+        const id = uid()
+
         const sql =
-            'INSERT INTO device (name, description, status) VALUES (?, ?, ?)'
-        var params = [req.body.name, req.body.description, 'unconfigured']
+            'INSERT INTO device (ID, name, description, status) VALUES (?, ?, ?, ?)'
+        var params = [id, req.body.name, req.body.description, 'unconfigured']
 
         db.run(sql, params, (err) => {
             if (err) {
@@ -31,7 +39,7 @@ module.exports.postDevice = function (req, res) {
                 return
             }
             res.json({
-                key: '1h24a445',
+                key: id,
             })
         })
     } catch (err) {

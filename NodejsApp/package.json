@@ -24,6 +24,7 @@
     "express-group-routes": "^1.1.0",
     "normalize-port": "^1.0.0",
     "serve-favicon": "^2.5.0",
+    "short-unique-id": "^4.4.4",
     "sqlite3": "^5.0.2"
   }
 }

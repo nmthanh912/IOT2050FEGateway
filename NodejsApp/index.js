@@ -36,11 +36,13 @@ app.use(cookieParser()) // use to read format cookie
 var deviceRouter = require('./routes/device/device.route')
 var tagRouter = require('./routes/tag/tag.route')
 var protocolRouter = require('./routes/protocol/protocol.route')
+var configRouter = require('./routes/config/config.route')
 var mqttRouter = require('./routes/mqtt/mqtt.route')
 
 app.use('/device', deviceRouter)
 app.use('/tag', tagRouter)
 app.use('/protocol', protocolRouter)
+app.use('/config', configRouter)
 // app.use('/mqtt', mqttRouter)
 
 //-------------------------------------------------------------------

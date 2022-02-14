@@ -3,11 +3,11 @@ const ShortUniqueId = require('short-unique-id')
 
 module.exports.getProtocol = function (req, res) {
     try {
-        const sql = 'SELECT * FROM protocol'
+        const sql = `SELECT tbl_name FROM sqlite_master WHERE sql LIKE('%REFERENCES config_info%')`
         var params = []
-        var data = []
+        var datas = []
 
-        db.all(sql, params, (err, rows) => {
+        db.all(sql, params, async (err, rows) => {
             if (err) {
                 res.status(400).json({
                     msg: err.message,
@@ -15,15 +15,37 @@ module.exports.getProtocol = function (req, res) {
                 return
             }
 
-            rows.map((row) => {
-                data.push({
-                    id: row.ID,
-                    name: row.name,
-                    attrList: JSON.parse(row.attrList),
-                })
-            })
+            for (let i = 1; i < rows.length; i++) {
+                let query = `PRAGMA table_info('${rows[i].tbl_name}')`
+                let name = rows[i].tbl_name
+                let attrList = []
 
-            res.json(data)
+                db.all(query, params, (err, rows) => {
+                    if (err) {
+                        res.status(400).json({
+                            msg: err.message,
+                        })
+                        return
+                    }
+
+                    rows.map((row) => {
+                        attrList.push({
+                            name: row.name,
+                            type: row.type,
+                        })
+                    })
+
+                    datas.push({
+                        name,
+                        attrList,
+                    })
+                    //console.log(datas)
+                })
+            }
+            console.log('---------------------')
+            console.log(datas)
+
+            res.json(datas)
         })
     } catch (err) {
         res.json({

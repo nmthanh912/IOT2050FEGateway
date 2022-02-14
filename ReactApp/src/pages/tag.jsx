@@ -1,65 +1,46 @@
 // import { Badge } from "react-bootstrap"
-import ShortUniqueId from "short-unique-id";
-import { useState } from 'react'
 import ReactJson from "react-json-view";
 import Header from "../components/tag/header";
 import Item from "../components/tag/item";
+import { Button, Form, FormControl, InputGroup, Modal } from 'react-bootstrap';
+import { useSelector, useDispatch } from "react-redux";
+import { useState } from 'react'
 
-const uid = new ShortUniqueId({
-  length: 7,
-  dictionary: 'number'
-});
+import { deleteTag, updateTag } from "../redux/slices/tag";
 
 export default function Tag() {
-  const [list, setList] = useState([{
-    id: uid(),
-    name: 'Tag đo nhiệt độ',
-    attribute: {
-      temp: 273
-    }
-  }, {
-    id: uid(),
-    name: 'Tag đo nồng độ CO2',
-    attribute: {}
-  }])
+  const tagList = useSelector(state => state.tag)
+  const dispatch = useDispatch()
 
-  const updateItemAttr = (id, newItem) => {
-    let newList = [...list];
-    let item = newList.find(value => value.id === id);
-    Object.assign(item.attribute, newItem)
-    setList(newList)
-    setTimeout(() => console.log(list), 2000)
+  const [showEditBox, setShowEditBox] = useState(false)
+  const [editTagId, setEditTagId] = useState('')
+  const [editTagName, setEditTagName] = useState('')
+  const [editTagAttr, setEditTagAttr] = useState({})
+
+  const handleUpdateTag = (id, name, attribute) => {
+    dispatch(updateTag({
+      id, name, attribute
+    }))
   }
 
-  const updateItemName = (itemId, newName) => {
-    let newList = [...list];
-    let item = newList.find(value => value.id === itemId);
-    item.name = newName
-    setList(newList)
-  }
-
-  const removeItem = id => {
-    let newList = [...list];
-    let i = newList.findIndex(value => value.id === id);
-    newList.splice(i, 1)
-    setList(newList)
-  }
-
-  const addItem = name => {
-    setList([...list, {
-      id: uid(),
-      name: name,
-      attribute: {}
-    }])
+  const handleDeleteTag = id => {
+    let confirm = window.confirm("Are you sure about that ?")
+    confirm && dispatch(deleteTag(id))
   }
 
   return <div>
-    <Header addItem={addItem} />
+    <Header />
     <hr />
-    {list.map(item => {
-      return <Item key={item.id}
-        remove={removeItem}
-        editName={updateItemName}
+    {
+      tagList.map(item => <Item
+        key={item.id}
+        onDelete={() => handleDeleteTag(item.id)}
+        onEdit={() => {
+          setShowEditBox(true)
+          setEditTagId(item.id)
+          setEditTagName(item.name)
+          setEditTagAttr(item.attribute)
+        }}
       >
         <Item.Header>
           <u className="text-primary me-5">#{item.id}</u>
@@ -69,14 +50,42 @@ export default function Tag() {
           <ReactJson src={item.attribute}
             name={'attributes'}
             iconStyle="circle"
-            onEdit={edit => updateItemAttr(item.id, edit.updated_src)}
-            onDelete={del => updateItemAttr(item.id, del.updated_src)}
-            onAdd={add => updateItemAttr(item.id, add.updated_src)}
             displayDataTypes={true}
             displayObjectSize={true}
           />
         </Item.Body>
       </Item>
-    })}
+      )
+    }
+    <Modal show={showEditBox} onHide={() => setShowEditBox(false)}>
+      <Modal.Header className="bg-dark text-light">
+        <h5 className="m-auto">Edit Tag</h5>
+      </Modal.Header>
+      <Modal.Body>
+        <Form.Group>
+          <Form.Label>Tag name</Form.Label>
+          <Form.Control value={editTagName} onChange={e => setEditTagName(e.target.value)} />
+        </Form.Group>
+        <ReactJson
+          name='attribute'
+          src={editTagAttr}
+          iconStyle="circle"
+          onEdit={edit => setEditTagAttr(edit.updated_src)}
+          onDelete={del => setEditTagAttr(del.updated_src)}
+          onAdd={add => setEditTagAttr(add.updated_src)}
+          displayDataTypes={true}
+          displayObjectSize={true}
+        />
+        <Button
+          className="float-end"
+          onClick={() => {
+            handleUpdateTag(editTagId, editTagName, editTagAttr)
+            setShowEditBox(false)
+          }}
+        >
+          Save
+        </Button>
+      </Modal.Body>
+    </Modal>
   </div>
 }

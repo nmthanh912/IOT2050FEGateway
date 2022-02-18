@@ -1,53 +1,42 @@
 var db = require('../../models/database.js')
-const ShortUniqueId = require('short-unique-id')
+var util = require('util')
 
-module.exports.getProtocol = function (req, res) {
+module.exports.getProtocol = async function (req, res) {
     try {
+        const getData = util.promisify(db.all.bind(db))
+
         const sql = `SELECT tbl_name FROM sqlite_master WHERE sql LIKE('%REFERENCES config_info%')`
-        var params = []
-        var datas = []
+        var data = []
+        let protocolName = await getData(sql)
 
-        db.all(sql, params, async (err, rows) => {
-            if (err) {
-                res.status(400).json({
-                    msg: err.message,
+        for (let i = 1; i < protocolName.length; i++) {
+            let query = `PRAGMA table_info('${protocolName[i].tbl_name}')`
+            let name = protocolName[i].tbl_name
+            let attrList = []
+
+            let tableInfos = await getData(query)
+            tableInfos.pop()
+
+            tableInfos.map((tableInfo) => {
+                attrList.push({
+                    name:
+                        tableInfo.name[0].toUpperCase() +
+                        tableInfo.name.slice(1),
+                    type:
+                        tableInfo.type[0] +
+                        tableInfo.type.slice(1).toLowerCase(),
                 })
-                return
-            }
+            })
 
-            for (let i = 1; i < rows.length; i++) {
-                let query = `PRAGMA table_info('${rows[i].tbl_name}')`
-                let name = rows[i].tbl_name
-                let attrList = []
+            data.push({
+                name,
+                attrList,
+            })
+        }
 
-                db.all(query, params, (err, rows) => {
-                    if (err) {
-                        res.status(400).json({
-                            msg: err.message,
-                        })
-                        return
-                    }
-
-                    rows.map((row) => {
-                        attrList.push({
-                            name: row.name,
-                            type: row.type,
-                        })
-                    })
-
-                    datas.push({
-                        name,
-                        attrList,
-                    })
-                    //console.log(datas)
-                })
-            }
-            console.log('---------------------')
-            console.log(datas)
-
-            res.json(datas)
-        })
+        res.json(data)
     } catch (err) {
+        console.log('loi roi ne')
         res.json({
             msg: err,
         })
@@ -56,17 +45,26 @@ module.exports.getProtocol = function (req, res) {
 
 module.exports.postProtocol = function (req, res) {
     try {
-        const uid = new ShortUniqueId({
-            dictionary: 'hex',
-            length: 8,
+        const tableName = req.body.name
+
+        let attrList = ''
+
+        req.body.attrList.map((attr) => {
+            attrList =
+                attrList +
+                attr.name.toLowerCase() +
+                ' ' +
+                attr.type.toUpperCase() +
+                ', '
         })
 
-        const id = uid()
+        const sql = `CREATE TABLE ${tableName} (${attrList.slice(
+            0,
+            attrList.length - 2
+        )}, CINFO_ID TEXT PRIMARY KEY, 
+        FOREIGN KEY (CINFO_ID) REFERENCES config_info(ID))`
 
-        const sql = 'INSERT INTO protocol (ID, name, attrList) VALUES (?, ?, ?)'
-        var params = [id, req.body.name, JSON.stringify(req.body.attrList)]
-
-        db.run(sql, params, (err) => {
+        db.run(sql, [], (err) => {
             if (err) {
                 res.status(400).json({
                     msg: err.message,
@@ -75,7 +73,7 @@ module.exports.postProtocol = function (req, res) {
             }
 
             res.json({
-                key: id,
+                key: tableName,
             })
         })
     } catch (err) {
@@ -114,25 +112,51 @@ module.exports.editProtocol = function (req, res) {
 }
 
 module.exports.deleteProtocol = function (req, res) {
-    try {
-        const sql = 'DELETE FROM protocol WHERE ID = ?'
-        var params = [req.params.id]
+    db.serialize(function () {
+        try {
+            const name = req.params.name
+            const deleteConfig = `DELETE FROM config WHERE config.CINFO_ID IN (SELECT CINFO_ID FROM ${name})`
+            const deleteConfigInfo = `DELETE FROM config_info WHERE config_info.ID IN (SELECT CINFO_ID FROM ${name})`
+            const deleteProtocol = `DROP TABLE ${name}`
 
-        db.run(sql, params, (err) => {
-            if (err) {
-                res.status(400).json({
-                    msg: err.message,
-                })
-                return
-            }
+            db.run('begin')
+
+            db.run(deleteConfig, [], (err) => {
+                if (err) {
+                    res.status(400).json({
+                        msg: err.message,
+                    })
+                    return
+                }
+            })
+
+            db.run(deleteConfigInfo, [], (err) => {
+                if (err) {
+                    res.status(400).json({
+                        msg: err.message,
+                    })
+                    return
+                }
+            })
+
+            db.run(deleteProtocol, [], (err) => {
+                if (err) {
+                    res.status(400).json({
+                        msg: err.message,
+                    })
+                    return
+                }
+            })
+
+            db.run('commit')
 
             res.json({
-                key: req.params.id,
+                key: name,
             })
-        })
-    } catch (err) {
-        res.json({
-            msg: err,
-        })
-    }
+        } catch (err) {
+            res.json({
+                msg: err,
+            })
+        }
+    })
 }

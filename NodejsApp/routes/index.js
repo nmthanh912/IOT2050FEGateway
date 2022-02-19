@@ -10,6 +10,7 @@ const deviceController = require('../controllers/device/device.controller')
 const tagController = require('../controllers/tag/tag.controller')
 const protocolController = require('../controllers/protocol/protocol.controller')
 
+
 function route(app) {
     app.use('/devices', deviceController.getDevice)
     app.use('/device', deviceRouter)

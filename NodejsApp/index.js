@@ -33,15 +33,8 @@ const cookieParser = require('cookie-parser')
 app.use(cookieParser()) // use to read format cookie
 
 // ------------Khai báo Router -------------------------------
-var deviceRouter = require('./routes/device/device.route')
-var tagRouter = require('./routes/tag/tag.route')
-var protocolRouter = require('./routes/protocol/protocol.route')
-var mqttRouter = require('./routes/mqtt/mqtt.route')
-
-app.use('/device', deviceRouter)
-app.use('/tag', tagRouter)
-app.use('/protocol', protocolRouter)
-// app.use('/mqtt', mqttRouter)
+const route = require('./routes/index')
+route(app)
 
 //-------------------------------------------------------------------
 app.listen(port, function () {

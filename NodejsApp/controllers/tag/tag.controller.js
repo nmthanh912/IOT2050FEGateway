@@ -1,4 +1,5 @@
 var db = require('../../models/database.js')
+const ShortUniqueId = require('short-unique-id')
 
 module.exports.getTag = function (req, res) {
     try {
@@ -16,7 +17,7 @@ module.exports.getTag = function (req, res) {
                 data.push({
                     id: row.ID,
                     name: row.name,
-                    data: JSON.parse(row.attribute),
+                    attribute: JSON.parse(row.attribute),
                 })
             })
 
@@ -31,8 +32,15 @@ module.exports.getTag = function (req, res) {
 
 module.exports.postTag = function (req, res) {
     try {
-        const sql = 'INSERT INTO tag (name, attribute) VALUES (?, ?)'
-        var params = [req.body.name, JSON.stringify(req.body.data)]
+        const uid = new ShortUniqueId({
+            dictionary: 'hex',
+            length: 8,
+        })
+
+        const id = uid()
+
+        const sql = 'INSERT INTO tag (ID, name, attribute) VALUES (?, ?, ?)'
+        var params = [id, req.body.name, JSON.stringify(req.body.attribute)]
 
         db.run(sql, params, (err) => {
             if (err) {
@@ -41,7 +49,7 @@ module.exports.postTag = function (req, res) {
             }
 
             res.json({
-                key: '12345',
+                key: id,
             })
         })
     } catch (err) {

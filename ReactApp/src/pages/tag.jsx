@@ -4,13 +4,19 @@ import Header from "../components/tag/header";
 import Item from "../components/tag/item";
 import { Button, Form, Modal } from 'react-bootstrap';
 import { useSelector, useDispatch } from "react-redux";
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
-import { deleteTag, updateTag } from "../redux/slices/tag";
+import { deleteTag, updateTag, fetchTags } from "../redux/slices/tag";
 
 export default function Tag() {
-  const tagList = useSelector(state => state.tag)
+  const status = useSelector(state => state.tag.status)
+  const tagList = useSelector(state => state.tag.tags)
   const dispatch = useDispatch()
+
+  useEffect(() => {
+    if(status === 'idle') dispatch(fetchTags())
+    setTimeout(() => console.log(tagList), 3000)
+  }, [dispatch, status])
 
   const [showEditBox, setShowEditBox] = useState(false)
   const [editTagId, setEditTagId] = useState('')
@@ -31,8 +37,7 @@ export default function Tag() {
   return <div>
     <Header />
     <hr />
-    {
-      tagList.map(item => <Item
+    { status === 'succeed' && tagList.map(item => <Item
         key={item.id}
         onDelete={() => handleDeleteTag(item.id)}
         onEdit={() => {

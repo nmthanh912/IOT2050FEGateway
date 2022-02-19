@@ -17,7 +17,7 @@ module.exports.getTag = function (req, res) {
                 data.push({
                     id: row.ID,
                     name: row.name,
-                    data: JSON.parse(row.attribute),
+                    attribute: JSON.parse(row.attribute),
                 })
             })
 
@@ -40,7 +40,7 @@ module.exports.postTag = function (req, res) {
         const id = uid()
 
         const sql = 'INSERT INTO tag (ID, name, attribute) VALUES (?, ?, ?)'
-        var params = [id, req.body.name, JSON.stringify(req.body.data)]
+        var params = [id, req.body.name, JSON.stringify(req.body.attribute)]
 
         db.run(sql, params, (err) => {
             if (err) {

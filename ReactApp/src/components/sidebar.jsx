@@ -79,8 +79,8 @@ export default function Sidebar(props) {
                     icon={<Globe2 size={20} />}
                     active={active} index={4}
                     setActive={setActive}
-                    path={'/mqtt'}
-                    name={'MQTT'}
+                    path={'/mqtt-client'}
+                    name={'MQTT Client'}
                 />
             </Menu>
         </SidebarFooter>

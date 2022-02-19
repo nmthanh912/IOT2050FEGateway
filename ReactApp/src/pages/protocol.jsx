@@ -1,9 +1,9 @@
 import { useState } from "react"
-import { INT, REAL, TEXT } from "../components/protocol/datatypes"
 import Schema from "../components/protocol/schema"
 import ShortUniqueId from "short-unique-id"
 import { PlusCircleFill } from "react-bootstrap-icons"
-import AddModal from "../components/protocol/modal"
+import SchemaModal from "../components/protocol/SchemaModal"
+import { useSelector } from "react-redux"
 
 const uid = new ShortUniqueId({
 	length: 3,
@@ -11,6 +11,7 @@ const uid = new ShortUniqueId({
 })
 
 export default function Protocol() {
+	const schemaList = useSelector(state => state.protocol)
 	return <div>
 		{schemaList.map(schema => <Schema schema={schema} key={uid()} />)}
 		<Footer />
@@ -25,50 +26,7 @@ function Footer() {
 			className='hover text-dark float-end shadow-lg mb-3'
 			onClick={() => setShowBox(true)}
 		/>
-		<AddModal show={showBox} setShow={setShowBox}/>
+		<SchemaModal show={showBox} setShow={setShowBox}/>
 	</div>
 }
 
-const schemaList = [{
-	sname: 'ModbusTCP',
-	columns: [{
-		colName: 'ID',
-		type: INT
-	}, {
-		colName: 'com_port_num',
-		type: INT
-	}, {
-		colName: 'parity',
-		type: INT
-	}, {
-		colName: 'slave',
-		type: INT
-	}, {
-		colName: 'baudrate',
-		type: REAL
-	}, {
-		colName: 'stopbits',
-		type: TEXT
-	}, {
-		colName: 'databits',
-		type: TEXT
-	}]
-}, {
-	sname: 'OPC_UA',
-	columns: [{
-		colName: 'url',
-		type: TEXT
-	}]
-}, {
-	sname: 'OPC_UA',
-	columns: [{
-		colName: 'url',
-		type: TEXT
-	}]
-}, {
-	sname: 'OPC_UA',
-	columns: [{
-		colName: 'url',
-		type: TEXT
-	}]
-}]

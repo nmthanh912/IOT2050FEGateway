@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 
 import { ChevronDown, ChevronUp, Pencil, Trash } from 'react-bootstrap-icons';
-
-function Item({ children, onEdit, onDelete, modal }) {
+function Item({ children, onEdit, onDelete }) {
   const [expand, setExpand] = useState(false);
 
   return <div className='mb-2'>

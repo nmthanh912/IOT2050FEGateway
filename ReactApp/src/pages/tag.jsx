@@ -2,7 +2,7 @@
 import ReactJson from "react-json-view";
 import Header from "../components/tag/header";
 import Item from "../components/tag/item";
-import { Button, Form, FormControl, InputGroup, Modal } from 'react-bootstrap';
+import { Button, Form, Modal } from 'react-bootstrap';
 import { useSelector, useDispatch } from "react-redux";
 import { useState } from 'react'
 
@@ -57,6 +57,7 @@ export default function Tag() {
       </Item>
       )
     }
+    
     <Modal show={showEditBox} onHide={() => setShowEditBox(false)}>
       <Modal.Header className="bg-dark text-light">
         <h5 className="m-auto">Edit Tag</h5>

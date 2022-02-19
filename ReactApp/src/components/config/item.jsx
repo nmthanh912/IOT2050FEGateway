@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { Button, FormControl, InputGroup, Modal } from 'react-bootstrap';
-import { ChevronDown, ChevronUp, Pencil, Trash } from 'react-bootstrap-icons';
 
 function Item({ children }) {
   const [expand, setExpand] = useState(false);

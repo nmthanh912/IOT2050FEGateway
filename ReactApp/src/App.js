@@ -33,7 +33,7 @@ function App() {
             <Route path='/tag' element={<Tag />} />
             <Route path='/protocol' element={<Protocol />} />
             <Route path='/config' element={<Config />} />
-            <Route path='/mqtt' element={<MQTT />} />
+            <Route path='/mqtt-client' element={<MQTT />} />
             <Route path='/about-us' element={<AboutUs />} />
           </Routes>
         </div>

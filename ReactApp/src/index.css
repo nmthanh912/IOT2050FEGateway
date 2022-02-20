@@ -18,6 +18,11 @@ code {
   border: 1px solid #2684ff;
 }
 
+.form-check-input:focus {
+  outline: none !important;
+  box-shadow: 0 ;
+}
+
 .key-modal-request div {
   z-index: 10000;
 }

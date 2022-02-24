@@ -5,6 +5,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #f8f9fa !important;
 }
 
 code {
@@ -23,9 +24,10 @@ code {
   box-shadow: 0 ;
 }
 
-.key-modal-request div {
-  z-index: 10000;
+.pagination {
+  margin: 0;
 }
+
 .hover {
   cursor: pointer;
 }

@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 
-import { ChevronDown, ChevronUp, Front, Pencil, Trash, FileEarmarkPlus } from 'react-bootstrap-icons';
-function DropdownItem({ children, onEdit, onDelete, onDuplicate, onCreateTemplate }) {
+import { ChevronDown, ChevronUp, Pencil, Trash, Upload, BoxArrowDown } from 'react-bootstrap-icons';
+function DropdownItem({ children, onEdit, onDelete, onExport, onImport }) {
     const [expand, setExpand] = useState(false);
 
-    return <div className='mb-2'>
+    return <div className='mb-2 bg-white'>
         {/* Header */}
         {React.cloneElement(children[0], {
             expand: expand,
             setExpand: setExpand,
             onEdit,
             onDelete,
-            onDuplicate,
-            onCreateTemplate
+            onExport,
+            onImport
         })}
         {/* Body */}
         {React.cloneElement(children[1], { expand: expand })}
@@ -20,16 +20,16 @@ function DropdownItem({ children, onEdit, onDelete, onDuplicate, onCreateTemplat
 };
 
 const Header = props => {
-    return <div className={'row px-1 py-2 mx-1 bg-white border border-1 shadow-sm ' + (props.expand ? 'rounded-top' : 'rounded')}>
+    return <div className={'row px-1 py-2 m-0 bg-white border border-1 shadow ' + (props.expand ? 'rounded-top' : 'rounded')}>
         <div className='col-9'>
             {props.children}
         </div>
         <div className='col-3 d-flex justify-content-end align-items-center'>
-            {props.onCreateTemplate && <FileEarmarkPlus 
+            {props.onImport && <Upload 
                 size={18}
                 className='hover'
             />}
-            {props.onDuplicate && <Front 
+            {props.onExport && <BoxArrowDown 
                 size={18}
                 className='ms-2 hover'
             />}
@@ -58,7 +58,7 @@ const Header = props => {
 DropdownItem.Header = Header
 
 const Body = props => {
-    return <div className='px-3 py-2 mx-1 bg-white rounded-bottom border border-top-0 shadow-sm'
+    return <div className='px-3 py-2 m-0 bg-white rounded-bottom border border-top-0 shadow-sm'
         style={{ display: props.expand ? 'block' : 'none' }}>
         {props.children}
     </div>

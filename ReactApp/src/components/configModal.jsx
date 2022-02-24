@@ -1,31 +1,31 @@
 import { useState } from "react"
 import { Modal, Form, Button } from "react-bootstrap"
 
-export default function DeviceModal({ show, setShow }) {
-    const [useTemplate, setUseTemplate] = useState(false)
+export default function ConfigModal({ show, onHide, formats }) {
+    // const [useTemplate, setUseTemplate] = useState(false)
 
     const [deviceInfo, setDeviceInfo] = useState({
         name: '',
         description: '',
-        protocol: protocols[0],
+        protocol: formats[0],
         config: {}
     })
 
     const setName = name => setDeviceInfo({ ...deviceInfo, name })
     const setDescription = description => setDeviceInfo({ ...deviceInfo, description })
     const setProtocol = value => {
-        let protocol = protocols.find(p => p.value === value)
+        let protocol = formats.find(p => p.value === value)
         setDeviceInfo({ ...deviceInfo, protocol })
         // setTimeout(() => console.log(deviceInfo), 2000)
     }
 
-    return <Modal show={show} onHide={() => setShow(false)}>
+    return <Modal show={show} onHide={onHide}>
         <Modal.Header className="bg-dark text-white">
             <h5 className="m-auto">Add new device</h5>
         </Modal.Header>
         <Modal.Body>
             <Form>
-                <span className="me-2 fw-bold">Use Template:</span>
+                {/* <span className="me-2 fw-bold">Use Template:</span>
                 <Form.Group className="d-flex align-items-center mt-1">
                     
                     <Form.Select
@@ -41,7 +41,7 @@ export default function DeviceModal({ show, setShow }) {
                         onChange={() => setUseTemplate(!useTemplate)}
                         className='ms-2 '
                     />
-                </Form.Group>
+                </Form.Group> */}
                 <hr />
                 <div className="row mb-2">
                     <Form.Group className='col-6'>
@@ -63,7 +63,7 @@ export default function DeviceModal({ show, setShow }) {
                             required
                         >
                             {/* <option value={''}></option> */}
-                            {protocols.map(protocol => {
+                            {formats.map(protocol => {
                                 return <option value={protocol.value} key={protocol.value}>
                                     {protocol.label}
                                 </option>
@@ -98,26 +98,3 @@ export default function DeviceModal({ show, setShow }) {
         </Modal.Body>
     </Modal>
 }
-
-const protocols = [
-    {
-        value: 'ModbusRTU',
-        label: 'Modbus RTU',
-        attrs: ['com_port_num', 'parity', 'slave', 'baudrate', 'stopbits', 'databits']
-    },
-    {
-        value: 'ModbusTCP',
-        label: 'Modbus TCP',
-        attrs: ['IP', 'port', 'slave']
-    },
-    {
-        value: 'OPC_UA',
-        label: 'OPC UA',
-        attrs: ['URL']
-    },
-    {
-        value: 'MQTT_Client',
-        label: 'MQTT Client',
-        attrs: ['Username', 'Password', 'IP', 'Port']
-    }
-]

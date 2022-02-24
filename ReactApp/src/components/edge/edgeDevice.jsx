@@ -1,8 +1,9 @@
 
-import DropdownItem from "./dropdownItem";
+import DropdownItem from "../dropdownItem";
+import TagList from "./tagList";
 
-export default function Device({edit}) {
-    return <DropdownItem onEdit={edit} onDuplicate={true} onCreateTemplate>
+export default function EdgeDevice({edit}) {
+    return <DropdownItem onEdit={edit} onExport onImport onDelete>
         <DropdownItem.Header>
             <div className="row">
                 <div className="text-primary col-3"><u>#{'12ab56f'}</u></div>
@@ -11,8 +12,7 @@ export default function Device({edit}) {
             </div>
         </DropdownItem.Header>
         <DropdownItem.Body>
-            áđâsđâsd
+            <TagList />
         </DropdownItem.Body>
-
     </DropdownItem>
 }

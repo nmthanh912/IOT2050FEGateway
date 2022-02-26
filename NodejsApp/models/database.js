@@ -1,5 +1,6 @@
 var sqlite3 = require('sqlite3').verbose()
 const DBSOURCE = process.env.DATABASE_PATH
+const util = require('util')
 
 let db = new sqlite3.Database(DBSOURCE, (err) => {
     if (err) {
@@ -21,4 +22,10 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
     }
 })
 
-module.exports = db
+const dbRun = util.promisify(db.run.bind(db))
+
+const dbAll = util.promisify(db.all.bind(db))
+
+module.exports = {
+    db, dbRun, dbAll
+}

@@ -1,73 +1,61 @@
-var db = require('../../models/database.js')
 const ShortUniqueId = require('short-unique-id')
+const util = require('util')
+const {db, dbRun, dbAll} = require('../../models/database')
 
-module.exports.getDevice = function (req, res) {
+module.exports.getDevice = async function (req, res) {
+    const getDevice = `SELECT * FROM DEVICE`
+    var params = []
+    var data = []
+
     try {
-        const sql =
-            'SELECT CASE WHEN EXISTS (SELECT deviceID FROM config WHERE device.ID = config.deviceID)' +
-            'THEN 1 ELSE 0 END AS checked, device.ID, device.name, device.description FROM device'
-        var params = []
-        var data = []
+        const devices = await dbAll(getDevice, params)
 
-        db.all(sql, params, (err, rows) => {
-            if (err) {
-                res.status(400).json({msg: err.message})
-                return
-            }
-
-            rows.map((row) => {
-                if (row.checked === 1) {
-                    data.push({
-                        id: row.ID,
-                        name: row.name,
-                        description: row.description,
-                        status: 'configured',
-                    })
-                } else {
-                    data.push({
-                        id: row.ID,
-                        name: row.name,
-                        description: row.description,
-                        status: 'unconfigured',
-                    })
-                }
+        devices.map((device) => {
+            data.push({
+                ID: device.ID,
+                name: device.name,
+                description: device.description,
+                protocol: device.protocolType,
             })
+        })
 
-            res.json(data)
-        })
+        res.json(data)
     } catch (err) {
-        res.json({
-            msg: err,
-        })
+        res.status(500).send({msg: 'Internal Server Error'})
     }
 }
 
-module.exports.postDevice = function (req, res) {
+module.exports.postDevice = async function (req, res) {
+    const uid = new ShortUniqueId({
+        dictionary: 'hex',
+        length: 8,
+    })
+    const id = uid()
+
+    const inserDevice =
+        'INSERT INTO DEVICE (ID, name, description, protocolType) VALUES (?, ?, ?, ?)'
+    const deviceParams = [
+        id,
+        req.body.name,
+        req.body.description,
+        req.body.protocol.toUpperCase(),
+    ]
+    const protocolName = req.body.protocol.toUpperCase()
+    const protocolParams = Object.values(req.body.config)
+    protocolParams.push(id)
+
+    const insertProtocol = `INSERT INTO ${protocolName} VALUES (${',?'
+        .repeat(protocolParams.length)
+        .slice(1)})`
     try {
-        const uid = new ShortUniqueId({
-            dictionary: 'hex',
-            length: 8,
-        })
+        await dbRun(inserDevice, deviceParams)
+        await dbRun(insertProtocol, protocolParams)
 
-        const id = uid()
-
-        const sql =
-            'INSERT INTO device (ID, name, description) VALUES (?, ?, ?)'
-        var params = [id, req.body.name, req.body.description]
-
-        db.run(sql, params, (err) => {
-            if (err) {
-                res.status(400).json({msg: err.message})
-                return
-            }
-            res.json({
-                key: id,
-            })
+        res.json({
+            key: id,
         })
     } catch (err) {
-        res.json({
-            msg: err,
-        })
+        res.status(500).send({msg: 'Internal Server Error'})
     }
 }
 

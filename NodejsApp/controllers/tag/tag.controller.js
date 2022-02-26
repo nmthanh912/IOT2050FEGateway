@@ -1,32 +1,19 @@
-var db = require('../../models/database.js')
 const ShortUniqueId = require('short-unique-id')
+const {db, dbRun, dbAll} = require('../../models/database.js')
 
-module.exports.getTag = function (req, res) {
+module.exports.getTag = async function (req, res) {
+    const getTag = `SELECT * FROM ${req.query.protocol}_TAG WHERE deviceID = ?`
+    const params = [req.params.id]
+
     try {
-        const sql = 'SELECT * FROM tag'
-        var params = []
-        var data = []
-
-        db.all(sql, params, (err, rows) => {
-            if (err) {
-                res.status(400).json({msg: err.message})
-                return
-            }
-
-            rows.map((row) => {
-                data.push({
-                    id: row.ID,
-                    name: row.name,
-                    attribute: JSON.parse(row.attribute),
-                })
-            })
-
-            res.json(data)
+        const tags = await dbAll(getTag, params)
+        tags.forEach((tag) => {
+            delete tag.deviceID
         })
+
+        res.json(tags)
     } catch (err) {
-        res.json({
-            msg: err,
-        })
+        res.status(500).send({msg: 'Internal Server Error'})
     }
 }
 

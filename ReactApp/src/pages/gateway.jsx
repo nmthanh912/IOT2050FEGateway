@@ -4,7 +4,7 @@ import SubHeader from "../components/subHeader";
 import MappingList from "../components/gateway/mappingList";
 import { useState } from "react";
 
-export default function Gateway() {
+export default function GatewayPage() {
     const [showGatewayModal, setShowGatewayModal] = useState(false)
     return <div>
         <SubHeader

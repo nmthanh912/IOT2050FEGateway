@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Pencil, Trash, Upload, BoxArrowDown } from 'react-bootstrap-icons';
 function DropdownItem({ children, onEdit, onDelete, onExport, onImport }) {
     const [expand, setExpand] = useState(false);
+    const [firstClick, setFirstClick] = useState(false)
 
     return <div className='mb-2 bg-white'>
         {/* Header */}
@@ -12,10 +13,12 @@ function DropdownItem({ children, onEdit, onDelete, onExport, onImport }) {
             onEdit,
             onDelete,
             onExport,
-            onImport
+            onImport,
+            firstClick,
+            setFirstClick
         })}
         {/* Body */}
-        {React.cloneElement(children[1], { expand: expand })}
+        {React.cloneElement(children[1], { expand: expand, firstClick })}
     </div>
 };
 
@@ -35,11 +38,9 @@ const Header = props => {
             />}
             {props.onEdit && <Pencil
                 size={18} className='ms-2 hover'
-                onClick={props.onEdit}
             />}
             {props.onDelete && <Trash
                 size={18} className='ms-2 hover'
-                onClick={props.onDelete}
             />}
             {props.expand ?
                 <ChevronUp
@@ -49,7 +50,10 @@ const Header = props => {
                 : <ChevronDown
                     size={18}
                     className='ms-2 hover'
-                    onClick={() => props.setExpand(true)}
+                    onClick={() => {
+                        props.setExpand(true)
+                        !props.firstClick && props.setFirstClick(true)
+                    }}
                 />
             }
         </div>
@@ -60,7 +64,7 @@ DropdownItem.Header = Header
 const Body = props => {
     return <div className='px-3 py-2 m-0 bg-white rounded-bottom border border-top-0 shadow-sm'
         style={{ display: props.expand ? 'block' : 'none' }}>
-        {props.children}
+        {props.firstClick && props.children}
     </div>
 }
 DropdownItem.Body = Body

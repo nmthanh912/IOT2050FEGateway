@@ -12,11 +12,11 @@ export default function NavBar() {
         </Navbar.Brand>
         <div>
             <Link
-                to={'/edge-device'}
+                to={'/device'}
                 className={"me-3 text-decoration-none " + (active === 0 ? "text-white" : "text-secondary")}
                 onClick={() => setActive(0)}
             >
-                Edge Device
+                Device
             </Link><Link
                 to={'/gateway'}
                 className={"text-decoration-none " + (active === 1 ? "text-white" : "text-secondary")}

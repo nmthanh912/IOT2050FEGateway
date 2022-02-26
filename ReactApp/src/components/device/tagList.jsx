@@ -3,41 +3,55 @@ import { FormGroup, FormSelect, FormText, Table } from "react-bootstrap"
 import { useState, useEffect } from "react";
 import { CaretLeft, CaretRight } from "react-bootstrap-icons";
 import ShortUniqueId from "short-unique-id";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchTags } from "../../redux/slices/device"
 
 const uid = new ShortUniqueId({
   length: 5,
   dictionary: 'hex'
 })
 
-export default function TagList() {
-  const [currentItems, setCurrentItems] = useState(tagData);
+export default function TagList({ deviceID, protocol }) {
+  const dispatch = useDispatch()
+  const tagList = useSelector(state => {
+    const device = state.device.find(val => val.ID === deviceID)
+    return device.tagList
+  })
+
+  const [currentItems, setCurrentItems] = useState(tagList);
   const [pageCount, setPageCount] = useState(0);
   const [beginIdx, setBeginIdx] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(10)
 
   useEffect(() => {
     // Fetch items from another resources.
+
     const endIdx = beginIdx + itemsPerPage;
     // console.log(beginIdx + '\t' + endIdx);
-    setCurrentItems(tagData.slice(beginIdx, endIdx));
-    setPageCount(Math.ceil(tagData.length / itemsPerPage));
-  }, [beginIdx, itemsPerPage]);
+    setCurrentItems(tagList.slice(beginIdx, endIdx));
+    setPageCount(Math.ceil(tagList.length / itemsPerPage));
+  }, [beginIdx, itemsPerPage, tagList]);
+
+  // Fetch tag of a device from DB
+  useEffect(() => {
+    dispatch(fetchTags({ deviceID, protocol }))
+  }, [deviceID, protocol, dispatch])
 
   const pageClick = event => {
-    const newBeginIdx = (event.selected * itemsPerPage) % tagData.length;
+    const newBeginIdx = (event.selected * itemsPerPage) % tagList.length;
     setBeginIdx(newBeginIdx);
   };
 
   const resetState = (newItemsPerPage) => {
     // Set page to 0
-    setCurrentItems(tagData.slice(0, newItemsPerPage))
+    setCurrentItems(tagList.slice(0, newItemsPerPage))
     setPageCount(0)
     setItemsPerPage(newItemsPerPage)
   }
 
   return (
     <div>
-      <TagTable data={currentItems} />
+      {currentItems.length !== 0 && <TagTable data={currentItems} />}
       <div className="d-flex align-items-center justify-content-end">
         <FormText>Items/Page:</FormText>
 
@@ -92,20 +106,20 @@ function TagTable({ data }) {
   </div>
 }
 
-const tagData = [{
-  name: 'Nhiet do 1',
-  unit: 'K',
-  topicAddr: '/device1/nhietdo1'
-}, {
-  name: 'Ap suat',
-  unit: 'Bar',
-  topicAddr: '/device1/apsuat1'
-}, {
-  name: 'Nhiet do 2',
-  unit: 'K',
-  topicAddr: '/device1/nhietdo2'
-}, {
-  name: 'Ap suat 2',
-  unit: 'Bar',
-  topicAddr: '/device1/apsuat2'
-}]
+// const tagData = [{
+//   name: 'Nhiet do 1',
+//   unit: 'K',
+//   topicAddr: '/device1/nhietdo1'
+// }, {
+//   name: 'Ap suat',
+//   unit: 'Bar',
+//   topicAddr: '/device1/apsuat1'
+// }, {
+//   name: 'Nhiet do 2',
+//   unit: 'K',
+//   topicAddr: '/device1/nhietdo2'
+// }, {
+//   name: 'Ap suat 2',
+//   unit: 'Bar',
+//   topicAddr: '/device1/apsuat2'
+// }]

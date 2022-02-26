@@ -1,13 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit'
-import protocolReducer from './slices/protocol'
-import tagReducer from './slices/tag'
-import mqttReducer from './slices/mqtt'
+import gatewayReducer from './slices/gateway'
+import deviceReducer from './slices/device'
 
 const store = configureStore({
     reducer: {
-        protocol: protocolReducer,
-        tag: tagReducer,
-        mqtt: mqttReducer
+        gateway: gatewayReducer,
+        device: deviceReducer
     }
 })
 export default store

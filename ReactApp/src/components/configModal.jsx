@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Modal, Form, Button } from "react-bootstrap"
 import DeviceService from '../services/device'
 
@@ -22,7 +22,7 @@ export default function ConfigModal({ show, onHide, formats, onSubmit }) {
     const setConfig = config => setDeviceInfo({ ...deviceInfo, config })
 
     return <Modal show={show} onHide={onHide}>
-        <Modal.Header className="bg-dark text-white">
+        <Modal.Header className="bg-primary text-white">
             <h5 className="m-auto">Add new device</h5>
         </Modal.Header>
         <Modal.Body>
@@ -78,7 +78,7 @@ export default function ConfigModal({ show, onHide, formats, onSubmit }) {
                     />
                 </Form.Group>
             })}
-            <Button size="sm" className="float-end"
+            <Button size="sm" className="float-end text-white"
                 onClick={() => {
                     DeviceService.add({
                         name: deviceInfo.name,

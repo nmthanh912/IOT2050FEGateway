@@ -19,7 +19,7 @@ export default function DeviceModal({ show, onHide }) {
 	const setConfig = config => setDeviceInfo({ ...deviceInfo, config })
 
 	return <Modal show={show} onHide={onHide}>
-		<Modal.Header className="bg-dark text-white">
+		<Modal.Header className="bg-primary text-white">
 			<h5 className="m-auto">Add new device</h5>
 		</Modal.Header>
 		<Modal.Body>
@@ -79,7 +79,7 @@ export default function DeviceModal({ show, onHide }) {
 			})}
 
 			{/* Submit button */}
-			<Button size="sm" className="float-end"
+			<Button className="float-end text-white fw-bold"
 				onClick={() => {
 					DeviceService.add({
 						name: deviceInfo.name,

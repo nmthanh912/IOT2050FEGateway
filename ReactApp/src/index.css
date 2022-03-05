@@ -15,8 +15,7 @@ code {
 
 .form-control:focus, .form-select:focus {
   outline: none !important;
-  box-shadow: 0 0 0 1px #2684ff !important;
-  border: 1px solid #2684ff;
+  box-shadow: 0 0 0 1px hsl(180, 100%, 30%) !important;
 }
 
 .form-check-input:focus {

@@ -1,6 +1,6 @@
 import ReactPaginate from "react-paginate"
-import { FormGroup, FormSelect, FormText, Table } from "react-bootstrap"
-import { useState, useEffect } from "react";
+import { FormGroup, FormSelect, FormText, FormControl } from "react-bootstrap"
+import { useState, useEffect, useMemo } from "react";
 import { CaretLeft, CaretRight } from "react-bootstrap-icons";
 import ShortUniqueId from "short-unique-id";
 import { useSelector, useDispatch } from "react-redux";
@@ -72,10 +72,9 @@ export default function TagList({ deviceID, protocol }) {
           pageRangeDisplayed={2}
           pageCount={pageCount}
           renderOnZeroPageCount={null}
-
           breakClassName={'page-item'}
           breakLinkClassName={'page-link'}
-          containerClassName={'pagination'}
+          containerClassName={'pagination m-3'}
           pageClassName={'page-item'}
           pageLinkClassName={'page-link'}
           previousClassName={'page-item'}
@@ -90,36 +89,47 @@ export default function TagList({ deviceID, protocol }) {
 }
 
 function TagTable({ data }) {
+  const columns = useMemo(() => {
+    return Object.keys(data[0]).map(key => key[0].toUpperCase() + key.slice(1))
+  }, [data])
+
   return <div>
-    <Table striped bordered hover size="sm">
+    <table className="styled-table w-100" >
       <thead>
         <tr>
-          {Object.keys(data[0]).map(key => <th key={uid()}>{key}</th>)}
+          {columns.map(col => <th key={uid()} >
+            {col}
+          </th>)}
         </tr>
       </thead>
       <tbody>
-        {data.map(data => <tr key={uid()}>
-          {Object.values(data).map(value => <td key={uid()}>{value}</td>)}
-        </tr>)}
+        {data.map(row => {
+          return <tr key={uid()}>
+            {Object.values(row).map(cell => <EditableCell key={uid()} initValue={cell} />)}
+          </tr>
+        })}
       </tbody>
-    </Table>
+    </table>
   </div>
 }
 
-// const tagData = [{
-//   name: 'Nhiet do 1',
-//   unit: 'K',
-//   topicAddr: '/device1/nhietdo1'
-// }, {
-//   name: 'Ap suat',
-//   unit: 'Bar',
-//   topicAddr: '/device1/apsuat1'
-// }, {
-//   name: 'Nhiet do 2',
-//   unit: 'K',
-//   topicAddr: '/device1/nhietdo2'
-// }, {
-//   name: 'Ap suat 2',
-//   unit: 'Bar',
-//   topicAddr: '/device1/apsuat2'
-// }]
+function EditableCell({ initValue }) {
+  // We need to keep and update the state of the cell normally
+  const [value, setValue] = useState(initValue)
+  const [editable, setEditable] = useState(false)
+  // console.log(column)
+  // If the initialValue is changed external, sync it up with our state
+
+  return <td>
+    {editable ?
+      <FormGroup className='w-50'>
+        <FormControl
+          value={value} size='sm'
+          onChange={e => setValue(e.target.value)}
+          onBlur={() => setEditable(false)}
+        />
+      </FormGroup>
+      : <span onDoubleClick={() => setEditable(true)} className='hover'>{value}</span>}
+  </td>
+
+}

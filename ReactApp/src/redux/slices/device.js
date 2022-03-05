@@ -14,24 +14,50 @@ import DeviceService from "../../services/device";
 
 const deviceSlice = createSlice({
     name: 'device',
-    initialState: [],
+    initialState: [{
+        ID: '123456',
+        name: 'Thiết bị PLC',
+        tagList: [{
+            name: 'Nhiet do 1',
+            unit: 'K',
+            topicAddr: '/device1/nhietdo1'
+        },
+        {
+            name: 'Ap suat',
+            unit: 'Bar',
+            topicAddr: '/device1/apsuat1'
+        }, {
+            name: 'Nhiet do 2',
+            unit: 'K',
+            topicAddr: '/device1/nhietdo2'
+        }, {
+            name: 'Ap suat 2',
+            unit: 'Bar',
+            topicAddr: '/device1/apsuat2'
+        }],
+        protocol: 'ModbusTCP',
+        description: 'Mô tả thiết bị ở đây',
+        config: {}
+    }],
     reducers: {
-        addDevice: (state, payload) => {
+        addDevice: (state, action) => {
 
         },
-        removeDevice: (state, payload) => {
+        removeDevice: (state, action) => {
 
         },
-        updateDevice: (state, payload) => {
+        updateDevice: (state, action) => {
+            const device = state.find(val => parseInt(val.ID) === action.payload.id)
+            Object.assign(device, action.payload)
+            return state
+        },
+        addTag: (state, action) => {
 
         },
-        addTag: (state, payload) => {
+        removeTag: (state, action) => {
 
         },
-        removeTag: (state, payload) => {
-
-        },
-        updateTag: (state, payload) => {
+        updateTag: (state, action) => {
 
         }
     },

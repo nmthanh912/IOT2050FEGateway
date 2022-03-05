@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-
 import { ChevronDown, ChevronUp, Pencil, Trash, Upload, BoxArrowDown } from 'react-bootstrap-icons';
+
 function DropdownItem({ children, onEdit, onDelete, onExport, onImport }) {
     const [expand, setExpand] = useState(false);
     const [firstClick, setFirstClick] = useState(false)
 
-    return <div className='mb-2 bg-white'>
-        {/* Header */}
+    return <div className='mb-2'>
         {React.cloneElement(children[0], {
             expand: expand,
             setExpand: setExpand,
@@ -17,13 +16,12 @@ function DropdownItem({ children, onEdit, onDelete, onExport, onImport }) {
             firstClick,
             setFirstClick
         })}
-        {/* Body */}
         {React.cloneElement(children[1], { expand: expand, firstClick })}
     </div>
 };
 
 const Header = props => {
-    return <div className={'row px-1 py-2 m-0 bg-white border border-1 shadow ' + (props.expand ? 'rounded-top' : 'rounded')}>
+    return <div className={'row bg-white px-2 py-3 m-0 border border-1 shadow ' + (props.expand ? 'rounded-top-custom' : 'rounded-custom')}>
         <div className='col-9'>
             {props.children}
         </div>
@@ -31,10 +29,12 @@ const Header = props => {
             {props.onImport && <Upload 
                 size={18}
                 className='hover'
+                onClick={() => props.onImport()}
             />}
             {props.onExport && <BoxArrowDown 
                 size={18}
                 className='ms-2 hover'
+                onClick={() => props.onExport()}
             />}
             {props.onEdit && <Pencil
                 size={18} className='ms-2 hover'
@@ -62,7 +62,7 @@ const Header = props => {
 DropdownItem.Header = Header
 
 const Body = props => {
-    return <div className='px-3 py-2 m-0 bg-white rounded-bottom border border-top-0 shadow-sm'
+    return <div className='m-0 bg-white rounded-bottom-custom border border-top-0 shadow'
         style={{ display: props.expand ? 'block' : 'none' }}>
         {props.firstClick && props.children}
     </div>

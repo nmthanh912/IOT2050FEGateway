@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import './scss/custom.scss'
 import 'react-pro-sidebar/dist/css/styles.css';
 import App from './App';
 import { BrowserRouter } from 'react-router-dom'

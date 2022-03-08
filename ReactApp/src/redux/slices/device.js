@@ -1,5 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import DeviceService from "../../services/device";
+// import ShortUniqueId from "short-unique-id";
+// const uid = length => {
+//     return new ShortUniqueId({
+//         length,
+//         dictionary: 'number'
+//     })
+// }
 
 // {
 //     ID: '',
@@ -9,47 +16,29 @@ import DeviceService from "../../services/device";
 //     }],
 //     protocol: '',
 //     description: '',
-//     config: {}
 // }
 
 const deviceSlice = createSlice({
     name: 'device',
-    initialState: [{
-        ID: '123456',
-        name: 'Thiết bị PLC',
-        tagList: [{
-            name: 'Nhiet do 1',
-            unit: 'K',
-            topicAddr: '/device1/nhietdo1'
-        },
-        {
-            name: 'Ap suat',
-            unit: 'Bar',
-            topicAddr: '/device1/apsuat1'
-        }, {
-            name: 'Nhiet do 2',
-            unit: 'K',
-            topicAddr: '/device1/nhietdo2'
-        }, {
-            name: 'Ap suat 2',
-            unit: 'Bar',
-            topicAddr: '/device1/apsuat2'
-        }],
-        protocol: 'ModbusTCP',
-        description: 'Mô tả thiết bị ở đây',
-        config: {}
-    }],
+    initialState: [],
     reducers: {
         addDevice: (state, action) => {
-
-        },
-        removeDevice: (state, action) => {
-
+            const device = action.payload
+            device.tagList = []
+            state.push(device)
         },
         updateDevice: (state, action) => {
-            const device = state.find(val => parseInt(val.ID) === action.payload.id)
+            const updatedData = action.payload
+            const device = state.find(val => val.ID === updatedData.ID)
             Object.assign(device, action.payload)
             return state
+        },
+        removeDevice: (state, action) => {
+            const deviceID = action.payload
+            const idx = state.findIndex(device => {
+                return device.ID === deviceID
+            })
+            state.splice(idx, 1)
         },
         addTag: (state, action) => {
 
@@ -65,8 +54,7 @@ const deviceSlice = createSlice({
         builder.addCase(fetchDevices.fulfilled, (state, action) => {
             action.payload.forEach(val => state.push({
                 ...val,
-                tagList: [],
-                config: {}
+                tagList: []
             }))
             return state
         })
@@ -90,20 +78,26 @@ export const fetchDevices = createAsyncThunk('devices/fetchDevices', async () =>
     }
 })
 
+
 export const fetchTags = createAsyncThunk('devices/fetchTags', async ({ deviceID, protocol }) => {
     try {
         const response = await DeviceService.getTags(deviceID, protocol)
-        console.log(response.data)
         return {
             deviceID: deviceID,
             data: response.data
         }
     }
     catch (err) {
-        console.log('?????')
         return []
     }
 })
 
-export const { addDevice, removeDevice, updateDevice, addTag, removeTag, updateTag } = deviceSlice.actions
+export const {
+    addDevice,
+    removeDevice,
+    updateDevice,
+    addTag,
+    removeTag,
+    updateTag
+} = deviceSlice.actions
 export default deviceSlice.reducer

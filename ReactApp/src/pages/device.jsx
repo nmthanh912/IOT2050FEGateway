@@ -13,31 +13,37 @@ import EdgeDevice from "../components/device/device";
 // ];
 
 export default function DevicePage() {
-	const [showDeviceModal, setShowDeviceModal] = useState(false)
+	const [showAdd, setShowAdd] = useState(false)
+	const [showEdit, setShowEdit] = useState(false)
 	const deviceList = useSelector(state => state.device)
 	const dispatch = useDispatch()
+	const [currDevice, setCurrDevice] = useState(deviceList.length !== 0 ? deviceList[0] : null)
 
 	useEffect(() => {
 		dispatch(fetchDevices())
 	}, [dispatch])
 
 	return <div>
-		{/* <CSVLink data={csvData}>Download me</CSVLink> */}
-
-		{/* <CSVDownload data={csvData} target="_blank" /> */}
 		<SubHeader
 			modal={<DeviceModal
-				show={showDeviceModal}
-				onHide={() => setShowDeviceModal(false)}
+				show={showAdd}
+				onHide={() => setShowAdd(false)}
+				mode='add'
 			/>}
-			onShow={() => setShowDeviceModal(true)}
+			onShow={() => setShowAdd(true)}
 			onSubmit
 			title='Device'
 		/>
-
+		{currDevice && <DeviceModal show={showEdit}
+			onHide={() => setShowEdit(false)}
+			mode='edit' device={currDevice}
+		/>}
 		<hr />
 		{deviceList.map(device => {
-			return <EdgeDevice key={device.ID} data={{...device}}/>
+			return <EdgeDevice key={device.ID} data={{ ...device }} onDetail={() => {
+				setCurrDevice(device)
+				setShowEdit(true)}
+			}/>
 		})}
 	</div>
 }

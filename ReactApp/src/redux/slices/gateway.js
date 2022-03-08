@@ -3,15 +3,11 @@ import { createSlice } from '@reduxjs/toolkit'
 const gatewaySlice = createSlice({
     name: 'gateway',
     initialState: [{
-        ID: '',
-        name: '',
-        mapping: [{
-            deviceID: '',
-            tagList: [{
-                tagID: '',
-                topic: ''
-            }]
-        }]
+        ID: '12ab56f',
+        name: 'Gateway A',
+        mapping: [ '123456' ],
+        protocol: 'MQTT Client',
+        config: {}
     }],
     reducers: {
         addGateway: (state, payload) => {

@@ -1,13 +1,15 @@
+const {symlink} = require('fs')
 const ShortUniqueId = require('short-unique-id')
 const util = require('util')
 const {db, dbRun, dbAll} = require('../../models/database')
+const handler = require('../handler')
 
-module.exports.getDevice = async function (req, res) {
+module.exports.getAllDevice = function (req, res) {
     const getDevice = `SELECT * FROM DEVICE`
-    var params = []
+    const params = []
     var data = []
 
-    try {
+    handler(res, async () => {
         const devices = await dbAll(getDevice, params)
 
         devices.map((device) => {
@@ -20,19 +22,17 @@ module.exports.getDevice = async function (req, res) {
         })
 
         res.json(data)
-    } catch (err) {
-        res.status(500).send({msg: 'Internal Server Error'})
-    }
+    })
 }
 
-module.exports.postDevice = async function (req, res) {
+module.exports.postDevice = function (req, res) {
     const uid = new ShortUniqueId({
         dictionary: 'hex',
         length: 8,
     })
     const id = uid()
 
-    const inserDevice =
+    const insertDevice =
         'INSERT INTO DEVICE (ID, name, description, protocolType) VALUES (?, ?, ?, ?)'
     const deviceParams = [
         id,
@@ -47,56 +47,94 @@ module.exports.postDevice = async function (req, res) {
     const insertProtocol = `INSERT INTO ${protocolName} VALUES (${',?'
         .repeat(protocolParams.length)
         .slice(1)})`
-    try {
-        await dbRun(inserDevice, deviceParams)
+
+    handler(res, async () => {
+        await dbRun(insertDevice, deviceParams)
         await dbRun(insertProtocol, protocolParams)
 
         res.json({
             key: id,
         })
-    } catch (err) {
-        res.status(500).send({msg: 'Internal Server Error'})
-    }
+    })
 }
 
-module.exports.editDevice = function (req, res) {
-    try {
-        const sql = 'UPDATE device SET name = ?, description = ? WHERE ID = ?'
-        var params = [req.body.name, req.body.description, req.params.id]
+module.exports.getDevice = function (req, res) {
+    const getDevice = 'SELECT * FROM DEVICE WHERE DEVICE.ID = ?'
+    const params = req.params.id
 
-        db.run(sql, params, (err) => {
-            if (err) {
-                res.status(400).json({msg: err.message})
-                return
-            }
-            res.json({
-                key: req.params.id,
-            })
-        })
-    } catch (err) {
+    handler(res, async () => {
+        const device = await dbAll(getDevice, params)
+
+        console.log(device)
         res.json({
-            msg: err,
+            ID: device[0].ID,
+            name: device[0].name,
+            description: device[0].description,
+            protocol: device[0].protocolType,
         })
-    }
+    })
 }
 
-module.exports.deleteDevice = function (req, res) {
-    try {
-        const sql = 'DELETE FROM device WHERE ID = ?'
-        var params = [req.params.id]
+module.exports.getDeviceConfig = function (req, res) {
+    const deviceID = req.params.id
+    const protocolName = req.query.protocol.toUpperCase()
 
-        db.run(sql, params, (err) => {
-            if (err) {
-                res.status(400).json({msg: err.message})
-                return
-            }
-            res.json({
-                key: req.params.id,
-            })
-        })
-    } catch (err) {
+    const getConfig = `SELECT * FROM ${protocolName} WHERE ${protocolName}.deviceID = ?`
+
+    handler(res, async () => {
+        const config = await dbAll(getConfig, deviceID)
+        delete config[0].deviceID
+
+        res.json(config[0])
+    })
+}
+
+module.exports.editDeviceInfo = function (req, res) {
+    const editDevice =
+        'UPDATE DEVICE SET name = ?, description = ? WHERE ID = ?'
+    const deviceParams = [req.body.name, req.body.description, req.params.id]
+
+    var setString = 'SET '
+    const keys = Object.keys(req.body.config)
+    keys.forEach((key) => {
+        setString += key + ' = ?, '
+    })
+
+    const protocolName = req.body.protocol.toUpperCase()
+    const editProtocol = `UPDATE ${protocolName} ${setString.slice(
+        0,
+        setString.length - 2
+    )} WHERE deviceID = ?`
+
+    const protocolParams = Object.values(req.body.config)
+    protocolParams.push(req.params.id)
+
+    handler(res, async () => {
+        await dbRun(editDevice, deviceParams)
+        await dbRun(editProtocol, protocolParams)
+
         res.json({
-            msg: err,
+            key: req.params.id,
         })
-    }
+    })
+}
+
+module.exports.deleteDeviceInfo = function (req, res) {
+    const deleteDevice = 'DELETE FROM DEVICE WHERE ID = ?'
+    const params = [req.params.id]
+
+    const protocolName = req.query.protocol.toUpperCase()
+    const deleteProtocol = `DELETE FROM ${protocolName} WHERE deviceID = ?`
+
+    const deleteTag = `DELETE FROM ${protocolName}_TAG WHERE deviceID = ?`
+
+    handler(res, async () => {
+        await dbRun(deleteDevice, params)
+        await dbRun(deleteProtocol, params)
+        await dbRun(deleteTag, params)
+
+        res.json({
+            key: req.params.id,
+        })
+    })
 }

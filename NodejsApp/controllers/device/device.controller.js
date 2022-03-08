@@ -40,22 +40,43 @@ module.exports.postDevice = function (req, res) {
         req.body.description,
         req.body.protocol.toUpperCase(),
     ]
+
     const protocolName = req.body.protocol.toUpperCase()
-    const protocolParams = Object.values(req.body.config)
-    protocolParams.push(id)
+    var protocolParams = Object.values(req.body.config)
 
-    const insertProtocol = `INSERT INTO ${protocolName} VALUES (${',?'
-        .repeat(protocolParams.length)
-        .slice(1)})`
+    if (protocolParams.length == 0) {
+        const getTableInfo = `PRAGMA table_info(${protocolName})`
+        handler(res, async () => {
+            const infoTable = await dbAll(getTableInfo)
+            protocolParams = Array(infoTable.length - 1).fill('NULL')
+            protocolParams.push(id)
 
-    handler(res, async () => {
-        await dbRun(insertDevice, deviceParams)
-        await dbRun(insertProtocol, protocolParams)
+            const insertProtocol = `INSERT INTO ${protocolName} VALUES (${',?'
+                .repeat(protocolParams.length)
+                .slice(1)})`
 
-        res.json({
-            key: id,
+            await dbRun(insertDevice, deviceParams)
+            await dbRun(insertProtocol, protocolParams)
+
+            res.json({
+                key: id,
+            })
         })
-    })
+    } else {
+        protocolParams.push(id)
+        const insertProtocol = `INSERT INTO ${protocolName} VALUES (${',?'
+            .repeat(protocolParams.length)
+            .slice(1)})`
+
+        handler(res, async () => {
+            await dbRun(insertDevice, deviceParams)
+            await dbRun(insertProtocol, protocolParams)
+            
+            res.json({
+                key: id,
+            })
+        })
+    }
 }
 
 module.exports.getDevice = function (req, res) {
@@ -83,9 +104,12 @@ module.exports.getDeviceConfig = function (req, res) {
 
     handler(res, async () => {
         const config = await dbAll(getConfig, deviceID)
-        delete config[0].deviceID
-
-        res.json(config[0])
+        if (config.length == 0) {
+            res.json(config)
+        } else {
+            delete config[0].deviceID
+            res.json(config[0])
+        }
     })
 }
 

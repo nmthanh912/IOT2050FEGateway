@@ -1,10 +1,8 @@
 import { useState } from "react"
 import { Modal, Form, Button } from "react-bootstrap"
-import DeviceService from '../services/device'
+import DeviceService from '../../services/device'
 
 export default function ConfigModal({ show, onHide, formats, onSubmit }) {
-    // const [useTemplate, setUseTemplate] = useState(false)
-
     const [deviceInfo, setDeviceInfo] = useState({
         name: '',
         description: '',

@@ -1,11 +1,16 @@
 import DropdownItem from "../components/dropdownItem";
-import GatewayModal from '../components/configModal'
+import GatewayModal from '../components/gateway/configModal'
 import SubHeader from "../components/subHeader";
 import MappingList from "../components/gateway/mappingList";
 import { useState } from "react";
+import { useSelector } from "react-redux";
+import ShortUniqueId from "short-unique-id";
+
+const uid = new ShortUniqueId({ length: 3 })
 
 export default function GatewayPage() {
     const [showGatewayModal, setShowGatewayModal] = useState(false)
+    const gatewayList = useSelector(state => state.gateway)
     return <div>
         <SubHeader
             modal={<GatewayModal
@@ -17,30 +22,19 @@ export default function GatewayPage() {
             title='Gateway'
         />
         <hr />
-        <DropdownItem onEdit={() => { }} onDuplicate onDelete={() => { }}>
+        {gatewayList.map(gateway => <DropdownItem key={uid()} onEdit={() => { }} onDuplicate onDelete={() => { }}>
             <DropdownItem.Header>
                 <div className="row">
-                    <div className="text-primary col-3"><u>#{'12ab56f'}</u></div>
-                    <div className="fw-bold col-4">Gateway A</div>
-                    <div className="col-5"> MQTT Client </div>
+                    <div className="text-primary col-3"><u>#{gateway.ID}</u></div>
+                    <div className="fw-bold col-4">{gateway.name}</div>
+                    <div className="col-5">{gateway.protocol}</div>
                 </div>
             </DropdownItem.Header>
             <DropdownItem.Body>
-                <MappingList />
+                <MappingList list={gateway.mapping} />
             </DropdownItem.Body>
-        </DropdownItem>
-        <DropdownItem onEdit={() => { }} onDuplicate onDelete={() => { }}>
-            <DropdownItem.Header>
-                <div className="row">
-                    <div className="text-primary col-3"><u>#{'12ab56f'}</u></div>
-                    <div className="fw-bold col-4">Gateway A</div>
-                    <div className="col-5"> MQTT Client </div>
-                </div>
-            </DropdownItem.Header>
-            <DropdownItem.Body>
-                <MappingList />
-            </DropdownItem.Body>
-        </DropdownItem>
+        </DropdownItem>)}
+
     </div>
 }
 

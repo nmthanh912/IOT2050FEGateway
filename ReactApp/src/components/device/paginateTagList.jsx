@@ -11,7 +11,7 @@ const uid = new ShortUniqueId({
   dictionary: 'hex'
 })
 
-export default function TagList({ deviceID, protocol }) {
+export default function PaginateTagList({ deviceID, protocol, Table }) {
   const dispatch = useDispatch()
   const tagList = useSelector(state => {
     const device = state.device.find(val => val.ID === deviceID)
@@ -25,7 +25,6 @@ export default function TagList({ deviceID, protocol }) {
 
   useEffect(() => {
     // Fetch items from another resources.
-
     const endIdx = beginIdx + itemsPerPage;
     // console.log(beginIdx + '\t' + endIdx);
     setCurrentItems(tagList.slice(beginIdx, endIdx));
@@ -51,7 +50,7 @@ export default function TagList({ deviceID, protocol }) {
 
   return (
     <div>
-      {currentItems.length !== 0 && <TagTable data={currentItems} />}
+      {currentItems.length !== 0 && <Table data={currentItems} />}
       <div className="d-flex align-items-center justify-content-end">
         <FormText>Items/Page:</FormText>
 
@@ -88,7 +87,7 @@ export default function TagList({ deviceID, protocol }) {
   );
 }
 
-function TagTable({ data }) {
+export function TagTable({ data }) {
   const columns = useMemo(() => {
     return Object.keys(data[0]).map(key => key[0].toUpperCase() + key.slice(1))
   }, [data])

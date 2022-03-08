@@ -37,10 +37,13 @@ const Header = props => {
                 onClick={() => props.onExport()}
             />}
             {props.onEdit && <Pencil
-                size={18} className='ms-2 hover'
+                size={18} 
+                className='ms-2 hover'
+                onClick={() => props.onEdit()}
             />}
             {props.onDelete && <Trash
                 size={18} className='ms-2 hover'
+                onClick={props.onDelete}
             />}
             {props.expand ?
                 <ChevronUp

@@ -1,15 +1,24 @@
 import http from './http-common'
 
-const DeviceService = {
-    add: data => {
+class DeviceService {
+    add(data) {
         return http.post('/devices/new', data)
-    },
-    get: () => {
+    }
+    get() {
         return http.get('/devices')
-    },
-    getTags: (deviceID, protocol) => {
+    }
+    getConfigInfoById(id, protocol) {
+        return http.get(`/devices/${id}/config?protocol=${protocol}`)
+    }
+    getTags(deviceID, protocol) {
         return http.get(`/devices/${deviceID}/tags?protocol=${protocol}`)
+    }
+    editDevice(deviceID, data) {
+        return http.put(`/devices/${deviceID}/edit`, data)
+    }
+    deleteDevice(deviceID, protocol) {
+        return http.delete(`/devices/${deviceID}?protocol=${protocol}`)
     }
 }
 
-export default DeviceService;
+export default new DeviceService();

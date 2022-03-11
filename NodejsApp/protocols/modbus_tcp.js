@@ -2,91 +2,95 @@ require('dotenv').config()
 var modbus = require('jsmodbus')
 const net = require('net')
 
-// ----------Export csv file----------------
-const ObjectsToCsv = require('objects-to-csv')
-
-// ------------SETUP MQTT---------------
+// mqtt client
 const mqtt = require('mqtt')
 
-// -----------Socket io connection------------
-const io = require('socket.io-client')
-var ip = process.env.IP
-ioClient = io.connect(`http://${ip}:4001`)
-ioClient.on('connect', function () {
-    console.log('IO connected')
-})
+// SQLite
+const {db, dbAll, dbRun} = require('../models/database')
 
-// ---------SQLite DB-----------
-var db = require('../models/database')
+// let devices = []
+// let mqttTopic = []
+// main()
+// async function main() {
+//     await getDevice()
+//     setTimeout(getDataFromDevice, 2000)
+// }
 
-let devices = []
-let mqttTopic = []
-main()
-async function main() {
-    await getDevice()
-    setTimeout(getDataFromDevice, 2000)
+// const getConfig = 'SELECT * FROM MODBUSTCP'
+// const configParams = []
+
+// const getTag = 'SELECT * FROM MODBUSTCP_TAG WHERE deviceID = ?'
+// const tagParams = []
+
+const getDevice = async () => {
+    const getDevice = 'SELECT * FROM DEVICE WHERE protocolType = ?'
+    const deviceParams = ['MODBUSTCP']
+
+    try {
+        const devicesInfo = await dbAll(getDevice, deviceParams)
+        return devicesInfo
+    } catch (err) {
+        console.log(err)
+    }
 }
 
-async function getDevice() {
-    // Read device_config table in sqlite
-    const deviceQuerry = 'SELECT * FROM device_config'
-    var params = []
-    db.all(deviceQuerry, params, (err, rows) => {
-        if (err) {
-            console.log('DB has error ', err.message)
-        }
-        rows.forEach(function (row) {
-            let dv = {
-                id: row.id,
-                name: row.name,
-                ip: row.ip,
-                port: row.port,
-                slave: row.slave,
-                fc_type: row.fc_type,
-                tags: [],
-            }
+console.log(getDevice())
 
-            // Read tag_config table with device_id
-            const tagQuerry = 'SELECT * FROM tag_config WHERE device_id = ?'
-            var params1 = [parseInt(row.id)]
-            db.all(tagQuerry, params1, (err, row1s) => {
-                if (err) {
-                    console.log(err)
-                }
-                row1s.forEach(function (row1) {
-                    dv.tags.push({
-                        name: row1.name,
-                        tag: row1.tag,
-                        addr: row1.address,
-                        unit: row1.unit,
-                        length: row1.length,
-                        value_type: row1.value_type,
-                        id: row1.id,
-                    })
-                })
-                devices.push(dv)
-            })
-        })
-    })
+// db.all(getDevice, params, (err, rows) => {
+//     if (err) {
+//         console.log('DB has error ', err.message)
+//     }
+//     rows.forEach(function (row) {
+//         let dv = {
+//             id: row.id,
+//             name: row.name,
+//             ip: row.ip,
+//             port: row.port,
+//             slave: row.slave,
+//             fc_type: row.fc_type,
+//             tags: [],
+//         }
 
-    // Config mqtt broker
-    mqttQuery = 'SELECT * FROM mqtt_config'
-    params = []
-    db.all(mqttQuery, params, (err, rows) => {
-        if (err) {
-            console.log('DB has error ', err.message)
-        }
-        if (rows.length > 0) {
-            rows.forEach((row) => {
-                mqttTopic.push(row)
-            })
-        }
-        options = {
-            username: mqttTopic[0].username,
-            password: mqttTopic[0].password,
-        }
-    })
-}
+//         // Read tag_config table with device_id
+//         const tagQuerry = 'SELECT * FROM tag_config WHERE device_id = ?'
+//         var params1 = [parseInt(row.id)]
+//         db.all(tagQuerry, params1, (err, row1s) => {
+//             if (err) {
+//                 console.log(err)
+//             }
+//             row1s.forEach(function (row1) {
+//                 dv.tags.push({
+//                     name: row1.name,
+//                     tag: row1.tag,
+//                     addr: row1.address,
+//                     unit: row1.unit,
+//                     length: row1.length,
+//                     value_type: row1.value_type,
+//                     id: row1.id,
+//                 })
+//             })
+//             devices.push(dv)
+//         })
+//     })
+
+//     // Config mqtt broker
+//     mqttQuery = 'SELECT * FROM mqtt_config'
+//     params = []
+//     db.all(mqttQuery, params, (err, rows) => {
+//         if (err) {
+//             console.log('DB has error ', err.message)
+//         }
+//         if (rows.length > 0) {
+//             rows.forEach((row) => {
+//                 mqttTopic.push(row)
+//             })
+//         }
+//         options = {
+//             username: mqttTopic[0].username,
+//             password: mqttTopic[0].password,
+//         }
+//     })
+// }
 
 async function getDataFromDevice() {
     const mqttClient = mqtt.connect('mqtt://' + mqttTopic[0].ip + ':' + mqttTopic[0].port, options)

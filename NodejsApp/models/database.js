@@ -27,5 +27,7 @@ const dbRun = util.promisify(db.run.bind(db))
 const dbAll = util.promisify(db.all.bind(db))
 
 module.exports = {
-    db, dbRun, dbAll
+    db,
+    dbRun,
+    dbAll,
 }

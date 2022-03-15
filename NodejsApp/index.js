@@ -1,10 +1,11 @@
 require('dotenv').config()
 require('express-group-routes')
-
+ 
+// require('./subscribe.js')
 // Protocol here
 // require('./protocols/opcua_client')
 // require('./protocols/modbus_rtu')
-// require('./protocols/modbus_tcp')
+require('./protocols/modbus_tcp')
 
 const normalizePort = require('normalize-port')
 const bodyParser = require('body-parser')

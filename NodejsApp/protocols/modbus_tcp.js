@@ -2,11 +2,9 @@ require('dotenv').config()
 var modbus = require('jsmodbus')
 const net = require('net')
 
-// mqtt client
 const mqtt = require('mqtt')
 
-// SQLite
-const { dbAll, dbRun} = require('../models/database')
+const {dbAll} = require('../models/database')
 
 // let devices = []
 // let mqttTopic = []
@@ -23,12 +21,39 @@ const { dbAll, dbRun} = require('../models/database')
 // const tagParams = []
 
 const getDevice = async () => {
-    const getDevice = 'SELECT * FROM DEVICE WHERE protocolType = ?'
-    const deviceParams = ['MODBUSTCP']
+    const getDeviceQuery = `SELECT DEVICE.ID as deviceID, DEVICE.name as deviceName, 
+        GROUP_CONCAT(
+        MODBUSTCP_TAG.name || ',' || MODBUSTCP_TAG.address || ',' || MODBUSTCP_TAG.unit, ';'
+        ) as tagInfo,
+        MODBUSTCP.IP as configIP, MODBUSTCP.port as configPort, MODBUSTCP.slaveid as configSlave, 
+        MQTT_CLIENT.IP as mqttIP, MQTT_CLIENT.port as mqttPort, MQTT_CLIENT.username as mqttUsername, MQTT_CLIENT.password as mqttPassword
+    FROM
+        DEVICE 
+        JOIN MODBUSTCP_TAG ON DEVICE.ID = MODBUSTCP_TAG.deviceID
+        JOIN MODBUSTCP ON DEVICE.ID = MODBUSTCP.deviceID
+        JOIN SUBSCRIBES ON DEVICE.ID = SUBSCRIBES.deviceID
+        JOIN MQTT_CLIENT ON MQTT_CLIENT.ID = SUBSCRIBES.mqttID 
+    GROUP BY DEVICE.ID;`
 
     try {
-        const devicesInfo = await dbAll(getDevice, deviceParams)
-        return devicesInfo
+        const configInfos = await dbAll(getDeviceQuery, [])
+
+        configInfos.forEach((config, index) => {
+            const tags = []
+
+            config.tagInfo.split(';').forEach((item) => {
+                let temp = item.split(',')
+                tags.push({
+                    name: temp[0],
+                    address: temp[1],
+                    unit: temp[2],
+                })
+            })
+
+            configInfos[index].tagInfo = tags
+        })
+
+        console.log(configInfos)
     } catch (err) {
         console.log(err)
     }

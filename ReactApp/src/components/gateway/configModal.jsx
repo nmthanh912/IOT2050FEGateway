@@ -1,35 +1,33 @@
 import { useState } from "react"
 import { Modal, Form, Button } from "react-bootstrap"
-import DeviceService from '../../services/device'
+import GatewayService from '../../services/gateway'
 
-export default function ConfigModal({ show, onHide, formats, onSubmit }) {
-    const [deviceInfo, setDeviceInfo] = useState({
+export default function ConfigModal({ show, onHide }) {
+    const [gatewayInfo, setGatewayInfo] = useState({
         name: '',
         description: '',
-        protocol: formats[0],
+        protocol: gatewayConfigInfo[0],
         config: {}
     })
 
-    const setName = name => setDeviceInfo({ ...deviceInfo, name })
-    const setDescription = description => setDeviceInfo({ ...deviceInfo, description })
+    const setName = name => setGatewayInfo({ ...gatewayInfo, name })
+    const setDescription = description => setGatewayInfo({ ...gatewayInfo, description })
     const setProtocol = value => {
-        let protocol = formats.find(p => p.value === value)
-        setDeviceInfo({ ...deviceInfo, protocol })
-        // setTimeout(() => console.log(deviceInfo), 2000)
+        let protocol = gatewayConfigInfo.find(p => p.value === value)
+        setGatewayInfo({ ...gatewayInfo, protocol })
     }
-    const setConfig = config => setDeviceInfo({ ...deviceInfo, config })
+    const setConfig = config => setGatewayInfo({ ...gatewayInfo, config })
 
     return <Modal show={show} onHide={onHide}>
         <Modal.Header className="bg-primary text-white">
-            <h5 className="m-auto">Add new device</h5>
+            <h5 className="m-auto">Add new Gateway</h5>
         </Modal.Header>
         <Modal.Body>
-            <hr />
             <div className="row mb-2">
                 <Form.Group className='col-6'>
-                    <Form.Label>Device name:</Form.Label>
+                    <Form.Label>Gateway name:</Form.Label>
                     <Form.Control
-                        type="text" value={deviceInfo.name} size="sm"
+                        type="text" value={gatewayInfo.name} size="sm"
                         placeholder="Device name ..."
                         onChange={e => setName(e.target.value)}
                         required
@@ -39,12 +37,12 @@ export default function ConfigModal({ show, onHide, formats, onSubmit }) {
                     <Form.Label>Protocol:</Form.Label>
                     <Form.Select
                         size="sm"
-                        value={deviceInfo.protocol.value}
+                        value={gatewayInfo.protocol.value}
                         onChange={e => setProtocol(e.target.value)}
                         placeholder='Select protocol'
                         required
                     >
-                        {formats.map(protocol => {
+                        {gatewayConfigInfo.map(protocol => {
                             return <option value={protocol.value} key={protocol.value}>
                                 {protocol.label}
                             </option>
@@ -61,30 +59,30 @@ export default function ConfigModal({ show, onHide, formats, onSubmit }) {
                     onChange={e => setDescription(e.target.value)}
                 />
             </Form.Group>
+
             <hr />
+
             <h5><b>Configration Info</b></h5>
-            {deviceInfo.protocol.attrs.map(attr => {
-                const attrName = attr.charAt(0).toUpperCase() + attr.slice(1)
+            {gatewayInfo.protocol.attrs.map(attr => {
+                const label = attr.charAt(0).toUpperCase() + attr.slice(1)
                 return <Form.Group key={attr} className='mb-2'>
-                    <Form.Label>{attrName}:</Form.Label>
+                    <Form.Label>{label}:</Form.Label>
                     <Form.Control
                         type="text" size="sm"
-                        placeholder={attrName + ' ...'}
+                        placeholder={label + ' ...'}
                         required
-                        value={deviceInfo.config[attrName]}
-                        onChange={e => setConfig({ ...deviceInfo.config, [attrName]: e.target.value })}
+                        value={gatewayInfo.config[attr] ? gatewayInfo.config[attr] : ''}
+                        onChange={e => setConfig({ ...gatewayInfo.config, [attr]: e.target.value })}
                     />
                 </Form.Group>
             })}
+
             <Button size="sm" className="float-end text-white"
                 onClick={() => {
-                    DeviceService.add({
-                        name: deviceInfo.name,
-                        description: deviceInfo.description,
-                        protocol: deviceInfo.protocol.value,
-                        config: deviceInfo.config
-                    })
-                        .then(response => console.log(response.data))
+                    GatewayService.add({
+                        ...gatewayInfo,
+                        protocol: gatewayInfo.protocol.value
+                    }).then(response => console.log(response.data))
                 }}
             >
                 Submit
@@ -92,3 +90,9 @@ export default function ConfigModal({ show, onHide, formats, onSubmit }) {
         </Modal.Body>
     </Modal>
 }
+
+const gatewayConfigInfo = [{
+    value: 'MQTT_Client',
+    label: 'MQTT Client',
+    attrs: ['username', 'password', 'IP', 'port']
+}]

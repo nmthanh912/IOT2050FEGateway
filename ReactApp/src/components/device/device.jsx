@@ -1,29 +1,20 @@
 
 import DropdownItem from "../dropdownItem";
 import PaginateTagList, { TagTable } from "./paginateTagList";
-import { useMemo, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { CSVLink } from "react-csv";
-import CSVReader from "react-csv-reader";
 import { useDispatch } from "react-redux";
-import { removeDevice, updateDevice } from "../../redux/slices/device";
+import { removeDevice } from "../../redux/slices/device";
 import DeviceService from "../../services/device";
-
-
-const parseOptions = {
-    header: true,
-    dynamicTyping: true,
-    skipEmptyLines: true,
-    transformHeader: header => header.toLowerCase().replace(/\W/g, "_")
-};
 
 
 export default function EdgeDevice({ data, onDetail }) {
     const downloadCSVRef = useRef(null)
-    const uploadCSVRef = useRef(null)
     const dispatch = useDispatch()
+    const [exportData, setExportData] = useState([])
 
     // Convert data of a device into csv data
-    const exportData = useMemo(() => {
+    useEffect(() => {
         const list = [[], [], ['-----------']]
         Object.keys(data).forEach(key => {
             if (key !== 'tagList' && key !== 'config') {
@@ -38,42 +29,17 @@ export default function EdgeDevice({ data, onDetail }) {
                 list.push(Object.values(data.tagList[i]))
             }
         }
-        // console.log(list)
-        return list
+        DeviceService.getConfigInfoById(data.ID, data.protocol).then(res => {
+            list.push(['-----------'])
+            list.push(['Configurations'])
+            list.push(Object.keys(res.data))
+            list.push(Object.values(res.data))
+            setExportData(list)
+        }).catch(err => console.log(err))
     }, [data])
 
     const exportToCSV = () => {
         downloadCSVRef.current.link.click()
-    }
-
-    const handleUploadData = (data, fileInfo) => {
-        console.log(data)
-        let idx = data.findIndex(val => val.id === 'Tag List')
-        const tagHeader = Object.values(data[idx + 1])
-
-        while (tagHeader[tagHeader.length - 1] === null)
-            tagHeader.pop()
-
-        const tagList = []
-        for (let i = idx + 2; i < data.length; ++i) {
-            let tag = {}
-            let values = Object.values(data[i])
-            tagHeader.forEach((header, idx) => {
-                tag[header] = values[idx]
-            })
-            tagList.push(tag)
-        }
-        dispatch(updateDevice({
-            ...data[0],
-            tagList,
-            config: {}
-        }))
-    };
-
-    const importCSV = () => {
-        let csvReaderInput = uploadCSVRef.current.children[0]
-        let input = csvReaderInput.children[1]
-        input.click()
     }
 
     const deleteDevice = () => {
@@ -86,10 +52,9 @@ export default function EdgeDevice({ data, onDetail }) {
     }
 
     return <div>
-        <DropdownItem 
+        <DropdownItem
             onEdit={() => onDetail()}
             onExport={exportToCSV}
-            onImport={importCSV}
             onDelete={deleteDevice}
             key={data.ID}
         >
@@ -107,19 +72,12 @@ export default function EdgeDevice({ data, onDetail }) {
                     >
                         Download
                     </CSVLink>
-                    <div ref={uploadCSVRef}>
-                        <CSVReader
-                            label="Select CSV"
-                            onFileLoaded={handleUploadData}
-                            parserOptions={parseOptions}
-                        />
-                    </div>
                 </div>
             </DropdownItem.Header>
             <DropdownItem.Body>
                 <PaginateTagList deviceID={data.ID} protocol={data.protocol} Table={TagTable} />
             </DropdownItem.Body>
         </DropdownItem>
-        
+
     </div>
 }

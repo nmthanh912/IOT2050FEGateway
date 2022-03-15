@@ -1,6 +1,6 @@
-const handler = function (res, callback) {
+const handler = async function (res, callback) {
     try {
-        callback()
+        await callback()
     } catch (err) {
         res.status(500).send({msg: 'Internal Server Error'})
     }

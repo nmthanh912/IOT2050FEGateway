@@ -6,7 +6,7 @@ const net = require('net')
 const mqtt = require('mqtt')
 
 // SQLite
-const {db, dbAll, dbRun} = require('../models/database')
+const { dbAll, dbRun} = require('../models/database')
 
 // let devices = []
 // let mqttTopic = []

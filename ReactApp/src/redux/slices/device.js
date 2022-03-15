@@ -26,11 +26,16 @@ const deviceSlice = createSlice({
             const device = action.payload
             device.tagList = []
             state.push(device)
+            console.log(state)
+            return state
         },
         updateDevice: (state, action) => {
             const updatedData = action.payload
-            const device = state.find(val => val.ID === updatedData.ID)
-            Object.assign(device, action.payload)
+            console.log(updatedData)
+            const id = updatedData.ID
+            const idx = state.findIndex(val => val.ID === id)
+            state[idx].name = updatedData.name
+            state[idx].description = updatedData.description
             return state
         },
         removeDevice: (state, action) => {
@@ -39,6 +44,7 @@ const deviceSlice = createSlice({
                 return device.ID === deviceID
             })
             state.splice(idx, 1)
+            return state
         },
         addTag: (state, action) => {
 
@@ -52,6 +58,7 @@ const deviceSlice = createSlice({
     },
     extraReducers(builder) {
         builder.addCase(fetchDevices.fulfilled, (state, action) => {
+            state.length = 0
             action.payload.forEach(val => state.push({
                 ...val,
                 tagList: []

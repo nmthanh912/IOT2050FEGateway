@@ -2,27 +2,46 @@ import DropdownItem from "../components/dropdownItem";
 import GatewayModal from '../components/gateway/configModal'
 import SubHeader from "../components/subHeader";
 import MappingList from "../components/gateway/mappingList";
-import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
 import ShortUniqueId from "short-unique-id";
+import GatewayService from "../services/gateway";
+import { useSelector, useDispatch } from 'react-redux'
 
 const uid = new ShortUniqueId({ length: 3 })
 
+const initData = [{
+    ID: '36a157a5',
+    name: 'Gateway A',
+    protocol: 'MQTT Client',
+    config: {}
+}]
+
 export default function GatewayPage() {
+    const deviceList = useSelector(state => state.device)
     const [showGatewayModal, setShowGatewayModal] = useState(false)
-    const gatewayList = useSelector(state => state.gateway)
+
+    const dispatch = useDispatch()
+    const [list, setList] = useState([])
+    useEffect(() => {
+        // if (deviceList.length === 0) dispatch(fetchDevices())
+        GatewayService.get().then(response => {
+            console.log(response.data)
+        })
+        setList(initData)
+    }, [dispatch, deviceList])
+
     return <div>
         <SubHeader
             modal={<GatewayModal
                 show={showGatewayModal}
                 onHide={() => setShowGatewayModal(false)}
-                formats={gatewayConfigInfo}
             />}
             onShow={() => setShowGatewayModal(true)}
             title='Gateway'
         />
         <hr />
-        {gatewayList.map(gateway => <DropdownItem key={uid()} onEdit={() => { }} onDuplicate onDelete={() => { }}>
+
+        {list.map(gateway => <DropdownItem key={uid()} onEdit={() => { }} onDelete={() => { }}>
             <DropdownItem.Header>
                 <div className="row">
                     <div className="text-primary col-3"><u>#{gateway.ID}</u></div>
@@ -31,15 +50,8 @@ export default function GatewayPage() {
                 </div>
             </DropdownItem.Header>
             <DropdownItem.Body>
-                <MappingList list={gateway.mapping} />
+                <MappingList gatewayID={gateway.ID} />
             </DropdownItem.Body>
         </DropdownItem>)}
-
     </div>
 }
-
-const gatewayConfigInfo = [{
-    value: 'MQTTClient',
-    label: 'MQTT Client',
-    attrs: ['username', 'password', 'IP', 'port']
-}]

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Pencil, Trash, Upload, BoxArrowDown } from 'react-bootstrap-icons';
+import { ChevronDown, ChevronUp, Pencil, Trash, BoxArrowDown } from 'react-bootstrap-icons';
 
-function DropdownItem({ children, onEdit, onDelete, onExport, onImport }) {
+function DropdownItem({ children, onEdit, onDelete, onExport }) {
     const [expand, setExpand] = useState(false);
     const [firstClick, setFirstClick] = useState(false)
 
@@ -12,7 +12,7 @@ function DropdownItem({ children, onEdit, onDelete, onExport, onImport }) {
             onEdit,
             onDelete,
             onExport,
-            onImport,
+            // onImport,
             firstClick,
             setFirstClick
         })}
@@ -26,11 +26,11 @@ const Header = props => {
             {props.children}
         </div>
         <div className='col-3 d-flex justify-content-end align-items-center'>
-            {props.onImport && <Upload 
+            {/* {props.onImport && <Upload 
                 size={18}
                 className='hover'
                 onClick={() => props.onImport()}
-            />}
+            />} */}
             {props.onExport && <BoxArrowDown 
                 size={18}
                 className='ms-2 hover'

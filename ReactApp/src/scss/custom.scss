@@ -40,6 +40,10 @@ $info: #007bff;
     border-bottom: 2px solid $primary;
 }
 
+.noborder-bottom {
+    border-bottom: none !important;
+}
+
 .styled-table thead tr {
     background-color: $primary;
     color: #ffffff;
@@ -50,5 +54,7 @@ $info: #007bff;
     font-weight: bold;
     color: $primary;
 }
+
+
 
 @import "~bootstrap/scss/bootstrap.scss";

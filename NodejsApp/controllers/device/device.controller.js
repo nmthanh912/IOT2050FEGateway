@@ -30,8 +30,6 @@ class Device {
         })
         const id = uid()
 
-        console.log(req.body)
-
         const insertDeviceQuery = 'INSERT INTO DEVICE (ID, name, description, protocolType) VALUES (?, ?, ?, ?)'
         const insertDeviceParams = [id, req.body.name, req.body.description, req.body.protocol.toUpperCase()]
 
@@ -106,7 +104,6 @@ class Device {
     getConfigById = function (req, res) {
         const deviceID = req.params.id
         const protocolName = req.query.protocol.toUpperCase()
-
         const getConfigQuery = `SELECT * FROM ${protocolName} WHERE ${protocolName}.deviceID = ?`
 
         handler(res, async () => {
@@ -126,6 +123,7 @@ class Device {
 
         var setString = 'SET '
         const keys = Object.keys(req.body.config)
+
         keys.forEach((key) => {
             setString += key + ' = ?, '
         })

@@ -1,26 +1,27 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Modal, Form, Button } from "react-bootstrap"
-import GatewayService from '../../services/gateway'
 
-export default function ConfigModal({ show, onHide }) {
-    const [gatewayInfo, setGatewayInfo] = useState({
-        name: '',
-        description: '',
-        protocol: gatewayConfigInfo[0],
-        config: {}
-    })
+export default function ConfigModal({ show, onHide, onSubmit, editTarget }) {
+    const [gatewayInfo, setGatewayInfo] = useState(initState)
+
+    useEffect(() => {
+        setGatewayInfo(editTarget !== null ? { ...editTarget, protocol: gatewayProtocol[0] } : initState)
+    }, [editTarget])
 
     const setName = name => setGatewayInfo({ ...gatewayInfo, name })
     const setDescription = description => setGatewayInfo({ ...gatewayInfo, description })
     const setProtocol = value => {
-        let protocol = gatewayConfigInfo.find(p => p.value === value)
+        let protocol = gatewayProtocol.find(p => p.value === value)
         setGatewayInfo({ ...gatewayInfo, protocol })
     }
     const setConfig = config => setGatewayInfo({ ...gatewayInfo, config })
 
     return <Modal show={show} onHide={onHide}>
         <Modal.Header className="bg-primary text-white">
-            <h5 className="m-auto">Add new Gateway</h5>
+            {editTarget ?
+                <h5 className="m-auto">Edit gateway {editTarget.ID}</h5>
+                : <h5 className="m-auto">Add new Gateway</h5>
+            }
         </Modal.Header>
         <Modal.Body>
             <div className="row mb-2">
@@ -42,7 +43,7 @@ export default function ConfigModal({ show, onHide }) {
                         placeholder='Select protocol'
                         required
                     >
-                        {gatewayConfigInfo.map(protocol => {
+                        {gatewayProtocol.map(protocol => {
                             return <option value={protocol.value} key={protocol.value}>
                                 {protocol.label}
                             </option>
@@ -56,6 +57,7 @@ export default function ConfigModal({ show, onHide }) {
                 <Form.Control
                     type="text" as="textarea" size="sm"
                     placeholder="Description ..."
+                    value={gatewayInfo.description}
                     onChange={e => setDescription(e.target.value)}
                 />
             </Form.Group>
@@ -79,10 +81,12 @@ export default function ConfigModal({ show, onHide }) {
 
             <Button size="sm" className="float-end text-white"
                 onClick={() => {
-                    GatewayService.add({
+                    onSubmit({
                         ...gatewayInfo,
                         protocol: gatewayInfo.protocol.value
-                    }).then(response => console.log(response.data))
+                    })
+                    setGatewayInfo(initState)
+                    onHide()
                 }}
             >
                 Submit
@@ -91,8 +95,15 @@ export default function ConfigModal({ show, onHide }) {
     </Modal>
 }
 
-const gatewayConfigInfo = [{
+const gatewayProtocol = [{
     value: 'MQTT_Client',
     label: 'MQTT Client',
     attrs: ['username', 'password', 'IP', 'port']
 }]
+
+const initState = {
+    name: '',
+    description: '',
+    protocol: gatewayProtocol[0],
+    config: {}
+}

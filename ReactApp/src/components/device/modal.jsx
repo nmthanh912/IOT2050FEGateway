@@ -224,6 +224,7 @@ function EditModal({ show, onHide, device }) {
 		})
 		DeviceService.getConfigInfoById(device.ID, device.protocol).then(res => {
 			setConfig(res.data)
+			console.log(res.data)
 		}).catch(err => {
 			console.log(err)
 		})

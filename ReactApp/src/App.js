@@ -8,7 +8,7 @@ import { Routes, Route, Navigate } from "react-router-dom"
 export default function App() {
     return <div>
         <NavBar />
-        <Container className="mt-3">
+        <Container className="my-3">
             <Routes>
                 <Route path='/' element={<Navigate to={'/device'}/>}/>
                 <Route path='/device' element={<DevicePage />} />

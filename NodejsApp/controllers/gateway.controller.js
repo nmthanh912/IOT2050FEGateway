@@ -86,6 +86,23 @@ class GatewayController {
             res.json(deviceList)
         })
     }
+    addSubscribeDevice(req, res) {
+        const { gatewayID, deviceID } = req.body
+        const sqlQuery = `INSERT INTO subscribes VALUES (?, ?, ?)`
+        handler(res, async() => {
+            await dbRun(sqlQuery, [gatewayID, deviceID, null])
+            res.json({msg: 'OKE'})
+        })
+    }
+    removeSubscribeDevice(req, res) {
+        console.log(req.query)
+        const { gid: gatewayID, did: deviceID } = req.query
+        const sqlQuery = `DELETE FROM subscribes WHERE gatewayID = ? AND deviceID = ?`
+        handler(res, async() => {
+            await dbRun(sqlQuery, [gatewayID, deviceID])
+            res.json({msg: 'OKE'})
+        })
+    }
 
     getSubcribedDeviceConfig(req, res) {
         const gatewayId = req.query.gid

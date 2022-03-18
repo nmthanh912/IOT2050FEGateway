@@ -10,5 +10,7 @@ router.delete('/delete', GatewayController.delete)
 
 router.get('/devices/config', GatewayController.getSubcribedDeviceConfig)
 router.put('/:gid/:did', GatewayController.updateSubcribedDeviceConfig)
+router.post('/device/add', GatewayController.addSubscribeDevice)
+router.delete('/device/delete', GatewayController.removeSubscribeDevice)
 
 module.exports = router

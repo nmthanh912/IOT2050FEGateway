@@ -103,13 +103,9 @@ export default function GatewayPage() {
         </DropdownItem.Header>
         <DropdownItem.Body>
           <MappingList gatewayID={gateway.ID} />
-          <div className="d-flex justify-content-end m-2">
-            <Button className="text-white d-flex align-items-center" size="sm">
-              Subscribe
-              <PlusCircle size={18} className='ms-1' />
-            </Button>
-          </div>
+          
         </DropdownItem.Body>
       </DropdownItem>)}
   </div>
 }
+

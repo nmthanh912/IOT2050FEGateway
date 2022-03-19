@@ -203,7 +203,6 @@ function EditModal({ show, onHide, device }) {
 		}
 		// console.log(data)
 		DeviceService.editDevice(device.ID, data).then(response => {
-			console.log(response.data)
 			delete data.config
 			delete data.protocol
 			dispatch(updateDevice({

@@ -1,8 +1,7 @@
 import SubHeader from "../components/subHeader";
 import DeviceModal from '../components/device/modal'
-import { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { fetchDevices } from "../redux/slices/device";
+import { useState,  } from "react";
+import { useSelector  } from "react-redux";
 import EdgeDevice from "../components/device/device";
 
 export default function DevicePage() {
@@ -10,14 +9,7 @@ export default function DevicePage() {
 	const [showEdit, setShowEdit] = useState(false)
 
 	const deviceList = useSelector(state => state.device)
-
-	const dispatch = useDispatch()
-
 	const [currDevice, setCurrDevice] = useState(deviceList.length !== 0 ? deviceList[0] : null)
-
-	useEffect(() => {
-		dispatch(fetchDevices())
-	}, [dispatch])
 	
 	return <div>
 		<SubHeader

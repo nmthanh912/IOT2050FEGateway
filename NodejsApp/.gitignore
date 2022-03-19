@@ -1,4 +1,12 @@
 .env
+<<<<<<< HEAD
 node_modules
 
 /
+=======
+/node_modules
+
+/database
+
+/customJSON
+>>>>>>> 823cfa133962b8cf3725086d8af4c2775fcdf824

@@ -1,7 +1,7 @@
 var express = require('express')
 var router = express.Router()
-var Device = require('../../controllers/device/device.controller')
-var Tag = require('../../controllers/tag/tag.controller')
+var Device = require('../controllers/device.controller')
+var Tag = require('../controllers/tag.controller')
 
 router.get('/', Device.getAll)
 router.post('/new', Device.create)

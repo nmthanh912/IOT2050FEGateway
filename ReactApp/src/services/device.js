@@ -21,4 +21,4 @@ class DeviceService {
     }
 }
 
-export default new DeviceService();
+export default new DeviceService()

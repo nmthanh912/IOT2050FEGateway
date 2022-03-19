@@ -1,5 +1,5 @@
 // Routes
-const deviceRouter = require('./device/device.route')
+const deviceRouter = require('./device.route')
 const gatewayRouter = require('./gateway.route')
 
 function route(app) {

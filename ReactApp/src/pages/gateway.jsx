@@ -6,10 +6,10 @@ import { useEffect, useState } from "react";
 import ShortUniqueId from "short-unique-id";
 import GatewayService from "../services/gateway";
 import { useSelector, useDispatch } from 'react-redux'
-import { Button } from "react-bootstrap";
-import { PlusCircle } from "react-bootstrap-icons";
+import { toast, ToastContainer } from 'react-toastify'
+import { FailMessage, SuccessMessage } from '../components/toastMsg'
 
-const uid = new ShortUniqueId({ length: 3 })
+const uid = new ShortUniqueId({ length: 5 })
 
 export default function GatewayPage() {
   const deviceList = useSelector(state => state.device)
@@ -18,6 +18,13 @@ export default function GatewayPage() {
 
   const dispatch = useDispatch()
   const [list, setList] = useState([])
+
+  const notifySuccess = msg => toast(<SuccessMessage msg={msg} />, {
+    progressClassName: 'Toastify__progress-bar--success'
+  })
+  const notifyFail = msg => toast(<FailMessage msg={msg}/>, {
+    progressClassName: 'Toastify__progress-bar--error'
+  })
 
   useEffect(() => {
     GatewayService.get().then(response => {
@@ -44,8 +51,10 @@ export default function GatewayPage() {
   const addGateway = data => {
     console.log(data)
     GatewayService.add(data).then(response => {
-      setList([...list, { ID: response.data.ID, ...data }])
-    })
+      console.log(response.data)
+      setList([...list, { ID: response.data.key, ...data }])
+      notifySuccess(`Create gateway successfully !`)
+    }).catch(err => notifyFail(err.message))
   }
 
   const editGateway = data => {
@@ -54,7 +63,8 @@ export default function GatewayPage() {
       const edittedGateway = newList.find(gateway => gateway.ID === editTarget.ID)
       Object.assign(edittedGateway, data)
       setList(newList)
-    })
+      notifySuccess(`Update successfully !`)
+    }).catch(err => notifyFail(err.message))
   }
 
   const deleteGateway = gatewayID => {
@@ -63,10 +73,16 @@ export default function GatewayPage() {
       const idx = newList.findIndex(gateway => gateway.ID === gatewayID)
       newList.splice(idx, 1)
       setList(newList)
-    })
+      notifySuccess(`Delete successfully !`)
+    }).catch(err => notifyFail(err.message))
   }
 
   return <div>
+    <ToastContainer
+      pauseOnHover={false}
+      position="top-right"
+      autoClose={1500}
+    />
     <SubHeader
       modal={<Modal
         show={showModal}
@@ -103,7 +119,7 @@ export default function GatewayPage() {
         </DropdownItem.Header>
         <DropdownItem.Body>
           <MappingList gatewayID={gateway.ID} />
-          
+
         </DropdownItem.Body>
       </DropdownItem>)}
   </div>

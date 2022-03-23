@@ -139,7 +139,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 		<ToastContainer
 			pauseOnHover={false}
 			position="top-right"
-			autoClose={1500}
+			autoClose={1800}
 		/>
 		<Modal show={show} onHide={onHide}>
 			<Modal.Header className="bg-primary text-white">

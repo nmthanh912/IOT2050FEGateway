@@ -24,73 +24,74 @@ export default function ConfigModal({ show, onHide, onSubmit, editTarget }) {
             }
         </Modal.Header>
         <Modal.Body>
-            <div className="row mb-2">
-                <Form.Group className='col-6'>
-                    <Form.Label>Gateway name:</Form.Label>
+            <Form onSubmit={e => {
+                e.preventDefault()
+                onSubmit({
+                    ...gatewayInfo,
+                    protocol: gatewayInfo.protocol.value
+                })
+                setGatewayInfo(initState)
+                onHide()
+            }}>
+                <div className="row mb-2">
+                    <Form.Group className='col-6'>
+                        <Form.Label>Gateway name:</Form.Label>
+                        <Form.Control
+                            type="text" value={gatewayInfo.name} size="sm"
+                            placeholder="Device name ..."
+                            onChange={e => setName(e.target.value)}
+                            required
+                        />
+                    </Form.Group>
+                    <Form.Group className='col-6'>
+                        <Form.Label>Protocol:</Form.Label>
+                        <Form.Select
+                            size="sm"
+                            value={gatewayInfo.protocol.value}
+                            onChange={e => setProtocol(e.target.value)}
+                            placeholder='Select protocol'
+                            required
+                        >
+                            {gatewayProtocol.map(protocol => {
+                                return <option value={protocol.value} key={protocol.value}>
+                                    {protocol.label}
+                                </option>
+                            })}
+                        </Form.Select>
+                    </Form.Group>
+                </div>
+
+                <Form.Group>
+                    <Form.Label>Description:</Form.Label>
                     <Form.Control
-                        type="text" value={gatewayInfo.name} size="sm"
-                        placeholder="Device name ..."
-                        onChange={e => setName(e.target.value)}
-                        required
+                        type="text" as="textarea" size="sm"
+                        placeholder="Description ..."
+                        value={gatewayInfo.description}
+                        onChange={e => setDescription(e.target.value)}
                     />
                 </Form.Group>
-                <Form.Group className='col-6'>
-                    <Form.Label>Protocol:</Form.Label>
-                    <Form.Select
-                        size="sm"
-                        value={gatewayInfo.protocol.value}
-                        onChange={e => setProtocol(e.target.value)}
-                        placeholder='Select protocol'
-                        required
-                    >
-                        {gatewayProtocol.map(protocol => {
-                            return <option value={protocol.value} key={protocol.value}>
-                                {protocol.label}
-                            </option>
-                        })}
-                    </Form.Select>
-                </Form.Group>
-            </div>
 
-            <Form.Group>
-                <Form.Label>Description:</Form.Label>
-                <Form.Control
-                    type="text" as="textarea" size="sm"
-                    placeholder="Description ..."
-                    value={gatewayInfo.description}
-                    onChange={e => setDescription(e.target.value)}
-                />
-            </Form.Group>
+                <hr />
 
-            <hr />
+                <h5><b>Configration Info</b></h5>
+                {gatewayInfo.protocol.attrs.map(attr => {
+                    const label = attr.name.charAt(0).toUpperCase() + attr.name.slice(1)
+                    return <Form.Group key={attr.name} className='mb-2'>
+                        <Form.Label>{label}:</Form.Label>
+                        <Form.Control
+                            type={attr.type}size="sm"
+                            placeholder={label + ' ...'}
+                            required
+                            value={gatewayInfo.config[attr.name] ? gatewayInfo.config[attr.name] : ''}
+                            onChange={e => setConfig({ ...gatewayInfo.config, [attr.name]: e.target.value })}
+                        />
+                    </Form.Group>
+                })}
 
-            <h5><b>Configration Info</b></h5>
-            {gatewayInfo.protocol.attrs.map(attr => {
-                const label = attr.charAt(0).toUpperCase() + attr.slice(1)
-                return <Form.Group key={attr} className='mb-2'>
-                    <Form.Label>{label}:</Form.Label>
-                    <Form.Control
-                        type="text" size="sm"
-                        placeholder={label + ' ...'}
-                        required
-                        value={gatewayInfo.config[attr] ? gatewayInfo.config[attr] : ''}
-                        onChange={e => setConfig({ ...gatewayInfo.config, [attr]: e.target.value })}
-                    />
-                </Form.Group>
-            })}
-
-            <Button size="sm" className="float-end text-white"
-                onClick={() => {
-                    onSubmit({
-                        ...gatewayInfo,
-                        protocol: gatewayInfo.protocol.value
-                    })
-                    setGatewayInfo(initState)
-                    onHide()
-                }}
-            >
-                Submit
-            </Button>
+                <Button className="float-end text-white" type="submit">
+                    Submit
+                </Button>
+            </Form>
         </Modal.Body>
     </Modal>
 }
@@ -98,7 +99,19 @@ export default function ConfigModal({ show, onHide, onSubmit, editTarget }) {
 const gatewayProtocol = [{
     value: 'MQTT_Client',
     label: 'MQTT Client',
-    attrs: ['username', 'password', 'IP', 'port']
+    attrs: [{
+        name: 'username',
+        type: 'text'
+    }, {
+        name: 'password',
+        type: 'pass'
+    }, {
+        name: 'IP',
+        type: 'text'
+    }, {
+        name: 'port',
+        type: 'number'
+    }]
 }]
 
 const initState = {

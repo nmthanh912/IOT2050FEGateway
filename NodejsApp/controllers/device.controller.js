@@ -1,4 +1,4 @@
-const {dbRun, dbAll} = require('../models/database')
+const {dbRun, dbAll, db} = require('../models/database')
 const handler = require('./handler')
 const uniqueId = require('../utils/uniqueId')
 
@@ -19,7 +19,6 @@ class Device {
                 })
             })
 
-            console.log(data)
             res.json(data)
         })
     }
@@ -50,15 +49,19 @@ class Device {
                     `INSERT INTO ${protocolName}_TAG VALUES ` + bracketValue.repeat(tagList.length).slice(0, -2)
 
                 const bracketValueTag = '(' + ',?'.repeat(2).slice(1) + '), '
-                const insetTag = `INSERT INTO TAG VALUES ` + bracketValueTag.repeat(tagList.length).slice(0, -2)
+                const insertTag = `INSERT INTO TAG VALUES ` + bracketValueTag.repeat(tagList.length).slice(0, -2)
                 const value = []
-                tagValues.forEach(tag => value.push({
-                    deviceID: tag.deviceID,
-                    name: tag.name
-                }))
-                
-                await dbRun(insertProTag, tagValues)
-                await dbRun(insetTag, value)
+                tagValues.forEach((tag) =>
+                    value.push({
+                        deviceID: tag.deviceID,
+                        name: tag.name,
+                    })
+                )
+
+                db.serialize(() => {
+                    db.run(insertProTag, tagValues)
+                    db.run(insertTag, value)
+                })
             }
 
             if (insertProtocolParams.length === 0) {
@@ -146,11 +149,12 @@ class Device {
         editProtocolParams.push(req.params.id)
 
         handler(res, async () => {
-            await dbRun(editDeviceQuery, editDeviceParams)
-            await dbRun(editProtocolQuery, editProtocolParams)
-
-            res.json({
-                key: req.params.id,
+            db.serialize(() => {
+                db.run(editDeviceQuery, editDeviceParams)
+                db.run(editProtocolQuery, editProtocolParams)
+                res.json({
+                    key: req.params.id,
+                })
             })
         })
     }

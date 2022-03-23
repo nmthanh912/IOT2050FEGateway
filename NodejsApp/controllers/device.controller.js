@@ -1,7 +1,6 @@
 const ShortUniqueId = require('short-unique-id')
 const {dbRun, dbAll} = require('../models/database')
 const handler = require('./handler')
-const eventEmitter = require('../eventEmitter/emit')
 
 class Device {
     getAll = function (req, res) {
@@ -141,8 +140,6 @@ class Device {
         handler(res, async () => {
             await dbRun(editDeviceQuery, editDeviceParams)
             await dbRun(editProtocolQuery, editProtocolParams)
-
-            eventEmitter.emit('device/updateInfo')
 
             res.json({
                 key: req.params.id,

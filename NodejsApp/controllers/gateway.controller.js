@@ -1,9 +1,5 @@
 const uniqueId = require('../utils/uniqueId')
-<<<<<<< HEAD
-const {dbRun, dbAll} = require('../models/database')
-=======
 const { dbRun, dbAll, db } = require('../models/database')
->>>>>>> 823cfa133962b8cf3725086d8af4c2775fcdf824
 const handler = require('./handler')
 const fs = require('fs')
 const util = require('util')
@@ -23,22 +19,12 @@ class GatewayController {
         gatewayData = gatewayData.concat(infoData).concat(configData)
         gatewayData[gatewayData.length - 1] = parseInt(gatewayData[gatewayData.length - 1])
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 823cfa133962b8cf3725086d8af4c2775fcdf824
         let protocol = req.body.protocol.toUpperCase()
         const sqlQuery = `INSERT INTO ${protocol} VALUES (${'?,'.repeat(gatewayData.length).slice(0, -1)})`
 
         handler(res, async () => {
             await dbRun(sqlQuery, gatewayData)
-<<<<<<< HEAD
-            res.json({
-                key: ID,
-            })
-=======
             res.json({ ID })
->>>>>>> 823cfa133962b8cf3725086d8af4c2775fcdf824
         })
     }
     get(req, res) {

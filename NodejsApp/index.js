@@ -1,13 +1,4 @@
 require('dotenv').config()
-<<<<<<< HEAD
-require('express-group-routes')
-
-// require('./subscribe.js')
-// Protocol here
-// require('./protocols/opcua_client')
-// require('./protocols/modbus/modbus_rtu')
-// require('./protocols/modbus/modbus_tcp')
-=======
 // require('express-group-routes')
  
 // require('./subscribe.js')
@@ -15,7 +6,6 @@ require('express-group-routes')
 // require('./protocols/opcua_client')
 // require('./protocols/modbus_rtu')
 // require('./protocols/modbus_tcp')
->>>>>>> 823cfa133962b8cf3725086d8af4c2775fcdf824
 
 const bodyParser = require('body-parser')
 const express = require('express')

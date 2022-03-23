@@ -1,6 +1,6 @@
-const ShortUniqueId = require('short-unique-id')
-const {dbRun, dbAll} = require('../models/database')
+const {dbRun, dbAll, db} = require('../models/database')
 const handler = require('./handler')
+const uniqueId = require('../utils/uniqueId')
 
 class Device {
     getAll = function (req, res) {
@@ -24,11 +24,8 @@ class Device {
     }
 
     create = function (req, res) {
-        const uid = new ShortUniqueId({
-            dictionary: 'hex',
-            length: 8,
-        })
-        const id = uid()
+        console.log(req.body)
+        const id = uniqueId()
 
         const insertDeviceQuery = 'INSERT INTO DEVICE (ID, name, description, protocolType) VALUES (?, ?, ?, ?)'
         const insertDeviceParams = [id, req.body.name, req.body.description, req.body.protocol.toUpperCase()]
@@ -37,28 +34,42 @@ class Device {
         var insertProtocolParams = Object.values(req.body.config)
 
         const tagList = req.body.tagList
-        tagList.forEach((tag) => {
-            tag.deviceID = id
-        })
 
         handler(res, async () => {
             await dbRun(insertDeviceQuery, insertDeviceParams)
 
-            if (tagList.length != 0) {
-                const tagValues = tagList.map((tag) => Object.values(tag)).flat()
-                const insertTagStr = `INSERT INTO ${protocolName}_TAG VALUES `
-                const bracketValue = '(' + ',?'.repeat(Object.values(tagList[0]).length).slice(1) + '), '
-                const insertTagQuery = insertTagStr + bracketValue.repeat(tagList.length).slice(0, -2)
+            if (tagList.length !== 0) {
+                tagList.forEach((tag) => {
+                    tag.deviceID = id
+                })
 
-                await dbRun(insertTagQuery, tagValues)
+                const tagValues = tagList.map((tag) => Object.values(tag)).flat()
+                const bracketValue = '(' + ',?'.repeat(Object.values(tagList[0]).length).slice(1) + '), '
+                const insertProTag =
+                    `INSERT INTO ${protocolName}_TAG VALUES ` + bracketValue.repeat(tagList.length).slice(0, -2)
+
+                const bracketValueTag = '(' + ',?'.repeat(2).slice(1) + '), '
+                const insertTag = `INSERT INTO TAG VALUES ` + bracketValueTag.repeat(tagList.length).slice(0, -2)
+                const value = []
+                tagValues.forEach((tag) =>
+                    value.push({
+                        deviceID: tag.deviceID,
+                        name: tag.name,
+                    })
+                )
+
+                db.serialize(() => {
+                    db.run(insertProTag, tagValues)
+                    db.run(insertTag, value)
+                })
             }
 
-            if (insertProtocolParams.length == 0) {
+            if (insertProtocolParams.length === 0) {
                 const protocolInfoQuery = `PRAGMA table_info(${protocolName})`
 
                 handler(res, async () => {
                     const infoProtocolTable = await dbAll(protocolInfoQuery)
-                    insertProtocolParams = Array(infoProtocolTable.length - 1).fill('NULL')
+                    insertProtocolParams = Array(infoProtocolTable.length - 1).fill(null)
                     insertProtocolParams.push(id)
 
                     const insertProtocolQuery = `INSERT INTO ${protocolName} VALUES (${',?'
@@ -138,11 +149,12 @@ class Device {
         editProtocolParams.push(req.params.id)
 
         handler(res, async () => {
-            await dbRun(editDeviceQuery, editDeviceParams)
-            await dbRun(editProtocolQuery, editProtocolParams)
-
-            res.json({
-                key: req.params.id,
+            db.serialize(() => {
+                db.run(editDeviceQuery, editDeviceParams)
+                db.run(editProtocolQuery, editProtocolParams)
+                res.json({
+                    key: req.params.id,
+                })
             })
         })
     }

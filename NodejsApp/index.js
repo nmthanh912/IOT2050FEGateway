@@ -1,12 +1,3 @@
-require('dotenv').config()
-// require('express-group-routes')
- 
-// require('./subscribe.js')
-// Protocol here
-// require('./protocols/opcua_client')
-// require('./protocols/modbus_rtu')
-// require('./protocols/modbus_tcp')
-
 const bodyParser = require('body-parser')
 const express = require('express')
 const port = 4000
@@ -26,14 +17,13 @@ app.use((req, res, next) => {
     next()
 })
 
-app.use(bodyParser.json()) // for parsing application/json
-app.use(bodyParser.urlencoded({extended: true})) // for parsing application/x-www-form-urlencoded
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({extended: true})) 
 
-// ------------Khai báo Router -------------------------------
+// router
 const route = require('./routes/index')
 route(app)
 
-//-------------------------------------------------------------------
 app.listen(port, function () {
     console.log(`Server listening on port ${port}!`)
 })

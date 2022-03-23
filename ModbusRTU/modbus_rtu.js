@@ -4,7 +4,6 @@ const getConfig = require('./getConfig')
 
 // open connection to serial port
 const client = new modbusRTU()
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 class DataConnectionPool {
     constructor(configInfos = null) {
@@ -41,7 +40,7 @@ class DataConnectionPool {
                         buf.writeUInt16BE(data.data[1], 2)
 
                         let value = parseFloat(buf.readFloatBE().toFixed(2))
-                        console.log(tag.name, value)
+                        // console.log(tag.name, value)
                     })
                     .catch((err) => {
                         console.error(err)

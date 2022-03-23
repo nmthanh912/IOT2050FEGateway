@@ -1,5 +1,5 @@
 const uniqueId = require('../utils/uniqueId')
-const { dbRun, dbAll, db } = require('../models/database')
+const {dbRun, dbAll, db} = require('../models/database')
 const handler = require('./handler')
 const fs = require('fs')
 const util = require('util')
@@ -24,7 +24,9 @@ class GatewayController {
 
         handler(res, async () => {
             await dbRun(sqlQuery, gatewayData)
-            res.json({ ID })
+            res.json({
+                key: ID,
+            })
         })
     }
     get(req, res) {
@@ -59,9 +61,9 @@ class GatewayController {
                 data.config.password,
                 data.config.IP,
                 data.config.port,
-                req.query.id
+                req.query.id,
             ])
-            res.json({ msg: 'success' })
+            res.json({msg: 'success'})
         })
     }
 
@@ -70,7 +72,7 @@ class GatewayController {
         const sqlQuery = `DELETE FROM mqtt_client WHERE ID = ?`
         handler(res, async () => {
             await dbRun(sqlQuery, [gatewayID])
-            res.json({ msg: 'Success' })
+            res.json({msg: 'Success'})
         })
     }
 
@@ -86,18 +88,18 @@ class GatewayController {
         })
     }
     addSubscribeDevice(req, res) {
-        const { gatewayID, deviceID } = req.body
+        const {gatewayID, deviceID} = req.body
         const sqlQuery = `INSERT INTO subscribes VALUES (?, ?, ?)`
-        handler(res, async() => {
+        handler(res, async () => {
             await dbRun(sqlQuery, [gatewayID, deviceID, null])
             res.json({msg: 'OKE'})
         })
     }
     removeSubscribeDevice(req, res) {
         console.log(req.query)
-        const { gid: gatewayID, did: deviceID } = req.query
+        const {gid: gatewayID, did: deviceID} = req.query
         const sqlQuery = `DELETE FROM subscribes WHERE gatewayID = ? AND deviceID = ?`
-        handler(res, async() => {
+        handler(res, async () => {
             await dbRun(sqlQuery, [gatewayID, deviceID])
             res.json({msg: 'OKE'})
         })
@@ -118,36 +120,31 @@ class GatewayController {
         `
         handler(res, async () => {
             const tagConfigList = await dbAll(sqlQuery, [gatewayId, deviceId])
-            const list = tagConfigList.map(val => {
+            const list = tagConfigList.map((val) => {
                 let subscribe = val.gatewayID !== null
                 delete val.gatewayID
-                return { subscribe, ...val }
+                return {subscribe, ...val}
             })
 
             let exists = fs.existsSync(`./customJSON/${gatewayId}_${deviceId}.json`)
-            if (!exists) res.json({ tagList: list, code: null })
+            if (!exists) res.json({tagList: list, code: null})
             else {
                 let code = await readFile(`./customJSON/${gatewayId}_${deviceId}.json`, 'utf-8')
-                res.json({ tagList: list, code })
+                res.json({tagList: list, code})
             }
         })
     }
 
     updateSubcribedDeviceConfig(req, res) {
-        const { gid: gatewayID, did: deviceID } = req.params
+        const {gid: gatewayID, did: deviceID} = req.params
         const data = req.body
         console.log(req.params)
 
         handler(res, async () => {
-            if (data.code === null)
-                rm(`./customJSON/${gatewayID}_${deviceID}.json`, { force: true })
+            if (data.code === null) rm(`./customJSON/${gatewayID}_${deviceID}.json`, {force: true})
             else {
                 const customJSON = data.code.slice(data.code.indexOf('{'))
-                await writeFile(
-                    `./customJSON/${gatewayID}_${deviceID}.json`,
-                    customJSON,
-                    'utf-8'
-                )
+                await writeFile(`./customJSON/${gatewayID}_${deviceID}.json`, customJSON, 'utf-8')
             }
             db.serialize(() => {
                 let deleteSqlQuery = `DELETE FROM subscribes WHERE
@@ -157,15 +154,14 @@ class GatewayController {
                 db.run(deleteSqlQuery, [gatewayID, deviceID])
                 if (data.tagList.length > 0) {
                     let insertSqlQuery = `INSERT INTO subscribes
-                        VALUES ${"(?, ?, ?),".repeat(data.tagList.length).slice(0, -1)}
+                        VALUES ${'(?, ?, ?),'.repeat(data.tagList.length).slice(0, -1)}
                     `
-                    db.run(insertSqlQuery, data.tagList.map(val => [gatewayID, deviceID, val.name]).flat())
-                }
-                else {
-                    db.run("INSERT INTO subscribes VALUES (?, ?, ?)", [gatewayID, deviceID, null])
+                    db.run(insertSqlQuery, data.tagList.map((val) => [gatewayID, deviceID, val.name]).flat())
+                } else {
+                    db.run('INSERT INTO subscribes VALUES (?, ?, ?)', [gatewayID, deviceID, null])
                 }
             })
-            res.json({ msg: 'OK' })
+            res.json({msg: 'OK'})
         })
     }
 }

@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux"
 import { addDevice } from "../../redux/slices/device"
 import { updateDevice } from "../../redux/slices/device"
 import CSVReader from "./CSVImporter"
+import { toast, ToastContainer } from "react-toastify"
 
 export default function DeviceModal({ show, onHide, mode, device }) {
 	return mode === 'add' ?
@@ -13,13 +14,7 @@ export default function DeviceModal({ show, onHide, mode, device }) {
 }
 
 function AddModal({ show, onHide }) {
-	const [draftInfo, setDraftInfo] = useState({
-		name: '',
-		description: '',
-		protocol: deviceConfigInfo[0],
-		tagList: [],
-		config: {}
-	})
+	const [draftInfo, setDraftInfo] = useState(initState)
 	const csvRef = useRef(null)
 	const dispatch = useDispatch()
 
@@ -28,13 +23,15 @@ function AddModal({ show, onHide }) {
 	const setProtocol = value => {
 		let protocol = deviceConfigInfo.find(p => p.value === value)
 		setDraftInfo({ ...draftInfo, protocol })
-		// const resetConfig = {}
-		// protocol.attrs.forEach(attr => {
-		// 	resetConfig[attr.name] = ''
-		// })
-		// setConfig(resetConfig)
 	}
 	const setConfig = config => setDraftInfo({ ...draftInfo, config })
+
+	const notifySuccess = msg => toast(msg, {
+		progressClassName: 'Toastify__progress-bar--success'
+	})
+	const notifyFail = msg => toast(msg, {
+		progressClassName: 'Toastify__progress-bar--error'
+	})
 
 	const addDeviceToDB = () => {
 		const newDevice = {
@@ -47,8 +44,11 @@ function AddModal({ show, onHide }) {
 		DeviceService.add(newDevice).then(response => {
 			delete newDevice.config
 			dispatch(addDevice({ ...newDevice, ID: response.data.key }))
+			notifySuccess("Add device successfully !")
+			setDraftInfo(initState)
 			onHide()
 		}).catch(err => {
+			notifyFail("Some error occurred !")
 			console.log(err)
 		})
 	}
@@ -76,14 +76,7 @@ function AddModal({ show, onHide }) {
 		for (let i in removedNullData[configOffset]) {
 			newConfig[removedNullData[configOffset][i]] = removedNullData[configOffset + 1][i]
 		}
-		
-		// console.log({
-		// 	name: removedNullData[1][1],
-		// 	description: removedNullData[1][2],
-		// 	protocol: deviceConfigInfo.find(val => val.value.toLowerCase() === removedNullData[1][3].toLowerCase()),
-		// 	tagList: newTagList,
-		// 	config: newConfig
-		// })
+
 		setDraftInfo({
 			name: removedNullData[1][1],
 			description: removedNullData[1][2],
@@ -93,83 +86,97 @@ function AddModal({ show, onHide }) {
 		})
 	}
 
-	return <Modal show={show} onHide={onHide}>
-		<Modal.Header className="bg-primary text-white">
-			<h5 className="m-auto">Add new device</h5>
-		</Modal.Header>
-		<Modal.Body>
-			{/* Enter device info */}
-			<div className="row mb-2">
-				<div ref={csvRef}>
-					<CSVReader handleUpload={handleUploadFile} />
-				</div>
-				<Form.Group className='col-6'>
-					<Form.Label>Device name:</Form.Label>
-					<Form.Control
-						type="text" value={draftInfo.name} size="sm"
-						placeholder="Device name ..."
-						onChange={e => setName(e.target.value)}
-						required
-					/>
-				</Form.Group>
-				<Form.Group className='col-6'>
-					<Form.Label>Protocol:</Form.Label>
-					<Form.Select
-						size="sm"
-						value={draftInfo.protocol.value}
-						onChange={e => setProtocol(e.target.value)}
-						placeholder='Select protocol'
-						required
-					>
-						{deviceConfigInfo.map(protocol => {
-							return <option value={protocol.value} key={protocol.value}>
-								{protocol.label}
-							</option>
-						})}
-					</Form.Select>
-				</Form.Group>
-			</div>
-			<Form.Group>
-				<Form.Label>Description:</Form.Label>
-				<Form.Control
-					type="text" as="textarea" size="sm"
-					placeholder="Description ..." value={draftInfo.description}
-					onChange={e => setDescription(e.target.value)}
-				/>
-			</Form.Group>
+	return <div>
+		<ToastContainer
+			pauseOnHover={false}
+			position="top-right"
+			autoClose={1500}
+		/>
+		asdasdasd
+		<ToastContainer />
+		<Modal show={show} onHide={onHide}>
+			<Modal.Header className="bg-primary text-white">
+				<h5 className="m-auto">Add new device</h5>
+			</Modal.Header>
+			<Modal.Body>
+				<Form onSubmit={e => {
+					e.preventDefault()
+					addDeviceToDB()
+					onHide()
+				}}>
+					{/* Enter device info */}
+					<div className="row mb-2">
+						<div ref={csvRef}>
+							<CSVReader handleUpload={handleUploadFile} />
+						</div>
+						<Form.Group className='col-6'>
+							<Form.Label>Device name:</Form.Label>
+							<Form.Control
+								type="text" value={draftInfo.name} size="sm"
+								placeholder="Device name ..."
+								onChange={e => setName(e.target.value)}
+								required
+							/>
+						</Form.Group>
+						<Form.Group className='col-6'>
+							<Form.Label>Protocol:</Form.Label>
+							<Form.Select
+								size="sm"
+								value={draftInfo.protocol.value}
+								onChange={e => setProtocol(e.target.value)}
+								placeholder='Select protocol'
+								required
+							>
+								{deviceConfigInfo.map(protocol => {
+									return <option value={protocol.value} key={protocol.value}>
+										{protocol.label}
+									</option>
+								})}
+							</Form.Select>
+						</Form.Group>
+					</div>
+					<Form.Group>
+						<Form.Label>Description:</Form.Label>
+						<Form.Control
+							type="text" as="textarea" size="sm"
+							placeholder="Description ..." value={draftInfo.description}
+							onChange={e => setDescription(e.target.value)}
+						/>
+					</Form.Group>
 
-			{/* Enter config info */}
-			<hr />
-			<h5><b>Configration Info</b></h5>
-			{draftInfo.protocol.attrs.map(attr => {
-				const attrName = attr.name.charAt(0).toUpperCase() + attr.name.slice(1)
-				const key = attrName.toLowerCase()
-				return <Form.Group key={attr.name} className='mb-2'>
-					<Form.Label>{attrName}:</Form.Label>
-					{attr.type ? <Form.Control
-						size="sm" required type={attr.type}
-						placeholder={attrName + ' ...'}
-						value={draftInfo.config[key] ? draftInfo.config[key] : ''}
-						onChange={e => setConfig({ ...draftInfo.config, [key]: e.target.value })}
-					/>
-						: <Form.Select
-							value={draftInfo.config[key] ? draftInfo.config[key] : ''}
-							onChange={e => setConfig({ ...draftInfo.config, [key]: e.target.value })}
-							size='sm'
-						>
-							{attr.options.map(opt => <option value={opt} key={opt}>{opt}</option>)}
-						</Form.Select>}
-				</Form.Group>
-			})}
+					{/* Enter config info */}
+					<hr />
+					<h5><b>Configration Info</b></h5>
+					{draftInfo.protocol.attrs.map(attr => {
+						const attrName = attr.name.charAt(0).toUpperCase() + attr.name.slice(1)
+						const key = attrName.toLowerCase()
+						return <Form.Group key={attr.name} className='mb-2'>
+							<Form.Label>{attrName}:</Form.Label>
+							{attr.type ? <Form.Control
+								size="sm" required type={attr.type}
+								placeholder={attrName + ' ...'}
+								value={draftInfo.config[key] ? draftInfo.config[key] : ''}
+								onChange={e => setConfig({ ...draftInfo.config, [key]: e.target.value })}
+							/>
+								: <Form.Select
+									value={draftInfo.config[key] ? draftInfo.config[key] : ''}
+									onChange={e => setConfig({ ...draftInfo.config, [key]: e.target.value })}
+									size='sm' required
+								>
+									<option value={''} disabled>------</option>
+									{attr.options.map(opt => <option value={opt} key={opt}>{opt}</option>)}
+								</Form.Select>}
+						</Form.Group>
+					})}
 
-			{/* Submit button */}
-			<Button className="float-end text-white fw-bold"
-				onClick={addDeviceToDB}
-			>
-				Submit
-			</Button>
-		</Modal.Body>
-	</Modal>
+					{/* Submit button */}
+					<Button className="float-end text-white fw-bold" type="submit">
+						Submit
+					</Button>
+				</Form>
+			</Modal.Body>
+		</Modal>
+	</div>
 }
 
 function EditModal({ show, onHide, device }) {
@@ -313,7 +320,7 @@ const deviceConfigInfo = [{
 		type: 'text'
 	}, {
 		name: 'parity',
-		options: ['', 'odd', 'even']
+		options: ['odd', 'even']
 	}, {
 		name: 'slaveID',
 		type: 'number'
@@ -346,3 +353,11 @@ const deviceConfigInfo = [{
 	label: 'OPC UA',
 	attrs: [{ name: 'URL', type: 'url' }]
 }]
+
+const initState = {
+	name: '',
+	description: '',
+	protocol: deviceConfigInfo[0],
+	tagList: [],
+	config: {}
+}

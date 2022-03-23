@@ -8,7 +8,8 @@ const process = new Process()
 process.run()
 
 app.get('/updated', (req, res) => {
-        process.run(true)
+    console.log(req.query.pname)
+    process.run(true)
     res.json({msg: 'OKE'})
 })
 

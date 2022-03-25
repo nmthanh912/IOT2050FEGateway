@@ -28,7 +28,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 			description: draftInfo.description,
 			protocol: draftInfo.protocol.value,
 			config: draftInfo.config,
-			tagList: draftInfo.tagList
+			tagList: draftInfo.tagList ? draftInfo.tagList: []
 		}
 		// console.log(data)
 		DeviceService.editDevice(device.ID, data).then(response => {
@@ -52,7 +52,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 					name: device.name,
 					description: device.description,
 					protocol: deviceConfigInfo.find(cInfo => cInfo.value.toUpperCase() === device.protocol),
-					config: res.data
+					config: res.data,
 				})
 			}).catch(err => {
 				console.log(err)

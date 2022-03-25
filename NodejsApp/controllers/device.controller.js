@@ -3,6 +3,39 @@ const handler = require('./handler')
 const uniqueId = require('../utils/uniqueId')
 
 class Device {
+    handleErrCreate = async (id) => {
+        const getDevice = `SELECT * FROM DEVICE WHERE ID = ?`
+        const device = await dbAll(getDevice, id)
+
+        if (device) {
+            const deleteQuery = `DELETE FROM DEVICE WHERE ID = ?`
+            await dbRun(deleteQuery, id)
+        }
+    }
+
+    setupTagSql = (tagList, protocolName, id) => {
+        tagList.forEach((tag) => {
+            tag.deviceID = id
+        })
+
+        const bracketValue = '(' + ',?'.repeat(Object.values(tagList[0]).length).slice(1) + '), '
+        const proTagQuery = `INSERT INTO ${protocolName}_TAG VALUES ` + bracketValue.repeat(tagList.length).slice(0, -2)
+        const proTagParams = tagList.map((tag) => Object.values(tag)).flat()
+
+        const bracketValueTag = '(' + ',?'.repeat(2).slice(1) + '), '
+        const tagQuery = `INSERT INTO TAG VALUES ` + bracketValueTag.repeat(tagList.length).slice(0, -2)
+        const values = []
+        tagList.forEach((tag) =>
+            values.push({
+                deviceID: tag.deviceID,
+                name: tag.name,
+            })
+        )
+        const tagParams = values.map((value) => Object.values(value)).flat()
+
+        return {proTagQuery, proTagParams, tagQuery, tagParams}
+    }
+
     getAll = function (req, res) {
         const deviceQuery = `SELECT * FROM DEVICE`
         var data = []
@@ -23,9 +56,8 @@ class Device {
         })
     }
 
-    create = function (req, res) {
+    create = (req, res) => {
         const id = uniqueId()
-
         const deviceQuery = 'INSERT INTO DEVICE (ID, name, description, protocolType) VALUES (?, ?, ?, ?)'
         const deviceParams = [id, req.body.name, req.body.description, req.body.protocol.toUpperCase()]
 
@@ -43,26 +75,8 @@ class Device {
             protocolParams.push(id)
             const protocolQuery = `INSERT INTO ${protocolName} VALUES (${',?'.repeat(protocolParams.length).slice(1)})`
 
-            if (Object.keys(tagList[0]).length !== 0) {
-                tagList.forEach((tag) => {
-                    tag.deviceID = id
-                })
-
-                const proTagParams = tagList.map((tag) => Object.values(tag)).flat()
-                const bracketValue = '(' + ',?'.repeat(Object.values(tagList[0]).length).slice(1) + '), '
-                const proTagQuery =
-                    `INSERT INTO ${protocolName}_TAG VALUES ` + bracketValue.repeat(tagList.length).slice(0, -2)
-
-                const bracketValueTag = '(' + ',?'.repeat(2).slice(1) + '), '
-                const tagQuery = `INSERT INTO TAG VALUES ` + bracketValueTag.repeat(tagList.length).slice(0, -2)
-                const values = []
-                tagList.forEach((tag) =>
-                    values.push({
-                        deviceID: tag.deviceID,
-                        name: tag.name,
-                    })
-                )
-                const tagParams = values.map((value) => Object.values(value)).flat()
+            if (tagList.length !== 0) {
+                const {proTagQuery, proTagParams, tagQuery, tagParams} = this.setupTagSql(tagList, protocolName, id)
 
                 try {
                     await Promise.all([
@@ -72,31 +86,17 @@ class Device {
                         dbRun(proTagQuery, proTagParams),
                     ])
                 } catch (err) {
-                    console.log('error')
-                    const getDevice = `SELECT * FROM DEVICE WHERE ID = ?`
-                    const device = await dbAll(getDevice, id)
-
-                    if (device) {
-                        const deleteQuery = `DELETE FROM DEVICE WHERE ID = ?`
-                        await dbRun(deleteQuery, id)
-                    }
+                    await this.handleErrCreate(id)
                     throw err
                 }
             } else {
                 try {
                     await Promise.all([dbRun(deviceQuery, deviceParams), dbRun(protocolQuery, protocolParams)])
                 } catch (err) {
-                    const getDevice = `SELECT * FROM DEVICE WHERE ID = ?`
-                    const device = await dbAll(getDevice, id)
-
-                    if (device) {
-                        const deleteQuery = `DELETE FROM DEVICE WHERE ID = ?`
-                        await dbRun(deleteQuery, id)
-                    }
+                    await this.handleErrCreate(id)
                     throw err
                 }
             }
-
             res.json({
                 key: id,
             })
@@ -135,34 +135,40 @@ class Device {
         })
     }
 
-    editInfo = function (req, res) {
-        console.log(req.body)
-        const editDeviceQuery = 'UPDATE DEVICE SET name = ?, description = ? WHERE ID = ?'
-        const editDeviceParams = [req.body.name, req.body.description, req.params.id]
+    editInfo = (req, res) => {
+        const id = req.params.id
+        const deviceQuery = 'UPDATE DEVICE SET name = ?, description = ? WHERE ID = ?'
+        const deviceParams = [req.body.name, req.body.description, id]
 
         var setString = 'SET '
         const keys = Object.keys(req.body.config)
-
         keys.forEach((key) => {
             setString += key + ' = ?, '
         })
-
         const protocolName = req.body.protocol.toUpperCase()
-        const editProtocolQuery = `UPDATE ${protocolName} ${setString.slice(
-            0,
-            setString.length - 2
-        )} WHERE deviceID = ?`
+        const protocolQuery = `UPDATE ${protocolName} ${setString.slice(0, setString.length - 2)} WHERE deviceID = ?`
+        const protocolParams = Object.values(req.body.config)
+        protocolParams.push(id)
 
-        const editProtocolParams = Object.values(req.body.config)
-        editProtocolParams.push(req.params.id)
+        const tagList = req.body.tagList
 
         handler(res, async () => {
-            db.serialize(() => {
-                db.run(editDeviceQuery, editDeviceParams)
-                db.run(editProtocolQuery, editProtocolParams)
-                res.json({
-                    key: req.params.id,
-                })
+            if (tagList.length !== 0) {
+                const deleteQuery = `DELETE FROM TAG WHERE deviceID = ?`
+                await dbRun(deleteQuery, id)
+
+                const {proTagQuery, proTagParams, tagQuery, tagParams} = this.setupTagSql(tagList, protocolName, id)
+                await Promise.all([
+                    dbRun(deviceQuery, deviceParams),
+                    dbRun(protocolQuery, protocolParams),
+                    dbRun(tagQuery, tagParams),
+                    dbRun(proTagQuery, proTagParams),
+                ])
+            } else {
+                await Promise.all([dbRun(deviceQuery, deviceParams), dbRun(protocolQuery, protocolParams)])
+            }
+            res.json({
+                key: id,
             })
         })
     }

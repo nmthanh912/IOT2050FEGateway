@@ -1,12 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import DeviceService from "../../services/device";
-// import ShortUniqueId from "short-unique-id";
-// const uid = length => {
-//     return new ShortUniqueId({
-//         length,
-//         dictionary: 'number'
-//     })
-// }
 
 // {
 //     ID: '',
@@ -36,6 +29,7 @@ const deviceSlice = createSlice({
             const idx = state.findIndex(val => val.ID === id)
             state[idx].name = updatedData.name
             state[idx].description = updatedData.description
+            state[idx].tagList = updatedData.tagList
             return state
         },
         removeDevice: (state, action) => {
@@ -45,16 +39,16 @@ const deviceSlice = createSlice({
             })
             state.splice(idx, 1)
             return state
-        },
-        addTag: (state, action) => {
-
-        },
-        removeTag: (state, action) => {
-
-        },
-        updateTag: (state, action) => {
-
         }
+        // addTag: (state, action) => {
+
+        // },
+        // removeTag: (state, action) => {
+
+        // },
+        // updateTag: (state, action) => {
+
+        // }
     },
     extraReducers(builder) {
         builder.addCase(fetchDevices.fulfilled, (state, action) => {

@@ -20,23 +20,15 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 		setDraftInfo({ ...draftInfo, protocol, config: {} })
 	}
 	const setConfig = config => setDraftInfo({ ...draftInfo, config })
-	// const setProtocol = value => {
-	// 	let protocol = deviceConfigInfo.find(p => p.value === value)
-	// 	setDraftInfo({ ...draftInfo, protocol })
-	// 	const resetConfig = {}
-	// 	protocol.attrs.forEach(attr => {
-	// 		resetConfig[attr.name] = ''
-	// 	})
-	// 	setConfig(resetConfig)
-	// }
-
 
 	const update = () => {
+		console.log(draftInfo)
 		const data = {
 			name: draftInfo.name,
 			description: draftInfo.description,
 			protocol: draftInfo.protocol.value,
-			config: draftInfo.config
+			config: draftInfo.config,
+			tagList: draftInfo.tagList
 		}
 		// console.log(data)
 		DeviceService.editDevice(device.ID, data).then(response => {

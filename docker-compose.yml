@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - sqlitedb:/usr/src/app/Database
-    restart: unless-stopped
+    restart: always
     ports:
       - 4000:4000
   application:
@@ -15,9 +15,7 @@ services:
     build:
       context: ./ReactApp
       dockerfile: Dockerfile
-    volumes:
-      - sqlitedb:/usr/src/app/Database
-    restart: unless-stopped
+    restart: always
     ports:
       - 3000:3000
 

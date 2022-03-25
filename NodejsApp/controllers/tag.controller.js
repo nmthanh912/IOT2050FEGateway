@@ -3,11 +3,11 @@ const handler = require('./handler')
 
 class Tag {
     getAll = async function (req, res) {
-        const getTagQuery = `SELECT * FROM ${req.query.protocol}_TAG WHERE deviceID = ?`
-        const getTagParams = [req.params.id]
+        const tagQuery = `SELECT * FROM ${req.query.protocol}_TAG WHERE deviceID = ?`
+        const tagParams = [req.params.id]
 
         handler(res, async () => {
-            const tags = await dbAll(getTagQuery, getTagParams)
+            const tags = await dbAll(tagQuery, tagParams)
             tags.forEach((tag) => {
                 delete tag.deviceID
             })
@@ -22,8 +22,6 @@ class Tag {
 
                 delete tags[0].deviceID
             }
-
-            console.log(tags)
             res.json(tags)
         })
     }

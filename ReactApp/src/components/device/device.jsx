@@ -6,7 +6,8 @@ import { CSVLink } from "react-csv";
 import { useDispatch } from "react-redux";
 import { removeDevice } from "../../redux/slices/device";
 import DeviceService from "../../services/device";
-
+import { toast, ToastContainer } from 'react-toastify'
+import { SuccessMessage, FailMessage } from "../toastMsg";
 
 export default function EdgeDevice({ data, onDetail }) {
     const downloadCSVRef = useRef(null)
@@ -46,12 +47,21 @@ export default function EdgeDevice({ data, onDetail }) {
         const confirm = window.confirm("Are you sure about deleting this device ?")
         confirm && DeviceService.deleteDevice(data.ID, data.protocol).then(res => {
             dispatch(removeDevice(data.ID))
+            notifySuccess('Delete device successfully')
         }).catch(err => {
-            console.log(err)
+            notifyFail(err.message)
         })
     }
 
+    const notifySuccess = msg => toast(<SuccessMessage msg={msg} />, {
+		progressClassName: 'Toastify__progress-bar--success'
+	})
+	const notifyFail = msg => toast(<FailMessage msg={msg} />, {
+		progressClassName: 'Toastify__progress-bar--error'
+	})
+
     return <div>
+        <ToastContainer autoClose={1800} pauseOnHover={false}/>
         <DropdownItem
             onEdit={() => onDetail()}
             onExport={exportToCSV}

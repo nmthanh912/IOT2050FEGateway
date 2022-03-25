@@ -6,6 +6,7 @@ import { addDevice } from "../../redux/slices/device"
 import { updateDevice } from "../../redux/slices/device"
 import CSVReader from "./CSVImporter"
 import { toast, ToastContainer } from "react-toastify"
+import { SuccessMessage, FailMessage } from '../toastMsg'
 
 export default function DeviceModal({ show, onHide, device, mode }) {
 	const [draftInfo, setDraftInfo] = useState(initState)
@@ -16,9 +17,19 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 	const setDescription = description => setDraftInfo({ ...draftInfo, description })
 	const setProtocol = value => {
 		let protocol = deviceConfigInfo.find(p => p.value === value)
-		setDraftInfo({ ...draftInfo, protocol })
+		setDraftInfo({ ...draftInfo, protocol, config: {} })
 	}
 	const setConfig = config => setDraftInfo({ ...draftInfo, config })
+	// const setProtocol = value => {
+	// 	let protocol = deviceConfigInfo.find(p => p.value === value)
+	// 	setDraftInfo({ ...draftInfo, protocol })
+	// 	const resetConfig = {}
+	// 	protocol.attrs.forEach(attr => {
+	// 		resetConfig[attr.name] = ''
+	// 	})
+	// 	setConfig(resetConfig)
+	// }
+
 
 	const update = () => {
 		const data = {
@@ -57,20 +68,10 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 		}
 	}, [device, mode])
 
-	// const setProtocol = value => {
-	// 	let protocol = deviceConfigInfo.find(p => p.value === value)
-	// 	setDraftInfo({ ...draftInfo, protocol })
-	// 	const resetConfig = {}
-	// 	protocol.attrs.forEach(attr => {
-	// 		resetConfig[attr.name] = ''
-	// 	})
-	// 	setConfig(resetConfig)
-	// }
-
-	const notifySuccess = msg => toast(msg, {
+	const notifySuccess = msg => toast(<SuccessMessage msg={msg} />, {
 		progressClassName: 'Toastify__progress-bar--success'
 	})
-	const notifyFail = msg => toast(msg, {
+	const notifyFail = msg => toast(<FailMessage msg={msg} />, {
 		progressClassName: 'Toastify__progress-bar--error'
 	})
 

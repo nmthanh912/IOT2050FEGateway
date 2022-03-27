@@ -8,14 +8,14 @@ import { removeDevice } from "../../redux/slices/device";
 import DeviceService from "../../services/device";
 import { toast, ToastContainer } from 'react-toastify'
 import { SuccessMessage, FailMessage } from "../toastMsg";
+import { updateTagList } from "../../redux/slices/device";
 
 export default function EdgeDevice({ data, onDetail }) {
     const downloadCSVRef = useRef(null)
     const dispatch = useDispatch()
     const [exportData, setExportData] = useState([])
 
-    // Convert data of a device into csv data
-    useEffect(() => {
+    const exportToCSV = () => {
         const list = [[], [], ['-----------']]
         Object.keys(data).forEach(key => {
             if (key !== 'tagList' && key !== 'config') {
@@ -23,25 +23,48 @@ export default function EdgeDevice({ data, onDetail }) {
                 list[1].push(data[key])
             }
         })
-        list.push(['Tag List'])
-        if (data.tagList.length !== 0) {
-            list.push(Object.keys(data.tagList[0]))
-            for (let i = 0; i < data.tagList.length; ++i) {
-                list.push(Object.values(data.tagList[i]))
+
+        async function loadData() {
+            try {
+                let tagList
+                if (data.tagList.length === 0) {
+                    console.log("LOAD FROM DB")
+                    const response = await DeviceService.getTags(data.ID, data.protocol)
+                    dispatch(updateTagList({
+                        deviceID: data.ID,
+                        data: response.data
+                    }))
+                    tagList = response.data
+                }
+                else {
+                    console.log("LOAD FROM STORE")
+                    tagList = data.tagList
+                }
+                const res = await DeviceService.getConfigInfoById(data.ID, data.protocol)
+                
+                list.push(['Configurations'])
+                list.push(Object.keys(res.data))
+                list.push(Object.values(res.data))
+                
+                list.push(['-----------'])
+                list.push(['Tag List'])
+                list.push(Object.keys(tagList[0]))
+                for (let i = 0; i < tagList.length; ++i) {
+                    list.push(Object.values(tagList[i]))
+                }
+
+                setExportData([...list])
+            }
+            catch (err) {
+                notifyFail(err.message)
             }
         }
-        DeviceService.getConfigInfoById(data.ID, data.protocol).then(res => {
-            list.push(['-----------'])
-            list.push(['Configurations'])
-            list.push(Object.keys(res.data))
-            list.push(Object.values(res.data))
-            setExportData(list)
-        }).catch(err => console.log(err))
-    }, [data])
-
-    const exportToCSV = () => {
-        downloadCSVRef.current.link.click()
+        loadData()
     }
+
+    useEffect(() => {
+        if (exportData.length !== 0) downloadCSVRef.current.link.click()
+    }, [exportData, downloadCSVRef])
 
     const deleteDevice = () => {
         const confirm = window.confirm("Are you sure about deleting this device ?")
@@ -54,14 +77,18 @@ export default function EdgeDevice({ data, onDetail }) {
     }
 
     const notifySuccess = msg => toast(<SuccessMessage msg={msg} />, {
-		progressClassName: 'Toastify__progress-bar--success'
-	})
-	const notifyFail = msg => toast(<FailMessage msg={msg} />, {
-		progressClassName: 'Toastify__progress-bar--error'
-	})
+        progressClassName: 'Toastify__progress-bar--success'
+    })
+    const notifyFail = msg => toast(<FailMessage msg={msg} />, {
+        progressClassName: 'Toastify__progress-bar--error'
+    })
 
     return <div>
-        <ToastContainer autoClose={1800} pauseOnHover={false}/>
+        <ToastContainer
+            autoClose={1800}
+            pauseOnHover={false}
+            closeOnClick
+        />
         <DropdownItem
             onEdit={() => onDetail()}
             onExport={exportToCSV}

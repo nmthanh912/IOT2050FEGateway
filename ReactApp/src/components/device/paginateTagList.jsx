@@ -3,8 +3,8 @@ import { FormGroup, FormSelect, FormText, FormControl } from "react-bootstrap"
 import { useState, useEffect, useMemo } from "react";
 import { CaretLeft, CaretRight } from "react-bootstrap-icons";
 import ShortUniqueId from "short-unique-id";
-import { useSelector, useDispatch } from "react-redux";
-import { fetchTags } from "../../redux/slices/device"
+import { useDispatch, useSelector } from "react-redux";
+import { fetchTags } from "../../redux/slices/device";
 
 const uid = new ShortUniqueId({
   length: 5,
@@ -23,18 +23,19 @@ export default function PaginateTagList({ deviceID, protocol, Table }) {
   const [beginIdx, setBeginIdx] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(10)
 
+
   useEffect(() => {
-    // Fetch items from another resources.
     const endIdx = beginIdx + itemsPerPage;
-    // console.log(beginIdx + '\t' + endIdx);
     setCurrentItems(tagList.slice(beginIdx, endIdx));
     setPageCount(Math.ceil(tagList.length / itemsPerPage));
   }, [beginIdx, itemsPerPage, tagList]);
 
-  // Fetch tag of a device from DB
   useEffect(() => {
-    dispatch(fetchTags({ deviceID, protocol }))
-  }, [deviceID, protocol, dispatch])
+    if (tagList.length === 0) {
+      console.log("FETCH FROM DB")
+      dispatch(fetchTags({ deviceID, protocol }))
+    } else console.log("LOAD FROM STORE")
+  }, [])
 
   const pageClick = event => {
     const newBeginIdx = (event.selected * itemsPerPage) % tagList.length;

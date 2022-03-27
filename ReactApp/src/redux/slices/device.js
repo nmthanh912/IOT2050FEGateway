@@ -1,16 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import DeviceService from "../../services/device";
 
-// {
-//     ID: '',
-//     name: '',
-//     tagList: [{
-//         tagName: ''
-//     }],
-//     protocol: '',
-//     description: '',
-// }
-
 const deviceSlice = createSlice({
     name: 'device',
     initialState: [],
@@ -19,12 +9,10 @@ const deviceSlice = createSlice({
             const device = action.payload
             device.tagList = []
             state.push(device)
-            console.log(state)
             return state
         },
         updateDevice: (state, action) => {
             const updatedData = action.payload
-            console.log(updatedData)
             const id = updatedData.ID
             const idx = state.findIndex(val => val.ID === id)
             state[idx].name = updatedData.name
@@ -39,16 +27,14 @@ const deviceSlice = createSlice({
             })
             state.splice(idx, 1)
             return state
+        },
+        updateTagList: (state, action) => {
+            const deviceID = action.payload.deviceID
+            const device = state.find(val => val.ID === deviceID)
+            device.tagList = []
+            action.payload.data.forEach(val => device.tagList.push(val))
+            return state
         }
-        // addTag: (state, action) => {
-
-        // },
-        // removeTag: (state, action) => {
-
-        // },
-        // updateTag: (state, action) => {
-
-        // }
     },
     extraReducers(builder) {
         builder.addCase(fetchDevices.fulfilled, (state, action) => {
@@ -97,8 +83,6 @@ export const {
     addDevice,
     removeDevice,
     updateDevice,
-    addTag,
-    removeTag,
-    updateTag
+    updateTagList,
 } = deviceSlice.actions
 export default deviceSlice.reducer

@@ -82,6 +82,7 @@ export default function GatewayPage() {
       pauseOnHover={false}
       position="top-right"
       autoClose={1500}
+      closeOnClick
     />
     <SubHeader
       modal={<Modal

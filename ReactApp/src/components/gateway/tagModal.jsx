@@ -18,30 +18,39 @@ const commentStr = `// You can custom property by define new JSON Object.\n// Yo
 export default function TagModal({
   show, onHide, configCode,
   tagList, prefixTopic,
-  gatewayID, deviceID
+  gatewayID, deviceID,
+  toggle
 }) {
-  const [customMode, setCustomMode] = useState(false)
+  const [customMode, setCustomMode] = useState(toggle === 1)
   const [code, setCode] = useState(commentStr)
   const [list, setList] = useState([])
 
   const notifySuccess = msg => toast(<SuccessMessage msg={msg} />, {
     progressClassName: 'Toastify__progress-bar--success'
   })
-  const notifyFail = msg => toast(<FailMessage msg={msg}/>, {
+  const notifyFail = msg => toast(<FailMessage msg={msg} />, {
     progressClassName: 'Toastify__progress-bar--error'
   })
 
   useEffect(() => {
-    setList(tagList.map(tag => ({
+    const data = tagList.map(tag => ({
       ...tag,
       Topic: prefixTopic + '/' + removeAccents(tag.name),
       property: removeAccents(tag.name)
-    })))
-    if (configCode) {
-      setCode(configCode)
-      setCustomMode(true)
+    }))
+    setList(data)
+    setCustomMode(toggle === 1)
+    if (configCode) setCode(commentStr + configCode)
+  }, [tagList, prefixTopic, configCode, toggle])
+
+  useEffect(() => {
+    if (!configCode) {
+      const initJson = {}
+      const subscribeList = list.filter(val => val.subscribe === true)
+      subscribeList.forEach(val => initJson['custom_' + val.property] = val.property)
+      setCode(commentStr + JSON.stringify(initJson, null, "\t"))
     }
-  }, [tagList, prefixTopic, configCode])
+  }, [list, configCode])
 
   const toggleSubcribe = tagName => {
     const newList = [...list]
@@ -53,8 +62,9 @@ export default function TagModal({
   const updateSubscribes = () => {
     const tagList = list.map(val => ({ subscribe: val.subscribe, name: val.name }))
     let data = {
-      code: customMode ? code : null,
-      tagList: tagList.filter(val => val.subscribe === true).map(val => ({ name: val.name }))
+      code: code,
+      tagList: tagList.filter(val => val.subscribe === true).map(val => ({ name: val.name })),
+      toggle: customMode
     }
     GatewayService.updateSubcribedDeviceConfig(gatewayID, deviceID, data).then(response => {
       // console.log(response.data);
@@ -64,6 +74,7 @@ export default function TagModal({
 
   return <div>
     <ToastContainer
+      closeOnClick
       pauseOnHover={false}
       position="top-right"
       autoClose={1500}

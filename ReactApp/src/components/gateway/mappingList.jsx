@@ -42,6 +42,7 @@ export default function MappingList({ gatewayID }) {
                     ...device,
                     tagList: response.data.tagList,
                     code: response.data.code,
+                    toggle: response.data.toggle
                 })
             })
             .catch(err => console.log(err))
@@ -99,6 +100,7 @@ export default function MappingList({ gatewayID }) {
                 gatewayID={gatewayID}
                 prefixTopic={'/iot2050fe/' + removeAccents(configuringDevice.name)}
                 configCode={configuringDevice.code}
+                toggle={configuringDevice.toggle}
             />
         }
 

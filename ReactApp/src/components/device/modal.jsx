@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { Modal, Form, Button } from "react-bootstrap"
 import DeviceService from '../../services/device'
 import { useDispatch } from "react-redux"
-import { addDevice } from "../../redux/slices/device"
-import { updateDevice } from "../../redux/slices/device"
+import { addDevice, updateDevice, updateTagList } from "../../redux/slices/device"
 import CSVReader from "./CSVImporter"
 import { toast, ToastContainer } from "react-toastify"
 import { SuccessMessage, FailMessage } from '../toastMsg'
@@ -21,17 +20,30 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 	}
 	const setConfig = config => setDraftInfo({ ...draftInfo, config })
 
-	const update = () => {
-		console.log(draftInfo)
-		const data = {
-			name: draftInfo.name,
-			description: draftInfo.description,
-			protocol: draftInfo.protocol.value,
-			config: draftInfo.config,
-			tagList: draftInfo.tagList ? draftInfo.tagList: []
-		}
-		// console.log(data)
-		DeviceService.editDevice(device.ID, data).then(response => {
+	const updateToDB = async () => {
+		try {
+			let tagList
+			if (device.tagList.length === 0) {
+				const res1 = await DeviceService.getTags(device.ID, device.protocol)
+				dispatch(updateTagList({
+					deviceID: device.ID,
+					data: res1.data
+				}))
+				tagList = res1.data
+			}
+			else {
+				tagList = device.tagList
+			}
+	
+			const data = {
+				name: draftInfo.name,
+				description: draftInfo.description,
+				protocol: draftInfo.protocol.value.toUpperCase(),
+				tagList: draftInfo.tagList.length !== 0 ? draftInfo.tagList : tagList,
+				config: draftInfo.config
+			}
+	
+			await DeviceService.editDevice(device.ID, data)
 			delete data.config
 			delete data.protocol
 			dispatch(updateDevice({
@@ -39,9 +51,9 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 				...data
 			}))
 			notifySuccess('Update device successfully')
-		}).catch(err => {
+		} catch(err) {
 			notifyFail(err.message)
-		})
+		}
 	}
 
 	useEffect(() => {
@@ -53,6 +65,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 					description: device.description,
 					protocol: deviceConfigInfo.find(cInfo => cInfo.value.toUpperCase() === device.protocol),
 					config: res.data,
+					tagList: device.tagList
 				})
 			}).catch(err => {
 				console.log(err)
@@ -71,11 +84,12 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 		const newDevice = {
 			name: draftInfo.name,
 			description: draftInfo.description,
-			protocol: draftInfo.protocol.value,
+			protocol: draftInfo.protocol.value.toUpperCase(),
 			tagList: draftInfo.tagList,
 			config: draftInfo.config
 		}
 		DeviceService.add(newDevice).then(response => {
+			console.log(newDevice)
 			delete newDevice.config
 			dispatch(addDevice({ ...newDevice, ID: response.data.key }))
 			notifySuccess("Add device successfully !")
@@ -99,7 +113,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 			const tagListOffset = removedNullData.findIndex(val => val[0] === 'Tag List') + 1
 			const configOffset = removedNullData.findIndex(val => val[0] === 'Configurations') + 1
 
-			const tagListLength = configOffset - tagListOffset - 3
+			const tagListLength = tagListOffset - configOffset - 3
 
 			const newTagList = []
 			for (let i = 0; i < tagListLength; ++i) {
@@ -130,6 +144,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 
 	return <div>
 		<ToastContainer
+			closeOnClick
 			pauseOnHover={false}
 			position="top-right"
 			autoClose={1800}
@@ -142,7 +157,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 				<Form onSubmit={e => {
 					e.preventDefault()
 					mode === 'add' && addDeviceToDB()
-					mode === 'edit' && update()
+					mode === 'edit' && updateToDB()
 					onHide()
 				}}>
 					{/* Enter device info */}
@@ -223,7 +238,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 }
 
 const deviceConfigInfo = [{
-	value: 'ModbusRTU',
+	value: 'MODBUSRTU',
 	label: 'Modbus RTU',
 	attrs: [{
 		name: 'com_port_num',
@@ -245,7 +260,7 @@ const deviceConfigInfo = [{
 		type: 'number'
 	}]
 }, {
-	value: 'ModbusTCP',
+	value: 'MODBUSTCP',
 	label: 'Modbus TCP',
 	attrs: [{
 		name: 'IP',

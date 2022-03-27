@@ -30,17 +30,17 @@ export default function PaginateTagList({ deviceID, protocol, Table }) {
     setPageCount(Math.ceil(tagList.length / itemsPerPage));
   }, [beginIdx, itemsPerPage, tagList]);
 
+  const pageClick = event => {
+    const newBeginIdx = (event.selected * itemsPerPage) % tagList.length;
+    setBeginIdx(newBeginIdx);
+  };
+
   useEffect(() => {
     if (tagList.length === 0) {
       console.log("FETCH FROM DB")
       dispatch(fetchTags({ deviceID, protocol }))
     } else console.log("LOAD FROM STORE")
   }, [])
-
-  const pageClick = event => {
-    const newBeginIdx = (event.selected * itemsPerPage) % tagList.length;
-    setBeginIdx(newBeginIdx);
-  };
 
   const resetState = (newItemsPerPage) => {
     // Set page to 0
@@ -63,7 +63,6 @@ export default function PaginateTagList({ deviceID, protocol, Table }) {
             <option value={50}>50</option>
           </FormSelect>
         </FormGroup>
-
         <ReactPaginate
           breakLabel="..."
           nextLabel={<CaretRight />}

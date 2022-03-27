@@ -37,7 +37,6 @@ export default function MappingList({ gatewayID }) {
     const openTagModal = device => {
         GatewayService.getSubcribedDeviceConfig(gatewayID, device.ID, device.protocol)
             .then(response => {
-                console.log(response.data)
                 setConfiguringDevice({
                     ...device,
                     tagList: response.data.tagList,
@@ -100,7 +99,7 @@ export default function MappingList({ gatewayID }) {
                 gatewayID={gatewayID}
                 prefixTopic={'/iot2050fe/' + removeAccents(configuringDevice.name)}
                 configCode={configuringDevice.code}
-                toggle={configuringDevice.toggle}
+                toggleCustom={configuringDevice.toggle}
             />
         }
 

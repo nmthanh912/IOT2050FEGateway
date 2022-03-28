@@ -1,8 +1,8 @@
 import http from './http-common'
 
 class DeviceService {
-    add(data) {
-        return http.post('/devices/new', data)
+    add(data, repNum) {
+        return http.post('/devices/new', { data, repNum })
     }
     get() {
         return http.get('/devices')

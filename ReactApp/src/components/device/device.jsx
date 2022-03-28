@@ -9,6 +9,7 @@ import DeviceService from "../../services/device";
 import { toast, ToastContainer } from 'react-toastify'
 import { SuccessMessage, FailMessage } from "../toastMsg";
 import { updateTagList } from "../../redux/slices/device";
+import shortId from "../../utils/shortId";
 
 export default function EdgeDevice({ data, onDetail }) {
     const downloadCSVRef = useRef(null)
@@ -41,11 +42,11 @@ export default function EdgeDevice({ data, onDetail }) {
                     tagList = data.tagList
                 }
                 const res = await DeviceService.getConfigInfoById(data.ID, data.protocol)
-                
+
                 list.push(['Configurations'])
                 list.push(Object.keys(res.data))
                 list.push(Object.values(res.data))
-                
+
                 list.push(['-----------'])
                 list.push(['Tag List'])
                 list.push(Object.keys(tagList[0]))
@@ -88,6 +89,7 @@ export default function EdgeDevice({ data, onDetail }) {
             autoClose={1800}
             pauseOnHover={false}
             closeOnClick
+            containerId={shortId()}
         />
         <DropdownItem
             onEdit={() => onDetail()}

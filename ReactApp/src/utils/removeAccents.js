@@ -5,4 +5,5 @@ const removeAccents = str => {
         .replaceAll(' ', '')
         .toLowerCase()
 }
+
 export default removeAccents

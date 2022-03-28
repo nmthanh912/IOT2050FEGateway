@@ -83,6 +83,7 @@ export default function GatewayPage() {
       position="top-right"
       autoClose={1500}
       closeOnClick
+      containerId={uid()}
     />
     <SubHeader
       modal={<Modal

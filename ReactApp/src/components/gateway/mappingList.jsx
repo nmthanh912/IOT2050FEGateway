@@ -43,6 +43,7 @@ export default function MappingList({ gatewayID }) {
                     code: response.data.code,
                     toggle: response.data.toggle
                 })
+                console.log(response.data)
             })
             .catch(err => console.log(err))
         setShowTagModal(true)

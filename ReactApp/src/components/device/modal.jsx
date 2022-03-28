@@ -6,11 +6,13 @@ import { addDevice, updateDevice, updateTagList } from "../../redux/slices/devic
 import CSVReader from "./CSVImporter"
 import { toast, ToastContainer } from "react-toastify"
 import { SuccessMessage, FailMessage } from '../toastMsg'
+import shortId from "../../utils/shortId"
 
 export default function DeviceModal({ show, onHide, device, mode }) {
 	const [draftInfo, setDraftInfo] = useState(initState)
 	const csvRef = useRef(null)
 	const dispatch = useDispatch()
+	const [replicateNumber, setReplicateNumber] = useState(1)
 
 	const setName = name => setDraftInfo({ ...draftInfo, name })
 	const setDescription = description => setDraftInfo({ ...draftInfo, description })
@@ -34,7 +36,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 			else {
 				tagList = device.tagList
 			}
-	
+
 			const data = {
 				name: draftInfo.name,
 				description: draftInfo.description,
@@ -42,7 +44,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 				tagList: draftInfo.tagList.length !== 0 ? draftInfo.tagList : tagList,
 				config: draftInfo.config
 			}
-	
+
 			await DeviceService.editDevice(device.ID, data)
 			delete data.config
 			delete data.protocol
@@ -51,7 +53,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 				...data
 			}))
 			notifySuccess('Update device successfully')
-		} catch(err) {
+		} catch (err) {
 			notifyFail(err.message)
 		}
 	}
@@ -88,12 +90,14 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 			tagList: draftInfo.tagList,
 			config: draftInfo.config
 		}
-		DeviceService.add(newDevice).then(response => {
-			console.log(newDevice)
+		DeviceService.add(newDevice, replicateNumber).then(response => {
+			console.log(response.data)
 			delete newDevice.config
-			dispatch(addDevice({ ...newDevice, ID: response.data.key }))
+			if (!Array.isArray(response.data))
+				dispatch(addDevice({ ...newDevice, ID: response.data.key }))
 			notifySuccess("Add device successfully !")
-			setDraftInfo(initState)
+			// setDraftInfo(initState)
+			// setReplicateNumber(1)
 			onHide()
 		}).catch(err => {
 			notifyFail("Some error occurred !")
@@ -148,6 +152,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 			pauseOnHover={false}
 			position="top-right"
 			autoClose={1800}
+			containerId={shortId()}
 		/>
 		<Modal show={show} onHide={onHide}>
 			<Modal.Header className="bg-primary text-white">
@@ -162,9 +167,8 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 				}}>
 					{/* Enter device info */}
 					<div className="row mb-2">
-						<div ref={csvRef}>
+						<div ref={csvRef} className='mb-1'>
 							<CSVReader handleUpload={handleUploadFile} />
-
 						</div>
 						<Form.Group className='col-6'>
 							<Form.Label>Device name:</Form.Label>
@@ -201,10 +205,23 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 							onChange={e => setDescription(e.target.value)}
 						/>
 					</Form.Group>
+					{mode === 'add' && <Form.Group className="mt-2">
+						<Form.Label>Replicate Number:</Form.Label>
+						<Form.Control
+							type="number" size='sm'
+							value={replicateNumber}
+							min={1} onChange={e => setReplicateNumber(parseInt(e.target.value))}
+							required
+							placeholder='Default by 1'
+						/>
+						<Form.Text className='text-muted'>
+							This number indicates how many anologous devices you want to create.
+						</Form.Text>
+					</Form.Group>}
 
 					{/* Enter config info */}
 					<hr />
-					<h5><b>Configration Info</b></h5>
+					<h5><b>Configuration Info</b></h5>
 					{draftInfo.protocol.attrs.map(attr => {
 						const attrName = attr.name.charAt(0).toUpperCase() + attr.name.slice(1)
 						const key = attrName.toLowerCase()
@@ -228,9 +245,13 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 					})}
 
 					{/* Submit button */}
-					<Button className="float-end text-white fw-bold" type="submit">
-						Submit
-					</Button>
+					<div className="d-flex justify-content-end mt-2">
+
+						<Button className="ms-2 text-white fw-bold" type="submit">
+							Submit
+						</Button>
+					</div>
+
 				</Form>
 			</Modal.Body>
 		</Modal>

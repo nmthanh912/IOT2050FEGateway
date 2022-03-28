@@ -4,6 +4,7 @@ import ReactPrismEditor from 'react-prism-editor'
 import ShortUniqueId from "short-unique-id"
 import removeAccents from "../../utils/removeAccents"
 import GatewayService from "../../services/gateway"
+import shortId from "../../utils/shortId"
 
 import { toast, ToastContainer } from "react-toastify"
 import { SuccessMessage, FailMessage } from "../toastMsg"
@@ -111,13 +112,14 @@ export default function TagModal({
       pauseOnHover={false}
       position="top-right"
       autoClose={1500}
+      containerId={shortId()}
     />
     <Modal show={show} onHide={onHide} centered size="xl">
       <Modal.Header className="bg-primary" >
         <h5 className="m-auto text-white">Config device's tags</h5>
       </Modal.Header>
       <Modal.Body>
-        {list.length !== 0 && <TagTable
+        {currentItems.length !== 0 && <TagTable
           data={currentItems} toggleSubscribe={toggleSubscribe}
           toggleSubscribeAll={toggleSubscribeAll}
           subsAll={subsAll}

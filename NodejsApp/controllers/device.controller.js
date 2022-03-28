@@ -4,9 +4,9 @@ const uniqueId = require('../utils/uniqueId')
 const Redis = require('ioredis')
 const redis = new Redis()
 
-const create = 'CREATE'
-const update = 'UPDATE'
-const drop = 'DROP'
+const POWERON = 'POWERON'
+const SHUTDOWN = 'SHUTDOWN'
+const RESTART = 'RESTART'
 
 const util = require('util')
 const fs = require('fs')
@@ -43,7 +43,7 @@ class Device {
         )
         const tagParams = values.map((value) => Object.values(value)).flat()
 
-        return { proTagQuery, proTagParams, tagQuery, tagParams }
+        return {proTagQuery, proTagParams, tagQuery, tagParams}
     }
 
     getAll = function (req, res) {
@@ -68,7 +68,7 @@ class Device {
 
     create = (req, res) => {
         const id = uniqueId()
-        const { data, repNum: replicateNumber } = req.body
+        const {data, repNum: replicateNumber} = req.body
         const deviceQuery = 'INSERT INTO DEVICE (ID, name, description, protocolType) VALUES (?, ?, ?, ?)'
         const deviceParams = [id, data.name, data.description, data.protocol.toUpperCase()]
 
@@ -76,8 +76,6 @@ class Device {
         var protocolParams = Object.values(data.config)
 
         const tagList = data.tagList
-
-        redis.publish(create, JSON.stringify({config: req.body, id}))
 
         handler(res, async () => {
             if (protocolParams.length === 0) {
@@ -90,7 +88,7 @@ class Device {
 
             console.log(tagList)
             if (tagList.length !== 0 && Object.keys(tagList[0]).length !== 0) {
-                const { proTagQuery, proTagParams, tagQuery, tagParams } = this.setupTagSql(tagList, protocolName, id)
+                const {proTagQuery, proTagParams, tagQuery, tagParams} = this.setupTagSql(tagList, protocolName, id)
 
                 try {
                     await Promise.all([
@@ -167,11 +165,11 @@ class Device {
         const tagList = req.body.tagList
 
         handler(res, async () => {
-            if (tagList.length !== 0 && Object.keys(tagList[0]).length !== 0) {
-                const deleteQuery = `DELETE FROM TAG WHERE deviceID = ?`
-                await dbRun(deleteQuery, id)
+            const deleteQuery = `DELETE FROM TAG WHERE deviceID = ?`
+            await dbRun(deleteQuery, id)
 
-                const { proTagQuery, proTagParams, tagQuery, tagParams } = this.setupTagSql(tagList, protocolName, id)
+            if (tagList.length !== 0 && tagList[0].name !== '') {
+                const {proTagQuery, proTagParams, tagQuery, tagParams} = this.setupTagSql(tagList, protocolName, id)
                 await Promise.all([
                     dbRun(deviceQuery, deviceParams),
                     dbRun(protocolQuery, protocolParams),
@@ -181,6 +179,9 @@ class Device {
             } else {
                 await Promise.all([dbRun(deviceQuery, deviceParams), dbRun(protocolQuery, protocolParams)])
             }
+            
+            redis.publish(POWERON, JSON.stringify({deviceID: id, protocolName: protocolName}))
+
             res.json({
                 key: id,
             })
@@ -193,9 +194,9 @@ class Device {
 
         handler(res, async () => {
             await dbRun(deleteDeviceQuery, [deviceID])
-
-            const files = fs.readdirSync('./customJSON').filter(fn => fn.slice(9, 17) === deviceID);
-            const unlinkPromises = files.map(file => unlink(file))
+            console.log(__dirname)
+            const files = fs.readdirSync('customJSON').filter((fn) => fn.slice(9, 17) === deviceID)
+            const unlinkPromises = files.map((file) => unlink('customJSON/' + file))
             await Promise.all(unlinkPromises)
 
             res.json({

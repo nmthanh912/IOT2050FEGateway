@@ -1,6 +1,6 @@
 const {dbAll} = require('./dbConnect')
 
-const getConfig = async (protocolName) => {
+const getConfig = async (protocolName, id) => {
     const getDeviceQuery = `SELECT DEVICE.ID as deviceID, DEVICE.name as deviceName, 
         ${protocolName}.*,
         GROUP_CONCAT(
@@ -11,28 +11,25 @@ const getConfig = async (protocolName) => {
         JOIN ${protocolName} ON DEVICE.ID = ${protocolName}.deviceID
         JOIN TAG ON TAG.deviceID = DEVICE.ID 
         JOIN ${protocolName}_TAG ON ${protocolName}_TAG.deviceID = TAG.deviceID AND ${protocolName}_TAG.name = TAG.name
-    GROUP BY DEVICE.ID`
+    WHERE DEVICE.ID = ?`
     try {
-        const configInfos = await dbAll(getDeviceQuery, [])
+        const configInfo = await dbAll(getDeviceQuery, id)
 
-        if (configInfos.length > 0) {
-            configInfos.forEach((config, index) => {
-                const tags = []
-
-                config.tagInfo.split(';').forEach((item) => {
-                    let temp = item.split(',')
-                    tags.push({
-                        name: temp[0],
-                        address: temp[1],
-                        unit: temp[2],
-                    })
+        if (configInfo[0].deviceID !== null) {
+            const tags = []
+            configInfo[0].tagInfo.split(';').forEach((item) => {
+                let temp = item.split(',')
+                tags.push({
+                    name: temp[0],
+                    address: temp[1],
+                    unit: temp[2],
                 })
-
-                configInfos[index].tagInfo = tags
             })
+            configInfo[0].tagInfo = tags
+            return configInfo
+        } else {
+            return []
         }
-
-        return configInfos
     } catch (err) {
         console.log(err)
         return []

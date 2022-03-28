@@ -1,58 +1,65 @@
 require('dotenv').config()
 const modbus = require('jsmodbus')
 const net = require('net')
-const Redis = require('ioredis')
 
 const getConfig = require('./getConfig')
 const timerReconnect = require('./utils/timer')
 
-const redis = new Redis()
-const create = 'CREATE'
-const update = 'UPDATE'
-const drop = 'DROP'
-
 const timeDelay = process.env.TIME_DELAY
 
-redis.subscribe(create, update, drop, (err) => {
-    if (err) {
-        console.error(err.message)
-    } else {
-        console.log('Subscribe successfully!')
-    }
-})
-
-redis.on('message', (channel, message) => {
-    if (channel === create) {
-        console.log(JSON.parse(message))
-    } else if (channel === update) {
-        console.log(JSON.parse(message))
-    } else if (channel === drop) {
-        console.log(JSON.parse(message))
-    }
-})
-
-class DataConnectionPool {
-    constructor(configInfos = null) {
-        this.configInfos = configInfos
+class DeviceConnection {
+    constructor(configInfo = null, deviceID) {
+        this.configInfo = configInfo
+        this.deviceID = deviceID
     }
 
-    setConfigInfos(configInfos) {
-        this.configInfos = configInfos
+    setConfigInfo(configInfo) {
+        this.configInfo = configInfo
     }
 
-    #setupPool() {
-        this.pool = this.configInfos.map((config) => {
-            const socket = new net.Socket()
-            const client = new modbus.client.TCP(socket, config.slaveid)
-            const options = {
-                host: config.ip,
-                port: config.port,
+    #setup() {
+        const socket = new net.Socket()
+        const client = new modbus.client.TCP(socket, this.configInfo.slaveid)
+        const options = {
+            host: this.configInfo.ip,
+            port: this.configInfo.port,
+        }
+
+        this.pool = {socket, client, options, tagList: this.configInfo.tagInfo}
+    }
+
+    #connect() {
+        const {socket, client, options, tagList} = this.pool
+        var timer = 1
+        var intervalTimer
+
+        socket.connect(options)
+
+        socket.on('connect', () => {
+            intervalTimer = setInterval(() => {
+                this.#getData(client, tagList)
+                this.pool.intervalTimer = intervalTimer
+            }, 3000)
+        })
+
+        socket.on('error', (err) => {
+            console.log('socket error!', err)
+            socket.end()
+            socket.destroy()
+        })
+
+        socket.on('close', (err) => {
+            console.log('socket close!', err)
+            if (intervalTimer) {
+                clearInterval(intervalTimer)
             }
-            return {socket, client, options, tagList: config.tagInfo}
+            socket.end()
+            timer = timerReconnect(err, timeDelay, timer)
+            setTimeout(() => socket.connect(options), timer * 1000)
         })
     }
 
-    getData(client, tagList, id) {
+    #getData(client, tagList) {
         tagList.forEach((tag) => {
             client
                 .readHoldingRegisters(tag.address, 2)
@@ -66,104 +73,48 @@ class DataConnectionPool {
                     console.log(tag.name, value)
                 })
                 .catch((err) => {
-                    console.log('error here')
-                    console.log(err)
-                    clearInterval(id)
+                    console.log('client error!', err)
                 })
         })
     }
 
-    #setupConnection() {
-        this.configInfos.forEach((config) => {
-            const socket = new net.Socket()
-            const client = new modbus.client.TCP(socket, config.slaveid)
-            const options = {
-                host: config.ip,
-                port: config.port,
-            }
-            var timer = 1
-            var intervalTimer
-
-            socket.connect(options)
-
-            socket.on('connect', () => {
-                intervalTimer = setInterval(() => {
-                    config.tagInfo.forEach((tag) => {
-                        client
-                            .readHoldingRegisters(tag.address, 2)
-                            .then((resp) => {
-                                let buf = Buffer.allocUnsafe(4)
-
-                                buf.writeUint16BE(resp.response._body.valuesAsArray[0], 0)
-                                buf.writeUInt16BE(resp.response._body.valuesAsArray[1], 2)
-
-                                let value = parseFloat(buf.readFloatBE().toFixed(2))
-                                console.log(tag.name, value)
-                            })
-                            .catch((err) => {
-                                console.log('client error!', err)
-                            })
-                    })
-                }, 3000)
-            })
-
-            socket.on('error', (err) => {
-                console.log('socket error!', err)
-                socket.end()
-                socket.destroy()
-            })
-
-            socket.on('close', (err) => {
-                console.log('socket close!', err)
-                if (intervalTimer) {
-                    clearInterval(intervalTimer)
-                }
-                socket.end()
-                timer = timerReconnect(err, timeDelay, timer)
-                setTimeout(() => socket.connect(options), timer*1000)
-            })
-        })
-    }
-
-    #disconnectAll() {
-        this.pool.forEach((connection) => {
-            connection.socket.end()
-            // clearInterval(connection.id)
-        })
-    }
-
-    run() {
-        if (this.configInfos !== null) {
-            // this.#setupPool()
-            this.#setupConnection()
+    poweron() {
+        if (this.configInfo !== null) {
+            this.#setup()
+            this.#connect()
         }
     }
 
-    reset() {
-        this.#disconnectAll()
-        // this.#setupPool()
-        this.#setupConnection()
+    shutdown() {
+        this.pool.socket.end()
+        this.pool.socket.destroy()
+        clearInterval(this.pool.intervalTimer)
     }
 }
 
-class Process {
-    #connectionPool
+class DeviceConnectionPool {
+    #pool
     constructor() {
-        this.#connectionPool = new DataConnectionPool()
+        this.#pool = []
     }
-    async run(reset = false) {
-        try {
-            const configInfos = await getConfig('MODBUSTCP')
-            console.log('config', configInfos)
 
-            if (configInfos.length > 0) {
-                this.#connectionPool.setConfigInfos(configInfos)
-                !reset ? this.#connectionPool.run() : this.#connectionPool.reset()
+    async poweron(deviceID) {
+        try {
+            const configInfo = await getConfig('MODBUSTCP', deviceID)
+            if (configInfo.length > 0) {
+                const connection = new DeviceConnection(configInfo[0], deviceID)
+                connection.poweron()
+                this.#pool.push(connection)
             }
         } catch (err) {
             console.log(err)
         }
     }
+
+    shutdown(deviceID) {
+        const connection = this.#pool.find(conn => conn.deviceID === deviceID)
+        connection.shutdown()
+    }
 }
 
-module.exports = Process
+module.exports = DeviceConnectionPool

@@ -199,7 +199,7 @@ function TagTable({ data, toggleSubscribe, toggleSubscribeAll, subsAll }) {
             columns.map((col, index) => index !== 0 ? <th key={uid()} >
               {col}
             </th> :
-              <th className="d-flex align-items-center">
+              <th className="d-flex align-items-center" key={uid()}>
                 <Form.Check
                   type="checkbox"
                   checked={subsAll}

@@ -9,8 +9,8 @@ var path = require('path')
 
 app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')))
 
-const cors = require('cors')
-app.use(cors({origin: true}))
+// const cors = require('cors')
+// app.use(cors({origin: true}))
 
 app.use((req, res, next) => {
     res.locals.user = ''

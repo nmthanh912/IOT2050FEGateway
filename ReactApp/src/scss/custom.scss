@@ -1,6 +1,7 @@
 $primary: hsl(180, 100%, 30%);
 $secondary: #cacaca;
 $info: #007bff;
+$danger: #dc3545;
 .rounded-custom {
     border-radius: .6rem;
 }
@@ -55,6 +56,26 @@ $info: #007bff;
     color: $primary;
 }
 
+.switch-group .switch-on{
+    background-color: $primary;
+    color: white;
+}
+.switch-group .switch-on:hover{
+    background-color: $primary;
+    color: white;
+}
 
+.switch-group .switch-off{
+    background-color: $danger;
+    color: white;
+}
+.switch-group .switch-off:hover{
+    background-color: $danger;
+    color: white;
+}
+
+.switch.btn.btn-primary {
+    border-color: $secondary !important;
+}
 
 @import "~bootstrap/scss/bootstrap.scss";

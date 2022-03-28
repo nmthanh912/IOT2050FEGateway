@@ -1,34 +1,34 @@
-import http from './http-common'
+import { configHttp } from './httpCommon'
 
 class Service {
     get() {
-        return http.get('/gateways')
+        return configHttp.get('/gateways')
     }
 
     getSubcribedDevices(gatewayId) {
-        return http.get(`/gateways/devices?id=${gatewayId}`)
+        return configHttp.get(`/gateways/devices?id=${gatewayId}`)
     }
     addSubscribeDevice(gatewayID, deviceID) {
-        return http.post(`/gateways/device/add?`, { gatewayID, deviceID })
+        return configHttp.post(`/gateways/device/add?`, { gatewayID, deviceID })
     }
     removeSubscribedDevice(gatewayId, deviceId) {
-        return http.delete(`/gateways/device/delete?gid=${gatewayId}&did=${deviceId}`)
+        return configHttp.delete(`/gateways/device/delete?gid=${gatewayId}&did=${deviceId}`)
     }
 
     getSubcribedDeviceConfig(gatewayId, deviceId, protocol) {
-        return http.get(`/gateways/devices/config?gid=${gatewayId}&did=${deviceId}&dp=${protocol}`)
+        return configHttp.get(`/gateways/devices/config?gid=${gatewayId}&did=${deviceId}&dp=${protocol}`)
     }
     add(data) {
-        return http.post('/gateways/new', data)
+        return configHttp.post('/gateways/new', data)
     }
     delete(gatewayId) {
-        return http.delete(`/gateways/delete?id=${gatewayId}`)
+        return configHttp.delete(`/gateways/delete?id=${gatewayId}`)
     }
     update(gatewayId, data) {
-        return http.put(`/gateways/update?id=${gatewayId}`, data)
+        return configHttp.put(`/gateways/update?id=${gatewayId}`, data)
     }
     updateSubcribedDeviceConfig(gatewayId, deviceId, data) {
-        return http.put(`/gateways/${gatewayId}/${deviceId}`, data)
+        return configHttp.put(`/gateways/${gatewayId}/${deviceId}`, data)
     }
 
 }

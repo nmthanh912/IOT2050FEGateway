@@ -72,8 +72,8 @@ class GatewayController {
         handler(res, async () => {
             await dbRun(sqlQuery, [gatewayID])
 
-            const files = fs.readdirSync('./customJSON').filter(fn => fn.slice(0, 8) === gatewayID);
-            const unlinkPromises = files.map(file => unlink(file))
+            const files = fs.readdirSync('../customJSON').filter(fn => fn.slice(0, 8) === gatewayID);
+            const unlinkPromises = files.map(file => unlink('../customJSON/' + file))
             await Promise.all(unlinkPromises)
 
             res.json({ msg: 'Success' })
@@ -137,14 +137,10 @@ class GatewayController {
             // console.log([gatewayId, deviceId])
             const useCustomQuery = `SELECT toggle FROM configs WHERE gatewayID = ? AND deviceID = ?`
             let useCustom = await dbAll(useCustomQuery, [gatewayId, deviceId])
-            // let exists = fs.existsSync(`./customJSON/${gatewayId}_${deviceId}.json`)
-            // var files = fs.readdirSync('./customJSON').filter(val => val.match());
-            // if (useCustomQuery === 0) res.json({ tagList: list, code: null, })
-            // else {
 
-            let exists = fs.existsSync(`./customJSON/${gatewayId}_${deviceId}.json`)
+            let exists = fs.existsSync(`../customJSON/${gatewayId}_${deviceId}.json`)
             let code = null
-            if (exists) code = await readFile(`./customJSON/${gatewayId}_${deviceId}.json`, 'utf-8')
+            if (exists) code = await readFile(`../customJSON/${gatewayId}_${deviceId}.json`, 'utf-8')
 
 
             res.json({ tagList: list, code, toggle: useCustom[0].toggle })
@@ -160,14 +156,9 @@ class GatewayController {
         handler(res, async () => {
             const updateToggleQuery = `UPDATE configs SET toggle = ? WHERE gatewayID = ? AND deviceID = ?`
             await dbRun(updateToggleQuery, [data.toggle, gatewayID, deviceID])
-            // if (data.toggle === null) {
-            // rm(`./customJSON/${gatewayID}_${deviceID}.json`, {force: true})
-            // const sqlQuery = `DELETE FROM CONFIGS WHERE gatewayID = ? AND deviceID = ?`
-            // await dbRun(sqlQuery, [gatewayID, deviceID])
-            // }
 
             const customJSON = data.code.slice(data.code.indexOf('{'))
-            await writeFile(`./customJSON/${gatewayID}_${deviceID}.json`, customJSON, 'utf-8')
+            await writeFile(`../customJSON/${gatewayID}_${deviceID}.json`, customJSON, 'utf-8')
 
             db.serialize(() => {
                 let deleteSqlQuery = `DELETE FROM subscribes WHERE

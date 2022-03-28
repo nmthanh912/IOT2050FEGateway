@@ -1,20 +1,26 @@
 
-import DropdownItem from "../dropdownItem";
-import PaginateTagList, { TagTable } from "./paginateTagList";
+
 import { useEffect, useState, useRef } from "react";
-import { CSVLink } from "react-csv";
 import { useDispatch } from "react-redux";
-import { removeDevice } from "../../redux/slices/device";
+
+import { removeDevice, updateTagList } from "../../redux/slices/device";
+
 import DeviceService from "../../services/device";
+import shortId from "../../utils/shortId";
+import HardwareServices from "../../services/protocol";
+
 import { toast, ToastContainer } from 'react-toastify'
 import { SuccessMessage, FailMessage } from "../toastMsg";
-import { updateTagList } from "../../redux/slices/device";
-import shortId from "../../utils/shortId";
+import BootstrapSwitchButton from 'bootstrap-switch-button-react'
+import DropdownItem from "../dropdownItem";
+import PaginateTagList, { TagTable } from "./paginateTagList";
+import { CSVLink } from "react-csv";
 
 export default function EdgeDevice({ data, onDetail }) {
     const downloadCSVRef = useRef(null)
     const dispatch = useDispatch()
     const [exportData, setExportData] = useState([])
+    const [poweron, setPoweron] = useState(false)
 
     const exportToCSV = () => {
         const list = [[], [], ['-----------']]
@@ -84,6 +90,15 @@ export default function EdgeDevice({ data, onDetail }) {
         progressClassName: 'Toastify__progress-bar--error'
     })
 
+    const turnOnDevice = () => {
+        console.log("POWERON")
+        HardwareServices.poweron(data.protocol, data.ID).then(res => console.log(res.data))
+    }
+    const shutdownDevice = () => {
+        console.log("SHUTDOWN")
+        HardwareServices.shutdown(data.protocol, data.ID).then(res => console.log(res.data))
+    }
+
     return <div>
         <ToastContainer
             autoClose={1800}
@@ -92,16 +107,27 @@ export default function EdgeDevice({ data, onDetail }) {
             containerId={shortId()}
         />
         <DropdownItem
-            onEdit={() => onDetail()}
+            onEdit={poweron ? null : () => onDetail()}
             onExport={exportToCSV}
             onDelete={deleteDevice}
             key={data.ID}
         >
             <DropdownItem.Header>
-                <div className="row">
+                <div className="row justify-content-between">
                     <div className="text-primary col-3"><u>#{data.ID}</u></div>
                     <div className="fw-bold col-4">{data.name}</div>
-                    <div className="col-5">{data.description}</div>
+                    <div className="col-4">{data.description}</div>
+                    <div className="col-1 text-end">
+                        <BootstrapSwitchButton
+                            checked={poweron}
+                            size='xs'
+                            onChange={() => {
+                                if(poweron) shutdownDevice()
+                                else turnOnDevice()
+                                setPoweron(poweron => !poweron)
+                            }}
+                        />
+                    </div>
                 </div>
                 <div style={{ display: 'none' }}>
                     <CSVLink
@@ -117,6 +143,5 @@ export default function EdgeDevice({ data, onDetail }) {
                 <PaginateTagList deviceID={data.ID} protocol={data.protocol} Table={TagTable} />
             </DropdownItem.Body>
         </DropdownItem>
-
     </div>
 }

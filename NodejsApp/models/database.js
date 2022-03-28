@@ -1,5 +1,4 @@
 var sqlite3 = require('sqlite3').verbose()
-// const DBSOURCE = process.env.DATABASE_PATH
 const util = require('util')
 
 let db = new sqlite3.Database('../Database/database.db', (err) => {
@@ -7,7 +6,6 @@ let db = new sqlite3.Database('../Database/database.db', (err) => {
         console.error(err.message)
         throw err
     }
-
     console.log('Connected to the SQLite database.')
     db.serialize(() => {
         db.run(
@@ -17,11 +15,17 @@ let db = new sqlite3.Database('../Database/database.db', (err) => {
                 Description TEXT
             )`,
             (err) => {
-                console.log('Database already created!')
+                if (err) {
+                    console.log('Database already created!')
+                }
             }
         )
 
-        db.run('PRAGMA foreign_keys = ON')
+        db.run('PRAGMA foreign_keys = ON', (err) => {
+            if (err) {
+                console.log(err)
+            }
+        })
     })
 })
 

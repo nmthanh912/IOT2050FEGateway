@@ -1,6 +1,12 @@
-const {dbRun, dbAll, db} = require('../models/database')
-const handler = require('./handler')
+const {dbRun, dbAll, dbSerialize, db} = require('../models/database')
+const handler = require('../utils/handler')
 const uniqueId = require('../utils/uniqueId')
+const Redis = require('ioredis')
+const redis = new Redis()
+
+const create = 'CREATE'
+const update = 'UPDATE'
+const drop = 'DROP'
 
 class Device {
     handleErrCreate = async (id) => {
@@ -65,6 +71,8 @@ class Device {
         var protocolParams = Object.values(req.body.config)
 
         const tagList = req.body.tagList
+
+        redis.publish(create, JSON.stringify({config: req.body, id}))
 
         handler(res, async () => {
             if (protocolParams.length === 0) {
@@ -153,11 +161,12 @@ class Device {
         const tagList = req.body.tagList
 
         handler(res, async () => {
-            if (tagList.length !== 0) {
-                const deleteQuery = `DELETE FROM TAG WHERE deviceID = ?`
-                await dbRun(deleteQuery, id)
+            const deleteQuery = `DELETE FROM TAG WHERE deviceID = ?`
+            await dbRun(deleteQuery, id)
 
+            if (tagList.length !== 0) {
                 const {proTagQuery, proTagParams, tagQuery, tagParams} = this.setupTagSql(tagList, protocolName, id)
+
                 await Promise.all([
                     dbRun(deviceQuery, deviceParams),
                     dbRun(protocolQuery, protocolParams),

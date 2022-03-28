@@ -1,0 +1,11 @@
+{
+  "name": "modbustcp",
+  "version": "1.0.0",
+  "description": "ModbusTCP container for IOT2050FE project - a modbus multi-client container",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Le Tien Vinh",
+  "license": "MIT"
+}

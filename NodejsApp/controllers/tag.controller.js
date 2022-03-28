@@ -1,5 +1,5 @@
 const {dbRun, dbAll, db} = require('../models/database.js')
-const handler = require('./handler')
+const handler = require('../utils/handler')
 
 class Tag {
     getAll = async function (req, res) {

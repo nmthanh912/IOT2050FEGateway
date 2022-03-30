@@ -1,4 +1,4 @@
-const { dbRun, dbAll } = require('../models/database')
+const {dbRun, dbAll} = require('../models/database')
 const handler = require('../utils/handler')
 const uniqueId = require('../utils/uniqueId')
 // const Redis = require('ioredis')
@@ -76,8 +76,6 @@ class Device {
         var protocolParams = Object.values(data.config)
 
         const tagList = data.tagList
-
-        // redis.publish(create, JSON.stringify({ config: req.body, id }))
 
         handler(res, async () => {
             if (protocolParams.length === 0) {
@@ -181,8 +179,6 @@ class Device {
             } else {
                 await Promise.all([dbRun(deviceQuery, deviceParams), dbRun(protocolQuery, protocolParams)])
             }
-            
-            redis.publish(POWERON, JSON.stringify({deviceID: id, protocolName: protocolName}))
 
             res.json({
                 key: id,
@@ -197,9 +193,9 @@ class Device {
         handler(res, async () => {
             await dbRun(deleteDeviceQuery, [deviceID])
 
-            const files = fs.readdirSync('../customJSON').filter(fn => fn.slice(9, 17) === deviceID)
+            const files = fs.readdirSync('../customJSON').filter((fn) => fn.slice(9, 17) === deviceID)
             console.log(files)
-            const unlinkPromises = files.map(file => unlink('../customJSON/' + file))
+            const unlinkPromises = files.map((file) => unlink('../customJSON/' + file))
             await Promise.all(unlinkPromises)
 
             res.json({

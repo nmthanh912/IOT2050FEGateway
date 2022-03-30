@@ -9,13 +9,14 @@ let db = new sqlite3.Database('../Database/database.db', (err) => {
     console.log('Connected to the SQLite database.')
     db.serialize(() => {
         db.run(
-            `CREATE TABLE device (
+            `CREATE TABLE IF NOT EXISTS device (
                 ID INTEGER PRIMARY KEY AUTOINCREMENT,
                 Name VARCHAR(50),
                 Description TEXT
             )`,
             (err) => {
                 if (err) {
+                    console.log(err)
                     console.log('Database already created!')
                 }
             }

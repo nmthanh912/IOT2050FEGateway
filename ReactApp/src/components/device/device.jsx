@@ -15,12 +15,14 @@ import BootstrapSwitchButton from 'bootstrap-switch-button-react'
 import DropdownItem from "../dropdownItem";
 import PaginateTagList, { TagTable } from "./paginateTagList";
 import { CSVLink } from "react-csv";
+import { Button } from "react-bootstrap";
 
 export default function EdgeDevice({ data, onDetail }) {
     const downloadCSVRef = useRef(null)
     const dispatch = useDispatch()
     const [exportData, setExportData] = useState([])
     const [poweron, setPoweron] = useState(false)
+    const [disabledToggle, setDisableToggle] = useState(false)
 
     const exportToCSV = () => {
         const list = [[], [], ['-----------']]
@@ -118,15 +120,28 @@ export default function EdgeDevice({ data, onDetail }) {
                     <div className="fw-bold col-4">{data.name}</div>
                     <div className="col-4">{data.description}</div>
                     <div className="col-1 text-end">
-                        <BootstrapSwitchButton
-                            checked={poweron}
-                            size='xs'
-                            onChange={() => {
-                                if(poweron) shutdownDevice()
-                                else turnOnDevice()
-                                setPoweron(poweron => !poweron)
-                            }}
-                        />
+                        <Button disabled={disabledToggle} style={{
+                            padding: 0,
+                            background: 'transparent',
+                            outline: '0!important',
+                            border: 'none'
+                        }}>
+                            <BootstrapSwitchButton
+                                checked={poweron}
+                                size='xs'
+                                onChange={checked => {
+                                    if (disabledToggle) {
+                                        return
+                                    }
+                                    setDisableToggle(true)
+                                    setTimeout(() => setDisableToggle(false), 3000)
+                                    if (poweron) shutdownDevice()
+                                    else turnOnDevice()
+                                    setPoweron(checked)
+                                }}
+                            />
+                        </Button>
+
                     </div>
                 </div>
                 <div style={{ display: 'none' }}>

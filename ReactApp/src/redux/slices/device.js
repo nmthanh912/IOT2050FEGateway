@@ -15,9 +15,10 @@ const deviceSlice = createSlice({
             const updatedData = action.payload
             const id = updatedData.ID
             const idx = state.findIndex(val => val.ID === id)
-            state[idx].name = updatedData.name
-            state[idx].description = updatedData.description
-            state[idx].tagList = updatedData.tagList
+            // state[idx].name = updatedData.name
+            // state[idx].description = updatedData.description
+            // state[idx].tagList = updatedData.tagList
+            state[idx] = { ...state[idx], updatedData, ID: id}
             return state
         },
         removeDevice: (state, action) => {

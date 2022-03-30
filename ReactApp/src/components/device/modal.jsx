@@ -100,7 +100,6 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 	}
 
 	const handleUploadFile = file => {
-		console.log(file)
 		try {
 			const removedNullData = file.data.map(row => row.filter(val => val !== ''))
 			if (mode === 'edit') {
@@ -112,7 +111,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 			const tagListOffset = removedNullData.findIndex(val => val[0] === 'Tag List') + 1
 			const configOffset = removedNullData.findIndex(val => val[0] === 'Configurations') + 1
 
-			const tagListLength = tagListOffset - configOffset - 3
+			const tagListLength = tagListOffset - configOffset - 2
 
 			const newTagList = []
 			for (let i = 0; i < tagListLength; ++i) {

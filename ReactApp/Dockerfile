@@ -1,7 +1,7 @@
 FROM node:16-alpine
 
 # Create app directory (physical path in container)
-WORKDIR /usr/src/app/application
+WORKDIR /usr/src/app/iot2050app
 
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied

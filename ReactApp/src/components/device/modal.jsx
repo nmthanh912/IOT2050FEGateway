@@ -20,11 +20,12 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 		let protocol = deviceConfigInfo.find(p => p.value === value)
 		setDraftInfo({ ...draftInfo, protocol, config: {} })
 	}
+
 	const setConfig = config => setDraftInfo({ ...draftInfo, config })
 
 	const updateToDB = async () => {
 		try {
-			let tagList
+			let tagList = []
 			if (device.tagList.length === 0) {
 				const res1 = await DeviceService.getTags(device.ID, device.protocol)
 				dispatch(updateTagList({
@@ -38,16 +39,15 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 			}
 
 			const data = {
-				name: draftInfo.name,
-				description: draftInfo.description,
+				...draftInfo,
 				protocol: draftInfo.protocol.value.toUpperCase(),
-				tagList: draftInfo.tagList.length !== 0 ? draftInfo.tagList : tagList,
-				config: draftInfo.config
+				tagList: draftInfo.tagList.length !== 0 ? draftInfo.tagList : tagList
 			}
 
 			await DeviceService.editDevice(device.ID, data)
 			delete data.config
 			delete data.protocol
+			console.log(data)
 			dispatch(updateDevice({
 				ID: device.ID,
 				...data
@@ -59,15 +59,13 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 	}
 
 	useEffect(() => {
+		console.log(device)
 		if (mode === 'edit') {
 			DeviceService.getConfigInfoById(device.ID, device.protocol).then(res => {
 				setDraftInfo({
-					ID: device.ID,
-					name: device.name,
-					description: device.description,
+					...device,
 					protocol: deviceConfigInfo.find(cInfo => cInfo.value.toUpperCase() === device.protocol),
-					config: res.data,
-					tagList: device.tagList
+					config: res.data
 				})
 			}).catch(err => {
 				console.log(err)
@@ -84,14 +82,10 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 
 	const addDeviceToDB = () => {
 		const newDevice = {
-			name: draftInfo.name,
-			description: draftInfo.description,
-			protocol: draftInfo.protocol.value.toUpperCase(),
-			tagList: draftInfo.tagList,
-			config: draftInfo.config
+			...draftInfo,
+			protocol: draftInfo.protocol.value.toUpperCase()
 		}
 		DeviceService.add(newDevice, replicateNumber).then(response => {
-			console.log(response.data)
 			delete newDevice.config
 			if (!Array.isArray(response.data))
 				dispatch(addDevice({ ...newDevice, ID: response.data.key }))
@@ -156,7 +150,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 		/>
 		<Modal show={show} onHide={onHide}>
 			<Modal.Header className="bg-primary text-white">
-				<h5 className="m-auto">Add new device</h5>
+				<h5 className="m-auto">{mode === 'add' ? 'Add new device' : 'Edit device'}</h5>
 			</Modal.Header>
 			<Modal.Body>
 				<Form onSubmit={e => {
@@ -173,7 +167,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 						<Form.Group className='col-6'>
 							<Form.Label>Device name:</Form.Label>
 							<Form.Control
-								type="text" value={draftInfo.name} size="sm"
+								value={draftInfo.name} size="sm"
 								placeholder="Device name ..."
 								onChange={e => setName(e.target.value)}
 								required
@@ -197,6 +191,62 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 							</Form.Select>
 						</Form.Group>
 					</div>
+
+					<div className="row">
+						<Form.Group className='col-6'>
+							<Form.Label>Byte order:</Form.Label>
+
+							<Form.Select
+								value={draftInfo.byteOrder} size="sm"
+								placeholder="Byte order ..."
+								onChange={e => setDraftInfo({ ...draftInfo, byteOrder: e.target.value })}
+								required
+							>
+								<option value={''} disabled>-- Select --</option>
+								<option value={'BigEndian'}>Big Endian</option>
+								<option value={'LittleEndian'}>Little Endian</option>
+							</Form.Select>
+						</Form.Group>
+
+						<Form.Group className='col-6'>
+							<Form.Label>Word order:</Form.Label>
+							<Form.Select
+								value={draftInfo.wordOrder} size="sm"
+								placeholder="Word order ..."
+								onChange={e => setDraftInfo({ ...draftInfo, wordOrder: e.target.value })}
+								required
+							>
+								<option value={''} disabled>-- Select --</option>
+								<option value={'BigEndian'}>Big Endian</option>
+								<option value={'LittleEndian'}>Little Endian</option>
+							</Form.Select>
+						</Form.Group>
+					</div>
+
+					<div className="row">
+						<Form.Group className='col-6'>
+							<Form.Label>Scanning cycle:</Form.Label>
+							<Form.Control
+								type="number" value={draftInfo.scanningCycle} size="sm"
+								placeholder="Second ..."
+								min={1}
+								onChange={e => setDraftInfo({ ...draftInfo, scanningCycle: parseInt(e.target.value) })}
+								required
+							/>
+						</Form.Group>
+
+						<Form.Group className='col-6'>
+							<Form.Label>Minimum response time:</Form.Label>
+							<Form.Control
+								type="number" value={draftInfo.minRespTime} size="sm"
+								placeholder="Milisecond ..."
+								onChange={e => setDraftInfo({ ...draftInfo, minRespTime: e.target.value })}
+								required
+								min={1}
+							/>
+						</Form.Group>
+					</div>
+
 					<Form.Group>
 						<Form.Label>Description:</Form.Label>
 						<Form.Control
@@ -303,6 +353,10 @@ const deviceConfigInfo = [{
 const initState = {
 	name: '',
 	description: '',
+	byteOrder: '',
+	wordOrder: '',
+	scanningCycle: '',
+	minRespTime: '',
 	protocol: deviceConfigInfo[0],
 	tagList: [],
 	config: {}

@@ -100,10 +100,11 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 	}
 
 	const handleUploadFile = file => {
+		console.log(file)
 		try {
 			const removedNullData = file.data.map(row => row.filter(val => val !== ''))
 			if (mode === 'edit') {
-				if (removedNullData[1][3].toLowerCase() !== draftInfo.protocol.value.toLowerCase())
+				if (removedNullData[1][7].toLowerCase() !== draftInfo.protocol.value.toLowerCase())
 					throw new Error('Protocol cannot be changed')
 			}
 
@@ -127,13 +128,19 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 				newConfig[removedNullData[configOffset][i]] = removedNullData[configOffset + 1][i]
 			}
 
-			setDraftInfo({
+			const obj = {
 				name: removedNullData[1][1],
 				description: removedNullData[1][2],
-				protocol: deviceConfigInfo.find(val => val.value.toLowerCase() === removedNullData[1][3].toLowerCase()),
+				byteOrder: removedNullData[1][3],
+				wordOrder: removedNullData[1][4],
+				scanningCycle: removedNullData[1][5],
+				minRespTime: removedNullData[1][6],
+				protocol: deviceConfigInfo.find(val => val.value.toLowerCase() === removedNullData[1][7].toLowerCase()),
 				tagList: newTagList,
 				config: newConfig
-			})
+			}
+			setDraftInfo(obj)
+			console.log(obj)
 		}
 		catch (err) {
 			notifyFail(err.message)
@@ -240,7 +247,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 							<Form.Control
 								type="number" value={draftInfo.minRespTime} size="sm"
 								placeholder="Milisecond ..."
-								onChange={e => setDraftInfo({ ...draftInfo, minRespTime: e.target.value })}
+								onChange={e => setDraftInfo({ ...draftInfo, minRespTime: parseInt(e.target.value) })}
 								required
 								min={1}
 							/>

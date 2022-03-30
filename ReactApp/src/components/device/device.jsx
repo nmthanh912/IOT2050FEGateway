@@ -24,6 +24,7 @@ export default function EdgeDevice({ data, onDetail }) {
     const [poweron, setPoweron] = useState(false)
     const [disabledToggle, setDisableToggle] = useState(false)
 
+    // console.log(data)
     const exportToCSV = () => {
         const list = [[], [], ['-----------']]
         Object.keys(data).forEach(key => {
@@ -63,6 +64,7 @@ export default function EdgeDevice({ data, onDetail }) {
                 }
 
                 setExportData([...list])
+                console.log([...list])
             }
             catch (err) {
                 notifyFail(err.message)

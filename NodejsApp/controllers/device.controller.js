@@ -54,10 +54,12 @@ class Device {
             const devices = await dbAll(deviceQuery, [])
 
             devices.map((device) => {
-                data.push({
+                const obj = {
                     ...device,
                     protocol: device.protocolType,
-                })
+                }
+                delete obj.protocolType
+                data.push(obj)
             })
 
             res.json(data)

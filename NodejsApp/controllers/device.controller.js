@@ -43,7 +43,7 @@ class Device {
         )
         const tagParams = values.map((value) => Object.values(value)).flat()
 
-        return { proTagQuery, proTagParams, tagQuery, tagParams }
+        return {proTagQuery, proTagParams, tagQuery, tagParams}
     }
 
     getAll = function (req, res) {
@@ -68,14 +68,19 @@ class Device {
 
     create = (req, res) => {
         const id = uniqueId()
-        const { data, repNum: replicateNumber } = req.body
-        console.log(data)
+        const {data, repNum: replicateNumber} = req.body
         const deviceQuery = `INSERT INTO DEVICE 
             (ID, name, description, protocolType, byteOrder, wordOrder, scanningCycle, minRespTime) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
         const deviceParams = [
-            id, data.name, data.description, data.protocol.toUpperCase(),
-            data.byteOrder, data.wordOrder, data.scanningCycle, data.minRespTime
+            id,
+            data.name,
+            data.description,
+            data.protocol.toUpperCase(),
+            data.byteOrder,
+            data.wordOrder,
+            data.scanningCycle,
+            data.minRespTime,
         ]
 
         const protocolName = data.protocol.toUpperCase()
@@ -92,17 +97,16 @@ class Device {
             protocolParams.push(id)
             const protocolQuery = `INSERT INTO ${protocolName} VALUES (${',?'.repeat(protocolParams.length).slice(1)})`
 
-            console.log(tagList)
             if (tagList.length !== 0 && Object.keys(tagList[0]).length !== 0) {
-                const { proTagQuery, proTagParams, tagQuery, tagParams } = this.setupTagSql(tagList, protocolName, id)
+                const {proTagQuery, proTagParams, tagQuery, tagParams} = this.setupTagSql(tagList, protocolName, id)
 
                 try {
-                    await Promise.all([
-                        dbRun(deviceQuery, deviceParams),
-                        dbRun(protocolQuery, protocolParams),
-                        dbRun(tagQuery, tagParams),
-                        dbRun(proTagQuery, proTagParams),
-                    ])
+                    // await Promise.all([
+                    await dbRun(deviceQuery, deviceParams)
+                    await dbRun(protocolQuery, protocolParams)
+                    await dbRun(tagQuery, tagParams)
+                    await dbRun(proTagQuery, proTagParams)
+                    // ]
                 } catch (err) {
                     await this.handleErrCreate(id)
                     throw err
@@ -164,11 +168,13 @@ class Device {
             minRespTime = ?
         WHERE ID = ?`
         const deviceParams = [
-            req.body.name, req.body.description, req.body.byteOrder,
+            req.body.name,
+            req.body.description,
+            req.body.byteOrder,
             req.body.wordOrder,
             req.body.scanningCycle,
             req.body.minRespTime,
-            id
+            id,
         ]
 
         var setString = 'SET '
@@ -188,7 +194,7 @@ class Device {
             await dbRun(deleteQuery, id)
 
             if (tagList.length !== 0 && tagList[0].name !== '') {
-                const { proTagQuery, proTagParams, tagQuery, tagParams } = this.setupTagSql(tagList, protocolName, id)
+                const {proTagQuery, proTagParams, tagQuery, tagParams} = this.setupTagSql(tagList, protocolName, id)
                 await Promise.all([
                     dbRun(deviceQuery, deviceParams),
                     dbRun(protocolQuery, protocolParams),

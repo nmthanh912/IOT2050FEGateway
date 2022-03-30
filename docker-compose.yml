@@ -6,7 +6,8 @@ services:
       context: ./NodejsApp
       dockerfile: Dockerfile
     volumes:
-      - sqlitedb:/usr/src/app/Database
+      - sqlitedb: /usr/src/app/Database
+      - customJSON: /usr/src/app/customJSON
     restart: always
     ports:
       - 4000:4000
@@ -21,3 +22,4 @@ services:
 
 db:
   sqlitedb:
+  customJSON:

@@ -1,7 +1,7 @@
-const {dbAll} = require('./dbConnect')
+const {dbAll} = require('../Models/dbConnect')
 
 const getConfig = async (protocolName, id) => {
-    const getDeviceQuery = `SELECT DEVICE.ID as deviceID, DEVICE.name as deviceName, 
+    const getDeviceQuery = `SELECT DEVICE.*, 
         ${protocolName}.*,
         GROUP_CONCAT(
         ${protocolName}_TAG.name || ',' || ${protocolName}_TAG.address || ',' || ${protocolName}_TAG.unit || ',' || 
@@ -18,11 +18,14 @@ const getConfig = async (protocolName, id) => {
         if (configInfo[0].deviceID !== null) {
             const tags = []
             configInfo[0].tagInfo.split(';').forEach((item) => {
-                let temp = item.split(',')
+                const tagValue = item.split(',')
                 tags.push({
-                    name: temp[0],
-                    address: temp[1],
-                    unit: temp[2],
+                    name: tagValue[0],
+                    address: tagValue[1],
+                    unit: tagValue[2],
+                    dataType: tagValue[3],
+                    PF: tagValue[4],
+                    size: tagValue[5],
                 })
             })
             configInfo[0].tagInfo = tags

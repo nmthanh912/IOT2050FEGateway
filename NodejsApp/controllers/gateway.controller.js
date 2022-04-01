@@ -68,7 +68,7 @@ class GatewayController {
 
     delete(req, res) {
         const gatewayID = req.query.id
-        const sqlQuery = `DELETE FROM mqtt_client WHERE ID = ?`
+        const sqlQuery = `DELETE FROM MQTT_CLIENT WHERE ID = ?`
         handler(res, async () => {
             await dbRun(sqlQuery, [gatewayID])
 
@@ -91,10 +91,11 @@ class GatewayController {
             res.json(deviceList)
         })
     }
+
     addSubscribeDevice(req, res) {
         const { gatewayID, deviceID } = req.body
-        const addSubsQuery = `INSERT INTO subscribes VALUES (?, ?, ?)`
-        const addConfigQuery = `INSERT INTO configs VALUES (?, ?, ?)`
+        const addSubsQuery = `INSERT INTO SUBSCRIBES VALUES (?, ?, ?)`
+        const addConfigQuery = `INSERT INTO CONFIGS VALUES (?, ?, ?)`
         handler(res, async () => {
             await dbRun(addSubsQuery, [gatewayID, deviceID, null])
             await dbRun(addConfigQuery, [gatewayID, deviceID, 0])

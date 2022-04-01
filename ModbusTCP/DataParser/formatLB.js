@@ -1,38 +1,32 @@
 class FormatLB {
-    Int16 = function (PF, buf) {
-        const value = buf.readInt16BE() * Math.pow(10, PF)
-        return Number(value.toFixed(Math.abs(PF)))
+    Int16 = function (buf) {
+        return buf.readInt16BE()
     }
 
-    UInt16 = function (PF, buf) {
-        const value = buf.readUInt16LE() * Math.pow(10, PF)
-        return Number(value.toFixed(Math.abs(PF)))
-    }  
+    UInt16 = function (buf) {
+        return buf.readUInt16LE()
+    }
 
-    Float = function (PF, buf) {
+    Float = function (buf) {
         buf.swap16()
-        const value = buf.readFloatLE() * Math.pow(10, PF)
-        return Number(value.toFixed(Math.abs(PF)))
+        return buf.readFloatLE()
     }
 
-    Int32 = function (PF, buf) {
+    Int32 = function (buf) {
         buf.swap16()
-        const value = buf.readInt32LE() * Math.pow(10, PF)
-        return Number(value.toFixed(Math.abs(PF)))
+        return buf.readInt32LE()
     }
 
-    UInt32 = function (PF, buf) {
+    UInt32 = function (buf) {
         buf.swap16()
-        const value = buf.readUInt32LE() * Math.pow(10, PF)
-        return Number(value.toFixed(Math.abs(PF)))
+        return buf.readUInt32LE()
     }
 
-    Double = function (PF, buf) {
+    Double = function (buf) {
         buf.swap16()
-        const value = buf.readDoubleLE() * Math.pow(10, PF)
-        return Number(value.toFixed(Math.abs(PF)))
+        return buf.readDoubleLE()
     }
-    
+
     String = function (buf) {
         return buf.toString('utf8')
     }

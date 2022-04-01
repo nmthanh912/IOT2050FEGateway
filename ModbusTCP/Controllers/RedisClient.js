@@ -1,76 +1,82 @@
 const Redis = require('ioredis')
-const logger = require('..Logger/winston');
+const logger = require('..Logger/winston')
 
-class RedisClient{
-    //Initialize a RedisClient instance by passing a config to it
-    constructor(config){
-        //properties and their default values
-        this._host = '127.0.0.1';
-        this._ip = 6379;
-        this._redisClient = null;
-        this._poolController = null;
-        if (this.#isConfigValid){
+class RedisClient {
+    constructor() {
+        this.options = {
+            host: '127.0.0.1',
+            port: 6379,
+            maxRetriesPerRequest: null,
+            retryStrategy(times) {
+                const delay = Math.min(times * 50, 2000)
+                return delay
+            },
+            reconnectOnError() {
+                return true
+            },
+        }
+        this.redisPub = null
+        this.redisSub = null
+
+        if (this.#isConfigValid) {
             logger.info('Starting RedisClient...')
-            try{
-                this.start();
-            }catch(e){
-                logger.error(new Error('Could not start RedisClient!'));
-            }  
-
+            try {
+                this.start()
+            } catch (err) {
+                logger.error(new Error('Could not start RedisClient!' + err))
+            }
         }
     }
 
-    #isConfigValid(config){
+    #isConfigValid(config) {
         //check if some params are not null
-        var valid = false;
-        return valid;
+        var valid = false
+        return valid
     }
 
     //Connectivity methods
-    start(){
-        //initilize a redis client with parameters
-        this._redisClient = new Redis(/*params here*/);
-        try{
-            this._redisClient.connect();
-            logger.info('ModbusTCP container connected to Redis Broker successfully')
-            this._redisClient.subRedis(config.pattern2Sub);            
-        }catch(e){
-            logger.error('Could not connect to Redis Broker ' + e.toString());
-        }        
+    start() {
+        const options = this.options
+        this.redisPub = new Redis(options)
+        this.redisSub = new Redis(options)
+
+        this.redisPub.on('connect', () => {
+            console.log('ModbusTCP container connected to Redis Broker successfully')
+        })
+
+        this.redisPub.on('error', (err) => {
+            console.log('Could not connect to Redis Broker ' + err.toString())
+        })
     }
 
-    stop(){
-
+    stop() {
+        this.redisPub.disconnect()
+        this.redisSub.disconnect()
     }
 
-    pub2Redis(topic, msg){
-
+    pub2Redis(channel, msg) {
+        this.redisPub.publish(channel, JSON.stringify(msg))
     }
 
-    subRedis(pattern){
-        try{
-            this._redisClient.psubscribe(pattern, (err, count) => {});
-            this._redisClient.on("pmessage", (pattern, channel, message) => {
-                // channel có dạng config:modbus:command .Trong đó: command = create|delete|modify , message = id của device
-                this.#handler(channel, message);
-            });
-        }catch(e){
-
-        }        
+    subRedis(pattern) {
+        this.redisClient.psubscribe(pattern, (err, count) => {})
+        this.redisClient.on('pmessage', (pattern, channel, message) => {
+            // channel có dạng config:modbus:command .Trong đó: command = create|delete|modify , message = id của device
+            this.#handler(channel, message)
+        })
     }
 
     //Data handler methods
-    #handler(command, id){
+    #handler(command, id) {
         //check if we recieves a create command from Interface
-        if(command==config.create){
+        if (command == config.create) {
             //call PoolController to create a new ModbusTCPClient instance (Observer Pattern)
-        }else if(command == config.delete){
+        } else if (command == config.delete) {
             //call PoolController to delete a specific ModbusTCPClient instance with its id
-        }else if(command == config.modify){
+        } else if (command == config.modify) {
             //call PoolController to modify a specific ModbusTCPClient instance with its id
         }
     }
-
 }
 
-module.exports = RedisClient
+module.exports = new RedisClient()

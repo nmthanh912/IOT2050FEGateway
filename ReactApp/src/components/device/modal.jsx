@@ -95,9 +95,9 @@ export default function DeviceModal({show, onHide, device, mode}) {
         DeviceService.add(newDevice, replicateNumber)
             .then((response) => {
                 delete newDevice.config
-                if (!Array.isArray(response.data)) dispatch(addDevice({...newDevice, ID: response.data.key}))
+                if (!Array.isArray(response.data)) dispatch(addDevice({ID: response.data.key, ...newDevice}))
                 notifySuccess('Add device successfully !')
-                // setDraftInfo(initState)
+                setDraftInfo(initState)
                 // setReplicateNumber(1)
                 onHide()
             })
@@ -121,7 +121,6 @@ export default function DeviceModal({show, onHide, device, mode}) {
             const configOffset = removedNullData.findIndex((val) => val[0] === 'Configurations') + 1
 
             const tagListLength = file.data.length - tagListOffset - 2
-            console.log(tagListLength)
 
             const newTagList = []
             for (let i = 0; i < tagListLength; ++i) {

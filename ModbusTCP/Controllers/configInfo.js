@@ -16,20 +16,36 @@ const getConfig = async (protocolName, id) => {
         const configInfo = await dbAll(getDeviceQuery, id)
 
         if (configInfo[0].deviceID !== null) {
-            const tags = []
+            const tagInfo = []
+            const deviceConfig = []
+
+            deviceConfig.push({
+                ID: configInfo[0].ID,
+                name: configInfo[0].name,
+                byteOrder: configInfo[0].byteOrder,
+                wordOrder: configInfo[0].wordOrder,
+                scanningCycle: configInfo[0].scanningCycle,
+                minRespTime: configInfo[0].minRespTime,
+                slaveid: configInfo[0].slaveid,
+                options: {
+                    host: configInfo[0].ip,
+                    port: configInfo[0].port,
+                },
+            })
+
             configInfo[0].tagInfo.split(';').forEach((item) => {
                 const tagValue = item.split(',')
-                tags.push({
+                tagInfo.push({
                     name: tagValue[0],
-                    address: tagValue[1],
+                    address: Number(tagValue[1]),
                     unit: tagValue[2],
                     dataType: tagValue[3],
-                    PF: tagValue[4],
-                    size: tagValue[5],
+                    PF: Number(tagValue[4]),
+                    size: Number(tagValue[5]),
                 })
             })
-            configInfo[0].tagInfo = tags
-            return configInfo
+
+            return [{deviceConfig, tagInfo}]
         } else {
             return []
         }

@@ -1,6 +1,6 @@
 class Queue {
-    constructor () {
-        this.queue = [5]
+    constructor (listEncoded) {
+        this.queue = listEncoded
     }
 
     enqueue (params) {
@@ -12,4 +12,4 @@ class Queue {
     }
 }
 
-module.exports = new Queue()
+module.exports = Queue

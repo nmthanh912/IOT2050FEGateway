@@ -1,36 +1,30 @@
 class FormatBL {
-    Int16 = function (PF, buf) {
-        const value = buf.readInt16BE() * Math.pow(10, PF)
-        return Number(value.toFixed(Math.abs(PF)))
+    Int16 = function (buf) {
+        return buf.readInt16BE()
     }
 
-    UInt16 = function (PF, buf) {
-        const value = buf.readUInt16BE() * Math.pow(10, PF)
-        return Number(value.toFixed(Math.abs(PF)))
+    UInt16 = function (buf) {
+        return buf.readUInt16BE()
     }
 
-    Float = function (PF, buf) {
+    Float = function (buf) {
         buf.swap16()
-        const value = buf.readFloatBE() * Math.pow(10, PF)
-        return Number(value.toFixed(Math.abs(PF)))
+        return buf.readFloatBE()
     }
 
-    Int32 = function (PF, buf) {
+    Int32 = function (buf) {
         buf.swap16()
-        const value = buf.readInt32BE() * Math.pow(10, PF)
-        return Number(value.toFixed(Math.abs(PF)))
+        return buf.readInt32BE()
     }
 
-    UInt32 = function (PF, buf) {
+    UInt32 = function (buf) {
         buf.swap16()
-        const value = buf.readUInt32BE() * Math.pow(10, PF)
-        return Number(value.toFixed(Math.abs(PF)))
+        return buf.readUInt32BE()
     }
 
-    Double = function (PF, buf) {
+    Double = function (buf) {
         buf.swap16()
-        const value = buf.readDoubleBE() * Math.pow(10, PF)
-        return Number(value.toFixed(Math.abs(PF)))
+        return buf.readDoubleBE()
     }
 
     String = function (buf) {

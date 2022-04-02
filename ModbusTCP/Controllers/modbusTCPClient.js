@@ -1,11 +1,10 @@
-require('dotenv').config()
 const modbus = require('jsmodbus')
 const net = require('net')
 
 const getConfig = require('./configInfo')
 const timer = require('../utils/timer')
 const Queue = require('../utils/queue')
-const {DataFormat, DataDecode} = require('../DataParser/index')
+const {DataFormat, DataDecode} = require('../dataParser/index')
 const {RegEncode} = require('./handleRegister')
 
 class DeviceConnection {
@@ -13,8 +12,8 @@ class DeviceConnection {
         this.deviceConfig = configInfo.deviceConfig[0]
         this.tagList = configInfo.tagInfo
         this.time = 1
-        this.dataLoopID = null
-        this.valueLoopID = null
+        this.dataLoopRef = null
+        this.valueLoopRef = null
     }
 
     #setup() {
@@ -35,7 +34,7 @@ class DeviceConnection {
             const dataFormat = DataFormat(this.deviceConfig.byteOrder, this.deviceConfig.wordOrder)
             const dataList = []
 
-            this.dataLoopID = setInterval(() => {
+            this.dataLoopRef = setInterval(() => {
                 this.#getData(client, dataFormat, queue, tagNumber, dataList)
                 console.log(dataList)
             }, this.deviceConfig.scanningCycle * 1000)
@@ -49,8 +48,11 @@ class DeviceConnection {
 
         socket.on('close', (err) => {
             console.log('Socket close!', err)
-            if (this.dataLoopID) {
-                clearInterval(this.dataLoopID)
+            if (this.dataLoopRef) {
+                clearInterval(this.dataLoopRef)
+            }
+            if(this.valueLoopRef) {
+                clearInterval(this.valueLoopRef)
             }
             socket.end()
             this.time = timer(err, this.deviceConfig.minRespTime, this.time)
@@ -59,14 +61,15 @@ class DeviceConnection {
     }
 
     #getData(client, dataFormat, queue, tagNumber, dataList) {
-        if (this.valueLoopID) {
-            clearInterval(this.valueLoopID)
+        if (this.valueLoopRef) {
+            clearInterval(this.valueLoopRef)
         }
         var position = 0
-        this.valueLoopID = setInterval(() => {
+        this.valueLoopRef = setInterval(() => {
             if (position === tagNumber) {
                 position = 0
             }
+            
             const regEncoded = queue.dequeue()
             client
                 .readHoldingRegisters(regEncoded.init.address, regEncoded.init.size)
@@ -88,7 +91,7 @@ class DeviceConnection {
                     })
                 })
                 .catch((err) => {
-                    console.log('client error!', err)
+                    console.log('Read register error!', err)
                 })
             queue.enqueue(regEncoded)
         }, 250)
@@ -105,11 +108,11 @@ class DeviceConnection {
         this.pool.socket.destroy()
         this.pool.socket.removeAllListeners('close', () => {})
         delete this.pool.socket
-        if (this.dataLoopID) {
-            clearInterval(this.dataLoopID)
+        if (this.dataLoopRef) {
+            clearInterval(this.dataLoopRef)
         }
-        if (this.valueLoopID) {
-            clearInterval(this.valueLoopID)
+        if (this.valueLoopRef) {
+            clearInterval(this.valueLoopRef)
         }
     }
 }

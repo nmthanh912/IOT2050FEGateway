@@ -14,7 +14,6 @@ const getConfig = async (protocolName, id) => {
     WHERE DEVICE.ID = ?`
     try {
         const configInfo = await dbAll(getDeviceQuery, id)
-
         if (configInfo[0].deviceID !== null) {
             const tagInfo = []
             const deviceConfig = []
@@ -27,9 +26,12 @@ const getConfig = async (protocolName, id) => {
                 scanningCycle: configInfo[0].scanningCycle,
                 minRespTime: configInfo[0].minRespTime,
                 slaveid: configInfo[0].slaveid,
+                comPortNum: configInfo[0].com_port_num,
                 options: {
-                    host: configInfo[0].ip,
-                    port: configInfo[0].port,
+                    baudRate: configInfo[0].baudrate,
+                    dataBits: configInfo[0].databits,
+                    stopBits: configInfo[0].stopbits,
+                    parity: configInfo[0].parity,
                 },
             })
 

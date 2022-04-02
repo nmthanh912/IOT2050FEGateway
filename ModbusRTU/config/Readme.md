@@ -1,0 +1,1 @@
+This foler contains all configuration in all formats if available (json , XML , ENV variables...)

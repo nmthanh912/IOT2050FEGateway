@@ -1,35 +1,25 @@
-require('dotenv').config()
 const modbus = require('jsmodbus')
 const net = require('net')
 
 const getConfig = require('./configInfo')
 const timer = require('../utils/timer')
-const DataPaser = require('../DataParser/index')
+const Queue = require('../utils/queue')
+const {DataFormat, DataDecode} = require('../dataParser/index')
+const {RegEncode} = require('./handleRegister')
 
 class DeviceConnection {
     constructor(configInfo) {
-        this.deviceConfig = {
-            ID: configInfo.ID,
-            name: configInfo.name,
-            byteOrder: configInfo.byteOrder,
-            wordOrder: configInfo.wordOrder,
-            scanningCycle: configInfo.scanningCycle,
-            minRespTime: configInfo.minRespTime,
-            slaveid: configInfo.slaveid,
-            options: {
-                host: configInfo.ip,
-                port: configInfo.port,
-            },
-        }
+        this.deviceConfig = configInfo.deviceConfig[0]
         this.tagList = configInfo.tagInfo
         this.time = 1
+        this.dataLoopRef = null
+        this.valueLoopRef = null
     }
 
     #setup() {
         const socket = new net.Socket()
         const client = new modbus.client.TCP(socket, this.deviceConfig.slaveid)
         const options = this.deviceConfig.options
-
         this.pool = {socket, client, options}
     }
 
@@ -38,8 +28,15 @@ class DeviceConnection {
         socket.connect(options)
 
         socket.on('connect', () => {
-            this.pool.intervalTimer = setInterval(() => {
-                this.#getData(client, this.tagList)
+            const tagNumber = this.tagList.length
+            const listRegEncoded = RegEncode(this.tagList)
+            const queue = new Queue(listRegEncoded)
+            const dataFormat = DataFormat(this.deviceConfig.byteOrder, this.deviceConfig.wordOrder)
+            const dataList = []
+
+            this.dataLoopRef = setInterval(() => {
+                this.#getData(client, dataFormat, queue, tagNumber, dataList)
+                console.log(dataList)
             }, this.deviceConfig.scanningCycle * 1000)
         })
 
@@ -51,59 +48,53 @@ class DeviceConnection {
 
         socket.on('close', (err) => {
             console.log('Socket close!', err)
-            if (this.pool.intervalTimer) {
-                clearInterval(this.pool.intervalTimer)
+            if (this.dataLoopRef) {
+                clearInterval(this.dataLoopRef)
+            }
+            if(this.valueLoopRef) {
+                clearInterval(this.valueLoopRef)
             }
             socket.end()
             this.time = timer(err, this.deviceConfig.minRespTime, this.time)
-            console.log(this.time)
             setTimeout(() => socket.connect(options), this.time * 1000)
         })
     }
 
-    #getData(client, tagList) {
-        tagList.forEach((tag) => {
+    #getData(client, dataFormat, queue, tagNumber, dataList) {
+        if (this.valueLoopRef) {
+            clearInterval(this.valueLoopRef)
+        }
+        var position = 0
+        this.valueLoopRef = setInterval(() => {
+            if (position === tagNumber) {
+                position = 0
+            }
+            
+            const regEncoded = queue.dequeue()
             client
-                .readHoldingRegisters(tag.address, tag.size)
+                .readHoldingRegisters(regEncoded.init.address, regEncoded.init.size)
                 .then((resp) => {
-                    let buf = Buffer.allocUnsafe(tag.size * 2)
+                    var buf = Buffer.allocUnsafe(regEncoded.init.size * 2)
                     buf = resp.response._body._valuesAsBuffer
 
-                    const FormatData = DataPaser(this.deviceConfig.byteOrder, this.deviceConfig.wordOrder)
-                    const dataType = tag.dataType
-
-                    if (FormatData === 'Invalid Data Format!') {
-                    } else {
-                        if (dataType === 'int16') {
-                            const value = FormatData.Int16(tag.PF, buf)
-                            console.log(value)
-                        } else if (dataType === 'uint16') {
-                            const value = FormatData.UInt16(tag.PF, buf)
-                            console.log(value)
-                        } else if (dataType === 'float32') {
-                            const value = FormatData.Float(tag.PF, buf)
-                            console.log(value)
-                        } else if (dataType === 'int32') {
-                            const value = FormatData.Int32(tag.PF, buf)
-                            console.log(value)
-                        } else if (dataType === 'uint32') {
-                            const value = FormatData.UInt32(tag.PF, buf)
-                            console.log(value)
-                        } else if (dataType === 'double') {
-                            const value = FormatData.Double(tag.PF, buf)
-                            console.log(value)
-                        } else if (dataType === 'string') {
-                            const value = FormatData.String(buf)
-                            console.log(value)
-                        } else {
-                            console.log('Invalid Data Type!')
+                    var i = 0
+                    regEncoded.tagList.forEach((tag) => {
+                        const bufDecoded = buf.slice(i, tag.size * 2 + i)
+                        i += tag.size * 2
+                        const valueDecoded = DataDecode(dataFormat, tag.dataType, tag.PF, bufDecoded)
+                        dataList[position] = {
+                            name: tag.name,
+                            unit: tag.unit,
+                            value: valueDecoded,
                         }
-                    }
+                        position += 1
+                    })
                 })
                 .catch((err) => {
-                    console.log('client error!', err)
+                    console.log('Read register error!', err)
                 })
-        })
+            queue.enqueue(regEncoded)
+        }, 250)
     }
 
     poweron() {
@@ -117,8 +108,11 @@ class DeviceConnection {
         this.pool.socket.destroy()
         this.pool.socket.removeAllListeners('close', () => {})
         delete this.pool.socket
-        if (this.pool.intervalTimer) {
-            clearInterval(this.pool.intervalTimer)
+        if (this.dataLoopRef) {
+            clearInterval(this.dataLoopRef)
+        }
+        if (this.valueLoopRef) {
+            clearInterval(this.valueLoopRef)
         }
     }
 }

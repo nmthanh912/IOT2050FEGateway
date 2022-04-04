@@ -101,12 +101,12 @@ class Device {
                 const {proTagQuery, proTagParams, tagQuery, tagParams} = this.setupTagSql(tagList, protocolName, id)
 
                 try {
-                    // await Promise.all([
-                    await dbRun(deviceQuery, deviceParams)
-                    await dbRun(protocolQuery, protocolParams)
-                    await dbRun(tagQuery, tagParams)
-                    await dbRun(proTagQuery, proTagParams)
-                    // ]
+                    await Promise.all([
+                        dbRun(deviceQuery, deviceParams),
+                        dbRun(protocolQuery, protocolParams),
+                        dbRun(tagQuery, tagParams),
+                        dbRun(proTagQuery, proTagParams),
+                    ])
                 } catch (err) {
                     await this.handleErrCreate(id)
                     throw err

@@ -3,10 +3,9 @@ const cors = require('cors')
 const port = 4001
 const app = express()
 
-const DeviceConnectionPool = require('./Controllers/modbusTCPClient')
+const DeviceConnectionPool = require('./controllers/modbusTCPClient')
 const pool = new DeviceConnectionPool()
-
-pool.poweron('057aae81')
+pool.poweron('33dfc393')
 
 app.use(cors())
 

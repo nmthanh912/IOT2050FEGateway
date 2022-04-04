@@ -51,7 +51,7 @@ class DeviceConnection {
             if (this.dataLoopRef) {
                 clearInterval(this.dataLoopRef)
             }
-            if(this.valueLoopRef) {
+            if (this.valueLoopRef) {
                 clearInterval(this.valueLoopRef)
             }
             socket.end()
@@ -69,7 +69,7 @@ class DeviceConnection {
             if (position === tagNumber) {
                 position = 0
             }
-            
+
             const regEncoded = queue.dequeue()
             client
                 .readHoldingRegisters(regEncoded.init.address, regEncoded.init.size)

@@ -8,6 +8,7 @@ import GatewayService from "../services/gateway";
 import { useSelector, useDispatch } from 'react-redux'
 import { toast, ToastContainer } from 'react-toastify'
 import { FailMessage, SuccessMessage } from '../components/toastMsg'
+import removeAccents from "../utils/removeAccents";
 
 const uid = new ShortUniqueId({ length: 5 })
 
@@ -19,10 +20,27 @@ export default function GatewayPage() {
   const dispatch = useDispatch()
   const [list, setList] = useState([])
 
+  const [savedQuery, setSavedQuery] = useState('')
+  const [currGatewatList, setCurrGatewayList] = useState([])
+
+  useEffect(() => {
+    if (savedQuery === '') setCurrGatewayList(list)
+  }, [list, savedQuery])
+
+  const searchGateway = query => {
+    let arr = list.filter(val => {
+      const searchStr = removeAccents(query).toLowerCase()
+      const normalGatewayName = removeAccents(val.name).toLowerCase()
+      return normalGatewayName.match(searchStr)
+    })
+    setSavedQuery(query)
+    setCurrGatewayList(arr)
+  }
+
   const notifySuccess = msg => toast(<SuccessMessage msg={msg} />, {
     progressClassName: 'Toastify__progress-bar--success'
   })
-  const notifyFail = msg => toast(<FailMessage msg={msg}/>, {
+  const notifyFail = msg => toast(<FailMessage msg={msg} />, {
     progressClassName: 'Toastify__progress-bar--error'
   })
 
@@ -97,10 +115,11 @@ export default function GatewayPage() {
       />}
       onShow={() => setShowModal(true)}
       title='Gateway'
+      onSearch={searchGateway}
     />
     <hr />
 
-    {list.map(gateway =>
+    {currGatewatList.map(gateway =>
       <DropdownItem key={uid()}
         onEdit={() => {
           setShowModal(true)

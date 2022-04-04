@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, current } from "@reduxjs/toolkit";
 import DeviceService from "../../services/device";
 
 const deviceSlice = createSlice({
@@ -28,11 +28,34 @@ const deviceSlice = createSlice({
             state.splice(idx, 1)
             return state
         },
+
         updateTagList: (state, action) => {
             const deviceID = action.payload.deviceID
             const device = state.find(val => val.ID === deviceID)
             device.tagList = []
             action.payload.data.forEach(val => device.tagList.push(val))
+            return state
+        },
+        editTagCell: (state, action) => {
+            const { deviceID, tagName, attr, newValue } = action.payload
+            console.log(action.payload)
+            const device = state.find(val => val.ID === deviceID)
+            const tag = device.tagList.find(val => val.name === tagName)
+            console.log(current(tag))
+            tag[attr] = newValue
+            return state
+        },
+        removeTag: (state, action) => {
+            const { deviceID, tagName } = action.payload
+            const device = state.find(val => val.ID === deviceID)
+            const tagIdx = device.tagList.findIndex(val => val.name === tagName)
+            device.tagList.splice(tagIdx, 1)
+            return state
+        },
+        addNewTag: (state, action) => {
+            const { deviceID, tag } = action.payload
+            const device = state.find(val => val.ID === deviceID)
+            device.tagList.push(tag)
             return state
         }
     },
@@ -58,7 +81,6 @@ const deviceSlice = createSlice({
 export const fetchDevices = createAsyncThunk('devices/fetchDevices', async () => {
     try {
         const response = await DeviceService.get()
-        console.log(response.data)
         return response.data
     }
     catch (err) {
@@ -85,5 +107,8 @@ export const {
     removeDevice,
     updateDevice,
     updateTagList,
+    editTagCell,
+    removeTag,
+    addNewTag
 } = deviceSlice.actions
 export default deviceSlice.reducer

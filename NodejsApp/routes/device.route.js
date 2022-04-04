@@ -11,5 +11,8 @@ router.put('/:id/edit', Device.editInfo)
 router.delete('/:id', Device.drop)
 
 router.get('/:id/tags', Tag.getAll)
+router.put('/:id/tags/edit', Tag.editAttribute)
+router.delete('/:id/tag', Tag.deleteTag)
+router.post('/:id/tags/add', Tag.addTag)
 
 module.exports = router

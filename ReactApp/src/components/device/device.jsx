@@ -157,7 +157,12 @@ export default function EdgeDevice({ data, onDetail }) {
                 </div>
             </DropdownItem.Header>
             <DropdownItem.Body>
-                <PaginateTagList deviceID={data.ID} protocol={data.protocol} Table={TagTable} />
+                <PaginateTagList
+                    deviceID={data.ID}
+                    protocol={data.protocol}
+                    Table={TagTable}
+                    readOnly={poweron}
+                />
             </DropdownItem.Body>
         </DropdownItem>
     </div>

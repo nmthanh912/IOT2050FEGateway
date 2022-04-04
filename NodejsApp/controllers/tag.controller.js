@@ -1,4 +1,4 @@
-const {dbRun, dbAll, db} = require('../models/database.js')
+const { dbRun, dbAll } = require('../models/database.js')
 const handler = require('../utils/handler')
 
 class Tag {
@@ -23,6 +23,48 @@ class Tag {
                 delete tags[0].deviceID
             }
             res.json(tags)
+        })
+    }
+    async editAttribute(req, res) {
+        console.log(req.query)
+        const deviceID = req.params.id
+        const { protocol, tagName, attr } = req.query
+        const newValue = req.body.newValue
+        const query = attr === 'name' ? {
+            SQL: `UPDATE TAG SET ${attr} = ? WHERE deviceID = ? AND name = ?`,
+            params: [newValue, deviceID, tagName]
+        } : {
+            SQL: `UPDATE ${protocol}_TAG SET ${attr} = ? WHERE deviceID = ? AND name = ?`,
+            params: [newValue, deviceID, tagName]
+        }
+        handler(res, async () => {
+            await dbRun(query.SQL, query.params)
+            res.json({ msg: 'OK' })
+        })
+    }
+    async deleteTag(req, res) {
+        const deviceID = req.params.id
+        const tagName = req.query.tagName
+        // console.log(deviceID, tagName)
+        const query = `DELETE FROM TAG WHERE deviceID = ? AND name = ?`
+        handler(res, async () => {
+            await dbRun(query, [deviceID, tagName])
+            res.json({ msg: 'OKE' })
+        })
+    }
+    async addTag(req, res) {
+        const deviceID = req.params.id
+        const protocol = req.query.protocol
+        const data = { ...req.body, deviceID }
+        const colNumber = Object.keys(data).length
+        const query1 = `INSERT INTO TAG (deviceID, name) VALUES (?, ?)`
+        const query2 = `INSERT INTO ${protocol}_TAG VALUES (${'?,'.repeat(colNumber).slice(0, -1)})`
+        console.log(data)
+        console.log(query2)
+        handler(res, async () => {
+            await dbRun(query1, [deviceID, data.name])
+            await dbRun(query2, Object.values(data))
+            res.json({ msg: "OKE" })
         })
     }
 }

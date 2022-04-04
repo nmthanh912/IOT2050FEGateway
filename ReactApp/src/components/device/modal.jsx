@@ -1,27 +1,27 @@
-import {useEffect, useRef, useState} from 'react'
-import {Modal, Form, Button} from 'react-bootstrap'
+import { useEffect, useRef, useState } from 'react'
+import { Modal, Form, Button } from 'react-bootstrap'
 import DeviceService from '../../services/device'
-import {useDispatch} from 'react-redux'
-import {addDevice, updateDevice, updateTagList} from '../../redux/slices/device'
+import { useDispatch } from 'react-redux'
+import { addDevice, updateDevice, updateTagList } from '../../redux/slices/device'
 import CSVReader from './CSVImporter'
-import {toast, ToastContainer} from 'react-toastify'
-import {SuccessMessage, FailMessage} from '../toastMsg'
+import { toast, ToastContainer } from 'react-toastify'
+import { SuccessMessage, FailMessage } from '../toastMsg'
 import shortId from '../../utils/shortId'
 
-export default function DeviceModal({show, onHide, device, mode}) {
+export default function DeviceModal({ show, onHide, device, mode }) {
     const [draftInfo, setDraftInfo] = useState(initState)
     const csvRef = useRef(null)
     const dispatch = useDispatch()
     const [replicateNumber, setReplicateNumber] = useState(1)
 
-    const setName = (name) => setDraftInfo({...draftInfo, name})
-    const setDescription = (description) => setDraftInfo({...draftInfo, description})
+    const setName = (name) => setDraftInfo({ ...draftInfo, name })
+    const setDescription = (description) => setDraftInfo({ ...draftInfo, description })
     const setProtocol = (value) => {
         let protocol = deviceConfigInfo.find((p) => p.value === value)
-        setDraftInfo({...draftInfo, protocol, config: {}})
+        setDraftInfo({ ...draftInfo, protocol, config: {} })
     }
 
-    const setConfig = (config) => setDraftInfo({...draftInfo, config})
+    const setConfig = (config) => setDraftInfo({ ...draftInfo, config })
 
     const updateToDB = async () => {
         try {
@@ -48,7 +48,6 @@ export default function DeviceModal({show, onHide, device, mode}) {
             await DeviceService.editDevice(device.ID, data)
             delete data.config
             delete data.protocol
-            console.log(data)
             dispatch(
                 updateDevice({
                     ID: device.ID,
@@ -62,7 +61,6 @@ export default function DeviceModal({show, onHide, device, mode}) {
     }
 
     useEffect(() => {
-        console.log(device)
         if (mode === 'edit') {
             DeviceService.getConfigInfoById(device.ID, device.protocol)
                 .then((res) => {
@@ -95,7 +93,7 @@ export default function DeviceModal({show, onHide, device, mode}) {
         DeviceService.add(newDevice, replicateNumber)
             .then((response) => {
                 delete newDevice.config
-                if (!Array.isArray(response.data)) dispatch(addDevice({ID: response.data.key, ...newDevice}))
+                if (!Array.isArray(response.data)) dispatch(addDevice({ ID: response.data.key, ...newDevice }))
                 notifySuccess('Add device successfully !')
                 setDraftInfo(initState)
                 // setReplicateNumber(1)
@@ -107,10 +105,9 @@ export default function DeviceModal({show, onHide, device, mode}) {
             })
     }
 
-    const handleUploadFile = (file) => {
-        console.log(file)
+    const handleUploadFile = file => {
         try {
-            const removedNullData = file.data.map((row) => row.filter((val) => val !== ''))
+            const removedNullData = file.data.map(row => row.filter(val => val !== ''))
             if (mode === 'edit') {
                 if (removedNullData[1][7].toLowerCase() !== draftInfo.protocol.value.toLowerCase())
                     throw new Error('Protocol cannot be changed')
@@ -150,7 +147,6 @@ export default function DeviceModal({show, onHide, device, mode}) {
                 config: newConfig,
             }
             setDraftInfo(obj)
-            console.log(obj)
         } catch (err) {
             notifyFail(err.message)
         }
@@ -222,8 +218,9 @@ export default function DeviceModal({show, onHide, device, mode}) {
                                     value={draftInfo.byteOrder}
                                     size='sm'
                                     placeholder='Byte order ...'
-                                    onChange={(e) => setDraftInfo({...draftInfo, byteOrder: e.target.value})}
+                                    onChange={(e) => setDraftInfo({ ...draftInfo, byteOrder: e.target.value })}
                                     required
+                                    disabled={draftInfo.protocol.value === "OPC_UA"}
                                 >
                                     <option value={''} disabled>
                                         -- Select --
@@ -239,8 +236,9 @@ export default function DeviceModal({show, onHide, device, mode}) {
                                     value={draftInfo.wordOrder}
                                     size='sm'
                                     placeholder='Word order ...'
-                                    onChange={(e) => setDraftInfo({...draftInfo, wordOrder: e.target.value})}
+                                    onChange={(e) => setDraftInfo({ ...draftInfo, wordOrder: e.target.value })}
                                     required
+                                    disabled={draftInfo.protocol.value === "OPC_UA"}
                                 >
                                     <option value={''} disabled>
                                         -- Select --
@@ -259,9 +257,9 @@ export default function DeviceModal({show, onHide, device, mode}) {
                                     value={draftInfo.scanningCycle}
                                     size='sm'
                                     placeholder='Second ...'
-                                    min={1}
+                                    min={60}
                                     onChange={(e) =>
-                                        setDraftInfo({...draftInfo, scanningCycle: parseInt(e.target.value)})
+                                        setDraftInfo({ ...draftInfo, scanningCycle: parseInt(e.target.value) })
                                     }
                                     required
                                 />
@@ -275,7 +273,7 @@ export default function DeviceModal({show, onHide, device, mode}) {
                                     size='sm'
                                     placeholder='Milisecond ...'
                                     onChange={(e) =>
-                                        setDraftInfo({...draftInfo, minRespTime: parseInt(e.target.value)})
+                                        setDraftInfo({ ...draftInfo, minRespTime: parseInt(e.target.value) })
                                     }
                                     required
                                     min={1}
@@ -330,12 +328,12 @@ export default function DeviceModal({show, onHide, device, mode}) {
                                             type={attr.type}
                                             placeholder={attrName + ' ...'}
                                             value={draftInfo.config[key] ? draftInfo.config[key] : ''}
-                                            onChange={(e) => setConfig({...draftInfo.config, [key]: e.target.value})}
+                                            onChange={(e) => setConfig({ ...draftInfo.config, [key]: e.target.value })}
                                         />
                                     ) : (
                                         <Form.Select
                                             value={draftInfo.config[key] ? draftInfo.config[key] : ''}
-                                            onChange={(e) => setConfig({...draftInfo.config, [key]: e.target.value})}
+                                            onChange={(e) => setConfig({ ...draftInfo.config, [key]: e.target.value })}
                                             size='sm'
                                             required
                                         >
@@ -370,32 +368,25 @@ const deviceConfigInfo = [
     {
         value: 'MODBUSRTU',
         label: 'Modbus RTU',
-        attrs: [
-            {
-                name: 'com_port_num',
-                type: 'text',
-            },
-            {
-                name: 'parity',
-                options: ['none', 'odd', 'even'],
-            },
-            {
-                name: 'slaveID',
-                type: 'number',
-            },
-            {
-                name: 'baudrate',
-                type: 'number',
-            },
-            {
-                name: 'stopbits',
-                type: 'number',
-            },
-            {
-                name: 'databits',
-                type: 'number',
-            },
-        ],
+        attrs: [{
+            name: 'com_port_num',
+            type: 'text',
+        }, {
+            name: 'parity',
+            options: ['none', 'odd', 'even'],
+        }, {
+            name: 'slaveID',
+            type: 'number',
+        }, {
+            name: 'baudrate',
+            type: 'number',
+        }, {
+            name: 'stopbits',
+            type: 'number',
+        }, {
+            name: 'databits',
+            type: 'number',
+        },],
     },
     {
         value: 'MODBUSTCP',
@@ -418,7 +409,7 @@ const deviceConfigInfo = [
     {
         value: 'OPC_UA',
         label: 'OPC UA',
-        attrs: [{name: 'URL', type: 'url'}],
+        attrs: [{ name: 'URL', type: 'url' }],
     },
 ]
 

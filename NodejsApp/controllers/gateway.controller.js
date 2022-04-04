@@ -6,7 +6,7 @@ const util = require('util')
 
 const writeFile = util.promisify(fs.writeFile.bind(fs))
 const readFile = util.promisify(fs.readFile.bind(fs))
-const rm = util.promisify(fs.rm.bind(fs))
+// const rm = util.promisify(fs.rm.bind(fs))
 
 class GatewayController {
     create(req, res) {

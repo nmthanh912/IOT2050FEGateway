@@ -19,6 +19,15 @@ class DeviceService {
     deleteDevice(deviceID, protocol) {
         return configHttp.delete(`/devices/${deviceID}?protocol=${protocol}`)
     }
+    editTagCell(deviceID, protocol, tagName, attr, newValue) {
+        return configHttp.put(`/devices/${deviceID}/tags/edit?protocol=${protocol}&tagName=${tagName}&attr=${attr}`, { newValue })
+    }
+    deleteTag(deviceID, tagName) {
+        return configHttp.delete(`/devices/${deviceID}/tag?tagName=${tagName}`)
+    }
+    addTag(deviceID, protocol, data) {
+        return configHttp.post(`/devices/${deviceID}/tags/add?protocol=${protocol}`, data)
+    }
 }
 
 export default new DeviceService()

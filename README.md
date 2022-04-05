@@ -40,7 +40,7 @@ docker-compose up -d --build
 
 If you want to stop the entire system (include volume), run this command:
 
-```command
+```console
 docker-compose down --volume
 ```
 

@@ -7,8 +7,12 @@ const deviceSlice = createSlice({
     reducers: {
         addDevice: (state, action) => {
             const device = action.payload
-            device.tagList = []
-            state.push(device)
+            state.push({ ...device, tagList: [] })
+            return state
+        },
+        addManyDevice: (state, action) => {
+            const deviceList = action.payload
+            deviceList.forEach(device => state.push({ ...device, tagList: [] }))
             return state
         },
         updateDevice: (state, action) => {
@@ -104,6 +108,7 @@ export const fetchTags = createAsyncThunk('devices/fetchTags', async ({ deviceID
 
 export const {
     addDevice,
+    addManyDevice,
     removeDevice,
     updateDevice,
     updateTagList,

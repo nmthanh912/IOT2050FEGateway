@@ -1,12 +1,6 @@
-const {dbRun, dbAll} = require('../models/database')
+const { dbRun, dbAll } = require('../models/database')
 const handler = require('../utils/handler')
 const uniqueId = require('../utils/uniqueId')
-// const Redis = require('ioredis')
-// const redis = new Redis()
-
-// const POWERON = 'POWERON'
-// const SHUTDOWN = 'SHUTDOWN'
-// const RESTART = 'RESTART'
 
 const util = require('util')
 const fs = require('fs')
@@ -43,7 +37,7 @@ class Device {
         )
         const tagParams = values.map((value) => Object.values(value)).flat()
 
-        return {proTagQuery, proTagParams, tagQuery, tagParams}
+        return { proTagQuery, proTagParams, tagQuery, tagParams }
     }
 
     getAll = function (req, res) {
@@ -66,9 +60,89 @@ class Device {
         })
     }
 
-    create = (req, res) => {
+    createMany(req, res) {
+        const { data, repNum: replicateNumber } = req.body
+
+        let deviceList = []
+        const insertManyDeviceQuery = `
+            INSERT INTO DEVICE VALUES
+            ${'(?, ?, ?, ? ,? ,? ,?, ?),'.repeat(replicateNumber).slice(0, -1)}
+        `
+
+        const protocolName = data.protocol.toUpperCase()
+        let config = Object.values(data.config)
+        let configList = []
+        let configBracketStr = '(' + ',?'.repeat(config.length + 1).slice(1) + '),'
+        const insertManyDeviceConfigQuery = `
+            INSERT INTO ${protocolName} VALUES
+            ${configBracketStr.repeat(replicateNumber).slice(0, -1)}
+        `
+
+        let tagListAll = []
+        const insertManyTagQuery = `
+            INSERT INTO TAG (deviceID, name) VALUES
+            ${'(?, ?),'.repeat(replicateNumber * data.tagList.length).slice(0, -1)}
+        `
+
+        let protocolTagListAll = []
+        let proTagBracketValue = '(' + ',?'.repeat(Object.values(data.tagList[0]).length + 1).slice(1) + '),'
+        const insertManyProtocolTagQuery = `
+            INSERT INTO ${protocolName}_TAG VALUES
+            ${proTagBracketValue.repeat(replicateNumber * data.tagList.length).slice(0, -1)}
+        `
+
+        const device = [
+            data.description,
+            data.protocol.toUpperCase(),
+            data.byteOrder,
+            data.wordOrder,
+            data.scanningCycle,
+            data.minRespTime,
+        ]
+
+        const range = [...Array(replicateNumber).keys()]
+
+        const keyList = []
+        for (let i in range) {
+            let deviceID = uniqueId()
+            keyList.push(deviceID)
+            let deviceName = data.name + `_${i}`
+
+            deviceList.push([deviceID, deviceName, ...device])
+
+            let tagList = data.tagList.map(tag => [deviceID, tag.name])
+            tagListAll.push(tagList)
+
+            let protocolTagList = data.tagList.map(tag => [...Object.values(tag), deviceID])
+            protocolTagListAll.push(protocolTagList)
+
+            configList.push([...config], deviceID)
+        }
+
+        // console.log(insertManyDeviceQuery, deviceList)
+        // console.log(insertManyDeviceConfigQuery, configList)
+        // console.log(insertManyTagQuery, tagListAll.flat(2))
+        // console.log(insertManyProtocolTagQuery, protocolTagListAll.flat(2))
+
+        deviceList = deviceList.flat()
+        tagListAll = tagListAll.flat(2)
+        protocolTagListAll = protocolTagListAll.flat(2)
+        configList = configList.flat()
+
+        handler(res, async () => {
+            await dbRun(insertManyDeviceQuery, deviceList)
+            await dbRun(insertManyDeviceConfigQuery, configList)
+            await dbRun(insertManyTagQuery, tagListAll)
+            await dbRun(insertManyProtocolTagQuery, protocolTagListAll)
+            res.json({
+                keyList
+            })
+        })
+    }
+
+    create(req, res) {
         const id = uniqueId()
-        const {data, repNum: replicateNumber} = req.body
+        const { data } = req.body
         const deviceQuery = `INSERT INTO DEVICE 
             (ID, name, description, protocolType, byteOrder, wordOrder, scanningCycle, minRespTime) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
@@ -84,7 +158,7 @@ class Device {
         ]
 
         const protocolName = data.protocol.toUpperCase()
-        var protocolParams = Object.values(data.config)
+        let protocolParams = Object.values(data.config)
 
         const tagList = data.tagList
 
@@ -98,7 +172,7 @@ class Device {
             const protocolQuery = `INSERT INTO ${protocolName} VALUES (${',?'.repeat(protocolParams.length).slice(1)})`
 
             if (tagList.length !== 0 && Object.keys(tagList[0]).length !== 0) {
-                const {proTagQuery, proTagParams, tagQuery, tagParams} = this.setupTagSql(tagList, protocolName, id)
+                const { proTagQuery, proTagParams, tagQuery, tagParams } = this.setupTagSql(tagList, protocolName, id)
 
                 try {
                     await Promise.all([
@@ -120,7 +194,7 @@ class Device {
                 }
             }
             res.json({
-                key: id,
+                keyList: [id],
             })
         })
     }
@@ -194,7 +268,7 @@ class Device {
             await dbRun(deleteQuery, id)
 
             if (tagList.length !== 0 && tagList[0].name !== '') {
-                const {proTagQuery, proTagParams, tagQuery, tagParams} = this.setupTagSql(tagList, protocolName, id)
+                const { proTagQuery, proTagParams, tagQuery, tagParams } = this.setupTagSql(tagList, protocolName, id)
                 await Promise.all([
                     dbRun(deviceQuery, deviceParams),
                     dbRun(protocolQuery, protocolParams),
@@ -219,7 +293,6 @@ class Device {
             await dbRun(deleteDeviceQuery, [deviceID])
 
             const files = fs.readdirSync('../customJSON').filter((fn) => fn.slice(9, 17) === deviceID)
-            console.log(files)
             const unlinkPromises = files.map((file) => unlink('../customJSON/' + file))
             await Promise.all(unlinkPromises)
 

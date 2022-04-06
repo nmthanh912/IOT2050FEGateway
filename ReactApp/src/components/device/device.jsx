@@ -26,11 +26,26 @@ export default function EdgeDevice({ data, onDetail }) {
 
     // console.log(data)
     const exportToCSV = () => {
-        const list = [[], [], ['-----------']]
+
+        const list = [
+            ['DO NOT:'],
+            [' *** LEAVE ANY BLANK CELLS IN A SUBTABLE  ***'],
+            [' *** LEAVE ANY BLANK ROWS BETWEEN SUBTABLES ***'],
+            [' *** RENAME SUBTABLES (i.e, Device Info, Configurations) ***'],
+            [' *** REORDER SUBTABLES (i.e, Device Info, Configurations) ***'],
+            [' *** RENAME COLUMNS ***'],
+            [' *** REORDERS COLUMNS ***'],
+            ['Any errors caused by violations of above warnings WON\'T BE THROWN !'],
+            ['-----------'],
+            ['Device Info'],
+            [],
+            [],
+            ['-----------']
+        ]
         Object.keys(data).forEach(key => {
             if (key !== 'tagList' && key !== 'config') {
-                list[0].push(key)
-                list[1].push(data[key])
+                list[10].push(key)
+                list[11].push(data[key])
             }
         })
 
@@ -64,7 +79,6 @@ export default function EdgeDevice({ data, onDetail }) {
                 }
 
                 setExportData([...list])
-                console.log([...list])
             }
             catch (err) {
                 notifyFail(err.message)

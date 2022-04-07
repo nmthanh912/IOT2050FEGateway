@@ -1,3 +1,4 @@
+require('dotenv').config()
 const uniqueId = require('../utils/uniqueId')
 const {dbRun, dbAll, db} = require('../models/database')
 const handler = require('../utils/handler')
@@ -7,6 +8,9 @@ const util = require('util')
 const writeFile = util.promisify(fs.writeFile.bind(fs))
 const readFile = util.promisify(fs.readFile.bind(fs))
 // const rm = util.promisify(fs.rm.bind(fs))
+
+const JSON_PATH = process.env.MODE === "development" ?
+    '../customJSON' : './customJSON'
 
 class GatewayController {
     create(req, res) {
@@ -72,8 +76,8 @@ class GatewayController {
         handler(res, async () => {
             await dbRun(sqlQuery, [gatewayID])
 
-            const files = fs.readdirSync('../customJSON').filter(fn => fn.slice(0, 8) === gatewayID);
-            const unlinkPromises = files.map(file => unlink('../customJSON/' + file))
+            const files = fs.readdirSync(JSON_PATH).filter(fn => fn.slice(0, 8) === gatewayID);
+            const unlinkPromises = files.map(file => unlink(JSON_PATH + file))
             await Promise.all(unlinkPromises)
 
             res.json({ msg: 'Success' })
@@ -139,9 +143,9 @@ class GatewayController {
             const useCustomQuery = `SELECT toggle FROM configs WHERE gatewayID = ? AND deviceID = ?`
             let useCustom = await dbAll(useCustomQuery, [gatewayId, deviceId])
 
-            let exists = fs.existsSync(`../customJSON/${gatewayId}_${deviceId}.json`)
+            let exists = fs.existsSync(`${JSON_PATH}/${gatewayId}_${deviceId}.json`)
             let code = null
-            if (exists) code = await readFile(`../customJSON/${gatewayId}_${deviceId}.json`, 'utf-8')
+            if (exists) code = await readFile(`${JSON_PATH}/${gatewayId}_${deviceId}.json`, 'utf-8')
 
 
             res.json({ tagList: list, code, toggle: useCustom[0].toggle })
@@ -159,7 +163,7 @@ class GatewayController {
             await dbRun(updateToggleQuery, [data.toggle, gatewayID, deviceID])
 
             const customJSON = data.code.slice(data.code.indexOf('{'))
-            await writeFile(`../customJSON/${gatewayID}_${deviceID}.json`, customJSON, 'utf-8')
+            await writeFile(`${JSON_PATH}/${gatewayID}_${deviceID}.json`, customJSON, 'utf-8')
 
             db.serialize(() => {
                 let deleteSqlQuery = `DELETE FROM subscribes WHERE

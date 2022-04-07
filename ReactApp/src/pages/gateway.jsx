@@ -3,14 +3,11 @@ import Modal from '../components/gateway/modal'
 import SubHeader from "../components/subHeader";
 import MappingList from "../components/gateway/mappingList";
 import { useEffect, useState } from "react";
-import ShortUniqueId from "short-unique-id";
 import GatewayService from "../services/gateway";
 import { useSelector, useDispatch } from 'react-redux'
-import { toast, ToastContainer } from 'react-toastify'
-import { FailMessage, SuccessMessage } from '../components/toastMsg'
+import { toast } from 'react-toastify'
 import removeAccents from "../utils/removeAccents";
-
-const uid = new ShortUniqueId({ length: 5 })
+import shortId from "../utils/shortId";
 
 export default function GatewayPage() {
   const deviceList = useSelector(state => state.device)
@@ -37,11 +34,13 @@ export default function GatewayPage() {
     setCurrGatewayList(arr)
   }
 
-  const notifySuccess = msg => toast(<SuccessMessage msg={msg} />, {
-    progressClassName: 'Toastify__progress-bar--success'
+  const notifySuccess = msg => toast.success(msg, {
+    progressClassName: 'Toastify__progress-bar--success',
+    toastId: 'gatewaySuccess'
   })
-  const notifyFail = msg => toast(<FailMessage msg={msg} />, {
-    progressClassName: 'Toastify__progress-bar--error'
+  const notifyFail = msg => toast.error(msg, {
+    progressClassName: 'Toastify__progress-bar--error',
+    toastId: 'gatewayFail'
   })
 
   useEffect(() => {
@@ -96,13 +95,6 @@ export default function GatewayPage() {
   }
 
   return <div>
-    <ToastContainer
-      pauseOnHover={false}
-      position="top-right"
-      autoClose={1500}
-      closeOnClick
-      containerId={uid()}
-    />
     <SubHeader
       modal={<Modal
         show={showModal}
@@ -120,7 +112,7 @@ export default function GatewayPage() {
     <hr />
 
     {currGatewatList.map(gateway =>
-      <DropdownItem key={uid()}
+      <DropdownItem key={shortId()}
         onEdit={() => {
           setShowModal(true)
           setEditTarget(gateway)

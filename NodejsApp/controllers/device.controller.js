@@ -1,3 +1,4 @@
+require('dotenv').config()
 const { dbRun, dbAll } = require('../models/database')
 const handler = require('../utils/handler')
 const uniqueId = require('../utils/uniqueId')
@@ -5,6 +6,9 @@ const uniqueId = require('../utils/uniqueId')
 const util = require('util')
 const fs = require('fs')
 const unlink = util.promisify(fs.unlink.bind(fs))
+
+const JSON_PATH = process.env.MODE === "development" ?
+    '../customJSON' : './customJSON'
 
 class Device {
     handleErrCreate = async (id) => {
@@ -292,8 +296,8 @@ class Device {
         handler(res, async () => {
             await dbRun(deleteDeviceQuery, [deviceID])
 
-            const files = fs.readdirSync('../customJSON').filter((fn) => fn.slice(9, 17) === deviceID)
-            const unlinkPromises = files.map((file) => unlink('../customJSON/' + file))
+            const files = fs.readdirSync(JSON_PATH).filter((fn) => fn.slice(9, 17) === deviceID)
+            const unlinkPromises = files.map((file) => unlink(JSON_PATH + file))
             await Promise.all(unlinkPromises)
 
             res.json({

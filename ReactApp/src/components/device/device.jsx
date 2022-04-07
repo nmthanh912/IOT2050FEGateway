@@ -2,15 +2,12 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useDispatch } from "react-redux";
-
 import { removeDevice, updateTagList } from "../../redux/slices/device";
 
 import DeviceService from "../../services/device";
-import shortId from "../../utils/shortId";
 import HardwareServices from "../../services/protocol";
 
-import { toast, ToastContainer } from 'react-toastify'
-import { SuccessMessage, FailMessage } from "../toastMsg";
+import { toast } from 'react-toastify'
 import BootstrapSwitchButton from 'bootstrap-switch-button-react'
 import DropdownItem from "../dropdownItem";
 import PaginateTagList, { TagTable } from "./paginateTagList";
@@ -101,11 +98,14 @@ export default function EdgeDevice({ data, onDetail }) {
         })
     }
 
-    const notifySuccess = msg => toast(<SuccessMessage msg={msg} />, {
-        progressClassName: 'Toastify__progress-bar--success'
+    const notifySuccess = msg => toast.success(msg, {
+        progressClassName: 'Toastify__progress-bar--success',
+        toastId: "deviceSuccess"
     })
-    const notifyFail = msg => toast(<FailMessage msg={msg} />, {
-        progressClassName: 'Toastify__progress-bar--error'
+
+    const notifyFail = msg => toast.error(msg, {
+        progressClassName: 'Toastify__progress-bar--error',
+        toastId: "deviceFail"
     })
 
     const turnOnDevice = () => {
@@ -118,12 +118,6 @@ export default function EdgeDevice({ data, onDetail }) {
     }
 
     return <div>
-        <ToastContainer
-            autoClose={1800}
-            pauseOnHover={false}
-            closeOnClick
-            containerId={shortId()}
-        />
         <DropdownItem
             onEdit={poweron ? null : () => onDetail()}
             onExport={exportToCSV}

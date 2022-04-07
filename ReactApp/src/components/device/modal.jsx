@@ -4,9 +4,7 @@ import DeviceService from '../../services/device'
 import { useDispatch } from 'react-redux'
 import { addDevice, addManyDevice, updateDevice, updateTagList } from '../../redux/slices/device'
 import CSVReader from './CSVImporter'
-import { toast, ToastContainer } from 'react-toastify'
-import { SuccessMessage, FailMessage } from '../toastMsg'
-import shortId from '../../utils/shortId'
+import { toast } from 'react-toastify'
 
 export default function DeviceModal({ show, onHide, device, mode }) {
 	const [draftInfo, setDraftInfo] = useState(initState)
@@ -76,21 +74,25 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 		}
 	}, [device, mode])
 
-	const notifySuccess = (msg) =>
-		toast(<SuccessMessage msg={msg} />, {
-			progressClassName: 'Toastify__progress-bar--success',
-		})
-	const notifyFail = (msg) =>
-		toast(<FailMessage msg={msg} />, {
-			progressClassName: 'Toastify__progress-bar--error',
-		})
+	const notifySuccess = (msg) => toast.success(msg, {
+		progressClassName: 'Toastify__progress-bar--success',
+		toastId: 'deviceModalSuccess'
+	})
+	const notifyFail = msg => toast.error(msg, {
+		progressClassName: 'Toastify__progress-bar--error',
+		toastId: 'deviceModalFail'
+	})
 
 	const addDeviceToDB = () => {
 		const newDevice = {
 			...draftInfo,
 			protocol: draftInfo.protocol.value.toUpperCase(),
 		}
-		DeviceService.add(newDevice, replicateNumber)
+		let confirmDuplicate = true
+		if (replicateNumber >= 5) {
+			confirmDuplicate = window.confirm("Have you checked out the config infomation ?")
+		}
+		confirmDuplicate && DeviceService.add(newDevice, replicateNumber)
 			.then((response) => {
 				delete newDevice.config
 				const keyList = response.data.keyList
@@ -164,19 +166,12 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 			}
 			setDraftInfo(obj)
 		} catch (err) {
-			notifyFail(err.response.data.msg)
+			notifyFail(err.message)
 		}
 	}
 
 	return (
 		<div>
-			<ToastContainer
-				closeOnClick
-				pauseOnHover={false}
-				position='top-right'
-				autoClose={1800}
-				containerId={shortId()}
-			/>
 			<Modal show={show} onHide={onHide}>
 				<Modal.Header className='bg-primary text-white'>
 					<h5 className='m-auto'>{mode === 'add' ? 'Add new device' : 'Edit device'}</h5>

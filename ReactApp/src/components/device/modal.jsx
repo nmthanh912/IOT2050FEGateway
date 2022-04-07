@@ -11,6 +11,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 	const csvRef = useRef(null)
 	const dispatch = useDispatch()
 	const [replicateNumber, setReplicateNumber] = useState(1)
+	const [disableProtocol, setDisableProtocol] = useState(false)
 
 	const setName = (name) => setDraftInfo({ ...draftInfo, name })
 	const setDescription = (description) => setDraftInfo({ ...draftInfo, description })
@@ -122,6 +123,8 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 			})
 	}
 
+
+
 	const handleUploadFile = file => {
 		try {
 			const removedNullData = file.data.map(row => row.filter(val => val !== ''))
@@ -165,6 +168,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 				config: newConfig,
 			}
 			setDraftInfo(obj)
+			setDisableProtocol(true)
 		} catch (err) {
 			notifyFail(err.message)
 		}
@@ -208,7 +212,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 									onChange={(e) => setProtocol(e.target.value)}
 									placeholder='Select protocol'
 									required
-									disabled={mode === 'edit'}
+									disabled={mode === 'edit' || disableProtocol}
 								>
 									{deviceConfigInfo.map((protocol) => {
 										return (
@@ -366,8 +370,16 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 						})}
 
 						{/* Submit button */}
-						<div className='d-flex justify-content-end mt-2'>
-							<Button className='ms-2 text-white fw-bold' type='submit'>
+						<div className='d-flex justify-content-between mt-2'>
+							<Button className='outline-none text-dark' variant='outline-secondary'
+								onClick={() => {
+									setDraftInfo(initState)
+									setDisableProtocol(false)
+								}}
+							>
+								Clear
+							</Button>
+							<Button className='text-white fw-bold' type='submit'>
 								Submit
 							</Button>
 						</div>

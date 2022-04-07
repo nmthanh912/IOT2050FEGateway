@@ -44,6 +44,13 @@ $danger: #dc3545;
 .noborder-bottom {
     border-bottom: none !important;
 }
+.outline-none {
+    outline: none!important;
+}
+.outline-none:focus {
+    outline: none!important;
+    box-shadow: none!important;
+}
 
 .styled-table thead tr {
     background-color: $primary;

@@ -22,9 +22,9 @@ class DeviceConnection {
         const queue = new Queue(listRegEncoded)
         const dataFormat = DataFormat(this.deviceConfig.byteOrder, this.deviceConfig.wordOrder)
         const dataList = []
+        this.#getData(this.deviceConfig, dataFormat, queue, tagNumber, dataList)
 
         this.dataLoopRef = setInterval(() => {
-            this.#getData(this.deviceConfig, dataFormat, queue, tagNumber, dataList)
             console.log(dataList)
         }, this.deviceConfig.scanningCycle * 1000)
     }

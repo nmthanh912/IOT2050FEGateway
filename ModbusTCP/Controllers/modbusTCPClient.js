@@ -6,6 +6,9 @@ const timer = require('../utils/timer')
 const Queue = require('../utils/queue')
 const {DataFormat, DataDecode} = require('../dataParser/index')
 const {RegEncode} = require('./handleRegister')
+const removeAccents = require('../utils/removeAccents')
+const redis = require('./redisClient')
+redis.pubConnection()
 
 class DeviceConnection {
     constructor(configInfo) {
@@ -33,9 +36,12 @@ class DeviceConnection {
             const queue = new Queue(listRegEncoded)
             const dataFormat = DataFormat(this.deviceConfig.byteOrder, this.deviceConfig.wordOrder)
             const dataList = []
+            const deviceName = removeAccents(this.deviceConfig.name)
+            this.#getData(client, dataFormat, queue, tagNumber, dataList)
 
             this.dataLoopRef = setInterval(() => {
-                this.#getData(client, dataFormat, queue, tagNumber, dataList)
+                // console.log(`/data/${deviceName}`)
+                redis.pub2Redis(`data/${deviceName}`, dataList)
                 console.log(dataList)
             }, this.deviceConfig.scanningCycle * 1000)
         })

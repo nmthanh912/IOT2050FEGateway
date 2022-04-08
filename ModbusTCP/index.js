@@ -5,7 +5,11 @@ const app = express()
 
 const DeviceConnectionPool = require('./controllers/modbusTCPClient')
 const pool = new DeviceConnectionPool()
-pool.poweron('33dfc393')
+
+pool.poweron('46503bb3')
+setTimeout(() => pool.poweron('ce8a1c9c'), 1000)
+setTimeout(() => pool.poweron('33dfc393'), 2000)
+
 
 app.use(cors())
 

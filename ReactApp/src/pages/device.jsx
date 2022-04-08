@@ -1,7 +1,7 @@
 import SubHeader from "../components/subHeader";
 import DeviceModal from '../components/device/modal'
-import { useEffect, useState} from "react";
-import { useSelector  } from "react-redux";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import EdgeDevice from "../components/device/device";
 import removeAccents from "../utils/removeAccents";
 
@@ -14,9 +14,9 @@ export default function DevicePage() {
 
 	const [currDeviceList, setCurrDeviceList] = useState([])
 	const [savedQuery, setSavedQuery] = useState('')
-	
+
 	useEffect(() => {
-		if(savedQuery === '') setCurrDeviceList(deviceList)
+		if (savedQuery === '') setCurrDeviceList(deviceList)
 	}, [deviceList, savedQuery])
 
 	const searchDevice = query => {
@@ -28,7 +28,7 @@ export default function DevicePage() {
 		setSavedQuery(query)
 		setCurrDeviceList(arr)
 	}
-	
+
 	return <div>
 		<SubHeader
 			modal={<DeviceModal
@@ -53,8 +53,9 @@ export default function DevicePage() {
 		{currDeviceList.map(device => {
 			return <EdgeDevice key={device.ID} data={device} onDetail={() => {
 				setCurrDevice(device)
-				setShowEdit(true)}
-			}/>
+				setShowEdit(true)
+			}
+			} />
 		})}
 	</div>
 }

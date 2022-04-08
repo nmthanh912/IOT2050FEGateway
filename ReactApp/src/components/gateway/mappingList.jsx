@@ -3,7 +3,7 @@ import { Trash, PlusCircle } from "react-bootstrap-icons"
 import { Button, Form, InputGroup, Modal } from "react-bootstrap"
 import TagModal from "./tagModal"
 import GatewayService from '../../services/gateway'
-import removeAccents from "../../utils/removeAccents"
+import  { removeAccentsWithUnderscore } from "../../utils/removeAccents"
 import { useSelector } from "react-redux"
 
 export default function MappingList({ gatewayID }) {
@@ -98,7 +98,7 @@ export default function MappingList({ gatewayID }) {
                 tagList={configuringDevice.tagList}
                 deviceID={configuringDevice.ID}
                 gatewayID={gatewayID}
-                prefixTopic={'/iot2050fe/' + removeAccents(configuringDevice.name)}
+                prefixTopic={'/iot2050fe/' + removeAccentsWithUnderscore(configuringDevice.name)}
                 configCode={configuringDevice.code}
                 toggleCustom={configuringDevice.toggle}
             />

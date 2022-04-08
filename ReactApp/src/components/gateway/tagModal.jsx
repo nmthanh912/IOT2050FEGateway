@@ -4,10 +4,8 @@ import ReactPrismEditor from 'react-prism-editor'
 import ShortUniqueId from "short-unique-id"
 import removeAccents from "../../utils/removeAccents"
 import GatewayService from "../../services/gateway"
-import shortId from "../../utils/shortId"
 
-import { toast, ToastContainer } from "react-toastify"
-import { SuccessMessage, FailMessage } from "../toastMsg"
+import { toast } from "react-toastify"
 import ReactPaginate from "react-paginate"
 import { CaretLeft, CaretRight } from "react-bootstrap-icons"
 
@@ -29,11 +27,13 @@ export default function TagModal({
   const [code, setCode] = useState(commentStr)
   const [list, setList] = useState([])
 
-  const notifySuccess = msg => toast(<SuccessMessage msg={msg} />, {
-    progressClassName: 'Toastify__progress-bar--success'
+  const notifySuccess = msg => toast.success(msg, {
+    progressClassName: 'Toastify__progress-bar--success',
+    toastId: 'gatewayTagModalSucess'
   })
-  const notifyFail = msg => toast(<FailMessage msg={msg} />, {
-    progressClassName: 'Toastify__progress-bar--error'
+  const notifyFail = msg => toast.error(msg, {
+    progressClassName: 'Toastify__progress-bar--error',
+    toastId: 'gatewayTagModalFail'
   })
 
   useEffect(() => {
@@ -107,13 +107,6 @@ export default function TagModal({
   };
 
   return <div>
-    <ToastContainer
-      closeOnClick
-      pauseOnHover={false}
-      position="top-right"
-      autoClose={1500}
-      containerId={shortId()}
-    />
     <Modal show={show} onHide={onHide} centered size="xl">
       <Modal.Header className="bg-primary" >
         <h5 className="m-auto text-white">Config device's tags</h5>

@@ -4,15 +4,14 @@ import DeviceService from '../../services/device'
 import { useDispatch } from 'react-redux'
 import { addDevice, addManyDevice, updateDevice, updateTagList } from '../../redux/slices/device'
 import CSVReader from './CSVImporter'
-import { toast, ToastContainer } from 'react-toastify'
-import { SuccessMessage, FailMessage } from '../toastMsg'
-import shortId from '../../utils/shortId'
+import { toast } from 'react-toastify'
 
 export default function DeviceModal({ show, onHide, device, mode }) {
 	const [draftInfo, setDraftInfo] = useState(initState)
 	const csvRef = useRef(null)
 	const dispatch = useDispatch()
 	const [replicateNumber, setReplicateNumber] = useState(1)
+	const [disableProtocol, setDisableProtocol] = useState(false)
 
 	const setName = (name) => setDraftInfo({ ...draftInfo, name })
 	const setDescription = (description) => setDraftInfo({ ...draftInfo, description })
@@ -76,21 +75,25 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 		}
 	}, [device, mode])
 
-	const notifySuccess = (msg) =>
-		toast(<SuccessMessage msg={msg} />, {
-			progressClassName: 'Toastify__progress-bar--success',
-		})
-	const notifyFail = (msg) =>
-		toast(<FailMessage msg={msg} />, {
-			progressClassName: 'Toastify__progress-bar--error',
-		})
+	const notifySuccess = (msg) => toast.success(msg, {
+		progressClassName: 'Toastify__progress-bar--success',
+		toastId: 'deviceModalSuccess'
+	})
+	const notifyFail = msg => toast.error(msg, {
+		progressClassName: 'Toastify__progress-bar--error',
+		toastId: 'deviceModalFail'
+	})
 
 	const addDeviceToDB = () => {
 		const newDevice = {
 			...draftInfo,
 			protocol: draftInfo.protocol.value.toUpperCase(),
 		}
-		DeviceService.add(newDevice, replicateNumber)
+		let confirmDuplicate = true
+		if (replicateNumber >= 5) {
+			confirmDuplicate = window.confirm("Have you checked out the config infomation ?")
+		}
+		confirmDuplicate && DeviceService.add(newDevice, replicateNumber)
 			.then((response) => {
 				delete newDevice.config
 				const keyList = response.data.keyList
@@ -119,6 +122,8 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 				notifyFail(err.response.data.msg)
 			})
 	}
+
+
 
 	const handleUploadFile = file => {
 		try {
@@ -163,20 +168,14 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 				config: newConfig,
 			}
 			setDraftInfo(obj)
+			setDisableProtocol(true)
 		} catch (err) {
-			notifyFail(err.response.data.msg)
+			notifyFail(err.message)
 		}
 	}
 
 	return (
 		<div>
-			<ToastContainer
-				closeOnClick
-				pauseOnHover={false}
-				position='top-right'
-				autoClose={1800}
-				containerId={shortId()}
-			/>
 			<Modal show={show} onHide={onHide}>
 				<Modal.Header className='bg-primary text-white'>
 					<h5 className='m-auto'>{mode === 'add' ? 'Add new device' : 'Edit device'}</h5>
@@ -213,7 +212,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 									onChange={(e) => setProtocol(e.target.value)}
 									placeholder='Select protocol'
 									required
-									disabled={mode === 'edit'}
+									disabled={mode === 'edit' || disableProtocol}
 								>
 									{deviceConfigInfo.map((protocol) => {
 										return (
@@ -371,8 +370,16 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 						})}
 
 						{/* Submit button */}
-						<div className='d-flex justify-content-end mt-2'>
-							<Button className='ms-2 text-white fw-bold' type='submit'>
+						<div className='d-flex justify-content-between mt-2'>
+							<Button className='outline-none text-dark' variant='outline-secondary'
+								onClick={() => {
+									setDraftInfo(initState)
+									setDisableProtocol(false)
+								}}
+							>
+								Clear
+							</Button>
+							<Button className='text-white fw-bold' type='submit'>
 								Submit
 							</Button>
 						</div>

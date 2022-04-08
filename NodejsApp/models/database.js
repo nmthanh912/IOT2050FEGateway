@@ -1,7 +1,11 @@
+require('dotenv').config()
 var sqlite3 = require('sqlite3').verbose()
 const util = require('util')
 
-let db = new sqlite3.Database('../Database/database.db', (err) => {
+const DB_PATH = process.env.MODE === 'development' ?
+    '../Database/database.db' : './Database/database.db'
+
+let db = new sqlite3.Database(DB_PATH, (err) => {
     if (err) {
         console.error(err.message)
         throw err

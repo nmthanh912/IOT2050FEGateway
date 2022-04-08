@@ -15,33 +15,10 @@ class RedisClient {
             },
         }
         this.redisPub = null
-        this.redisSub = null
     }
 
     pub2Redis(channel, msg) {
         this.redisPub.publish(channel, JSON.stringify(msg))
-    }
-
-    subRedis(pattern) {
-        this.redisClient.psubscribe(pattern, (err, count) => {})
-        this.redisClient.on('pmessage', (pattern, channel, message) => {
-            console.log('pattern', pattern)
-            console.log('channel', channel)
-            console.log('message', message)
-        })
-    }
-
-    subConnection() {
-        const options = this.options
-        this.redisSub = new Redis(options)
-
-        this.redisSub.on('connect', () => {
-            console.log('ModbusTCP container connected to Redis Broker successfully!')
-        })
-
-        this.redisSub.on('error', (err) => {
-            console.log('Could not connect to Redis Broker!' + err.toString())
-        })
     }
 
     pubConnection() {
@@ -55,10 +32,6 @@ class RedisClient {
         this.redisPub.on('error', (err) => {
             console.log('Could not connect to Redis Broker!' + err.toString())
         })
-    }
-
-    subDisconnect() {
-        this.redisSub.disconnect()
     }
 
     pubDisconnect() {

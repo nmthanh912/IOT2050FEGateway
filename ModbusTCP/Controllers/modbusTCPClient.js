@@ -40,7 +40,6 @@ class DeviceConnection {
             this.#getData(client, dataFormat, queue, tagNumber, dataList)
 
             this.dataLoopRef = setInterval(() => {
-                // console.log(`/data/${deviceName}`)
                 redis.pub2Redis(`data/${deviceName}`, dataList)
                 console.log(dataList)
             }, this.deviceConfig.scanningCycle * 1000)

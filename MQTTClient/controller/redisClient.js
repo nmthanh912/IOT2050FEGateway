@@ -28,8 +28,11 @@ class RedisClient {
                 }
             })
 
+            
+
             this.subRedis.on('message', (channel, message) => {
                 const dataList = JSON.parse(message)
+                // console.log(dataList)
                 item.tagNameList.forEach((tagName) => {
                     const tagData = dataList.find((data) => data.name === tagName)
                     if (tagData !== undefined) {

@@ -22,21 +22,19 @@ class MQTTConnection {
     #connection() {
         this.mqtt = mqttClient.connect(`mqtt://${this.ip}:${this.port}`, this.clientOptions)
 
-        this.mqtt.on('reconnect', () => {
-            console.log('MQTT Client try to reconnect to Broker!')
-        })
-
-        this.mqtt.on('offline', () => {
-            console.log('MQTT Client went offline!')
-        })
-
-        this.mqtt.on('error', (err) => {
-            console.log('Client cannot connect to Broker!', err)
-        })
-
-        this.mqtt.on('connect', () => {
-            redis.sub2Redis(this.mqtt, this.listSub)
-        })
+        this.mqtt
+            .on('reconnect', () => {
+                console.log('MQTT Client try to reconnect to Broker!')
+            })
+            .on('offline', () => {
+                console.log('MQTT Client went offline!')
+            })
+            .on('error', (err) => {
+                console.log('Client cannot connect to Broker!', err)
+            })
+            .on('connect', () => {
+                redis.sub2Redis(this.mqtt, this.listSub)
+            })
     }
 
     poweron() {
@@ -44,7 +42,9 @@ class MQTTConnection {
     }
 
     shutdown() {
-        redis.subDisconnect()
+        if (redis.subRedis !== null) {
+            redis.subDisconnect()
+        }
         this.mqtt.end()
     }
 }
@@ -70,11 +70,19 @@ class MQTTConnectionPool {
     }
 
     shutdown(mqttID) {
-        const connection = this.#pool.find(conn => conn.mqttID === mqttID)
+        const connection = this.#pool.find((conn) => conn.mqttID === mqttID)
         if (connection !== undefined) {
             connection.shutdown()
             this.#pool.slice(this.#pool.indexOf(connection), 1)
         }
+    }
+
+    mqttState() {
+        const mqttID = []
+        this.#pool.forEach((conn) => {
+            mqttID.push(conn.mqttID)
+        })
+        return mqttID
     }
 }
 

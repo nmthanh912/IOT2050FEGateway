@@ -148,6 +148,14 @@ class DeviceConnectionPool {
             this.#pool.splice(this.#pool.indexOf(connection), 1)
         }
     }
+
+    deviceState() {
+        const deviceID = []
+        this.#pool.forEach((conn) => {
+            deviceID.push(conn.deviceConfig.ID)
+        })
+        return deviceID
+    }
 }
 
 module.exports = DeviceConnectionPool

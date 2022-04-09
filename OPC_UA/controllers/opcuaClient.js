@@ -193,6 +193,15 @@ class DeviceConnection {
             clearInterval(connection.dataLoopRef)
         }
     }
+
+    deviceState() {
+        const deviceID = []
+        this.#pool.forEach((conn) => {
+            deviceID.push(conn.deviceID)
+        })
+        return deviceID
+    }
+
 }
 
 module.exports = DeviceConnection

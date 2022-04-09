@@ -10,6 +10,10 @@ pool.poweron('46503bb3')
 setTimeout(() => pool.poweron('ce8a1c9c'), 1000)
 setTimeout(() => pool.poweron('33dfc393'), 2000)
 
+setTimeout(() => {
+    console.log(pool.deviceState())
+}, 10000)
+
 
 app.use(cors())
 

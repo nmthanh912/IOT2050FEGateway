@@ -9,8 +9,7 @@ const writeFile = util.promisify(fs.writeFile.bind(fs))
 const readFile = util.promisify(fs.readFile.bind(fs))
 // const rm = util.promisify(fs.rm.bind(fs))
 
-const JSON_PATH = process.env.MODE === "development" ?
-    '../customJSON' : './customJSON'
+const JSON_PATH = process.env.MODE === 'development' ? '../customJSON' : './customJSON'
 
 class GatewayController {
     create(req, res) {
@@ -76,11 +75,11 @@ class GatewayController {
         handler(res, async () => {
             await dbRun(sqlQuery, [gatewayID])
 
-            const files = fs.readdirSync(JSON_PATH).filter(fn => fn.slice(0, 8) === gatewayID);
-            const unlinkPromises = files.map(file => unlink(JSON_PATH + file))
+            const files = fs.readdirSync(JSON_PATH).filter((fn) => fn.slice(0, 8) === gatewayID)
+            const unlinkPromises = files.map((file) => unlink(JSON_PATH + file))
             await Promise.all(unlinkPromises)
 
-            res.json({ msg: 'Success' })
+            res.json({msg: 'Success'})
         })
     }
 
@@ -97,24 +96,24 @@ class GatewayController {
     }
 
     addSubscribeDevice(req, res) {
-        const { gatewayID, deviceID } = req.body
+        const {gatewayID, deviceID} = req.body
         const addSubsQuery = `INSERT INTO SUBSCRIBES VALUES (?, ?, ?)`
         const addConfigQuery = `INSERT INTO CONFIGS VALUES (?, ?, ?)`
         handler(res, async () => {
             await dbRun(addSubsQuery, [gatewayID, deviceID, null])
             await dbRun(addConfigQuery, [gatewayID, deviceID, 0])
-            res.json({ msg: 'OKE' })
+            res.json({msg: 'OKE'})
         })
     }
     removeSubscribeDevice(req, res) {
         console.log(req.query)
-        const { gid: gatewayID, did: deviceID } = req.query
+        const {gid: gatewayID, did: deviceID} = req.query
         const deleteSubsQuery = `DELETE FROM subscribes WHERE gatewayID = ? AND deviceID = ?`
         const deleteConfigQuery = `DELETE FROM configs WHERE gatewayID = ? AND deviceID = ?`
         handler(res, async () => {
             await dbRun(deleteSubsQuery, [gatewayID, deviceID])
             await dbRun(deleteConfigQuery, [gatewayID, deviceID])
-            res.json({ msg: 'OKE' })
+            res.json({msg: 'OKE'})
         })
     }
 
@@ -147,14 +146,13 @@ class GatewayController {
             let code = null
             if (exists) code = await readFile(`${JSON_PATH}/${gatewayId}_${deviceId}.json`, 'utf-8')
 
-
-            res.json({ tagList: list, code, toggle: useCustom[0].toggle })
+            res.json({tagList: list, code, toggle: useCustom[0].toggle})
             // }
         })
     }
 
     updateSubcribedDeviceConfig(req, res) {
-        const { gid: gatewayID, did: deviceID } = req.params
+        const {gid: gatewayID, did: deviceID} = req.params
         const data = req.body // code, tagList, toggle
         console.log(req.params)
 

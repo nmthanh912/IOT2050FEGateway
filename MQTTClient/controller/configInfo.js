@@ -2,7 +2,7 @@ const {dbAll} = require('../models/dbConnect')
 
 const getConfig = async (id) => {
     const getInfoQuery = `SELECT MQTT_CLIENT.*, 
-    GROUP_CONCAT(SUBSCRIBES.tagName) AS tagName, DEVICE.name AS deviceName
+    GROUP_CONCAT(SUBSCRIBES.tagName) AS tagName, DEVICE.name AS deviceName, DEVICE.ID AS deviceID
     FROM MQTT_CLIENT 
         JOIN SUBSCRIBES ON MQTT_CLIENT.ID = SUBSCRIBES.gatewayID 
         JOIN TAG ON TAG.deviceID = SUBSCRIBES.deviceID AND TAG.name = SUBSCRIBES.tagName
@@ -19,6 +19,8 @@ const getConfig = async (id) => {
             configInfo.forEach((config) => {
                 listSub.push({
                     deviceName: config.deviceName,
+                    deviceID: config.deviceID,
+                    mqttID: config.ID,
                     tagNameList: config.tagName.split(','),
                 })
             })

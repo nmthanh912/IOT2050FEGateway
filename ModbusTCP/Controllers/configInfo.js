@@ -6,7 +6,7 @@ const getConfig = async (protocolName, id) => {
         GROUP_CONCAT(
         ${protocolName}_TAG.name || ',' || ${protocolName}_TAG.address || ',' || ${protocolName}_TAG.unit || ',' || 
         ${protocolName}_TAG.dataType || ',' || ${protocolName}_TAG.PF || ',' || ${protocolName}_TAG.size , ';'
-        ) as tagInfo
+        ) AS tagInfo
     FROM DEVICE 
         JOIN ${protocolName} ON DEVICE.ID = ${protocolName}.deviceID
         JOIN TAG ON TAG.deviceID = DEVICE.ID 

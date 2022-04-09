@@ -1,14 +1,13 @@
 {
   "dependencies": {
-    "cors": "^2.8.5",
     "express": "^4.17.3",
     "ioredis": "^5.0.3",
-    "node-opcua": "^2.66.3",
+    "mqtt": "^4.3.7",
+    "nodemon": "^2.0.15",
     "sqlite3": "^5.0.2"
   },
-  "name": "opc_ua",
+  "name": "mqttclient",
   "version": "1.0.0",
-  "description": "protocol opc_ua",
   "main": "index.js",
   "scripts": {
     "start": "nodemon --inspect index.js",
@@ -23,5 +22,6 @@
   "bugs": {
     "url": "https://github.com/nmthanh912/IOT2050FEGateway/issues"
   },
-  "homepage": "https://github.com/nmthanh912/IOT2050FEGateway#readme"
+  "homepage": "https://github.com/nmthanh912/IOT2050FEGateway#readme",
+  "description": ""
 }

@@ -1,17 +1,17 @@
 const modbusRTU = require('modbus-serial')
 
 const getConfig = require('./configInfo')
-const timer = require('../utils/timer')
 const Queue = require('../utils/queue')
 const {DataFormat, DataDecode} = require('../dataParser/index')
 const {RegEncode} = require('./handleRegister')
-
+const removeAccents = require('../utils/removeAccents')
+const redis = require('./redisClient')
+redis.pubConnection()
 class DeviceConnection {
     constructor(deviceConfig, tagList, client) {
         this.deviceConfig = deviceConfig
         this.tagList = tagList
         this.client = client
-        this.time = 1
         this.dataLoopRef = null
         this.valueLoopRef = null
     }
@@ -22,9 +22,11 @@ class DeviceConnection {
         const queue = new Queue(listRegEncoded)
         const dataFormat = DataFormat(this.deviceConfig.byteOrder, this.deviceConfig.wordOrder)
         const dataList = []
+        const deviceName = removeAccents(this.deviceConfig.name)
+        this.#getData(this.deviceConfig, dataFormat, queue, tagNumber, dataList)
 
         this.dataLoopRef = setInterval(() => {
-            this.#getData(this.deviceConfig, dataFormat, queue, tagNumber, dataList)
+            redis.pub2Redis(`data/${deviceName}`, dataList)
             console.log(dataList)
         }, this.deviceConfig.scanningCycle * 1000)
     }
@@ -92,7 +94,6 @@ class DeviceConnectionPool {
     constructor() {
         this.#pool = []
         this.client = null
-        this.time = 1
     }
 
     async #connection(comPortNum, options) {

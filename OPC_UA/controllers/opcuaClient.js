@@ -2,6 +2,9 @@ const {OPCUAClient, makeBrowsePath, AttributeIds, resolveNodeId, TimestampsToRet
 const async = require('async')
 
 const getConfig = require('./configInfo')
+const removeAccents = require('../utils/removeAccents')
+const redis = require('./redisClient')
+redis.pubConnection()
 
 function getData(deviceConfig, nodeList, callback) {
     const endpoint = deviceConfig.url
@@ -130,6 +133,8 @@ function getData(deviceConfig, nodeList, callback) {
                     }
                 })
                 dataLoopRef = setInterval(() => {
+                    const deviceName = removeAccents(deviceConfig.name)
+                    redis.pub2Redis(`data/${deviceName}`, dataList)
                     console.log(dataList)
                 }, deviceConfig.scanningCycle * 1000)
                 callback()

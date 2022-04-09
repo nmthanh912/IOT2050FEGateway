@@ -4,9 +4,8 @@ const app = express()
 
 const MQTTConnectionPool = require('./controller/mqttClient')
 const pool = new MQTTConnectionPool()
-pool.poweron('2ce17b4a')
+pool.poweron('7f958a74')
 
-setTimeout(() => pool.shutdown('2ce17b4a'), 5000)
 
 app.listen(port, function () {
     console.log(`Server listening on port ${port}!`)

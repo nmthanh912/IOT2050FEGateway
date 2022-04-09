@@ -7,7 +7,7 @@ const util = require('util')
 
 const writeFile = util.promisify(fs.writeFile.bind(fs))
 const readFile = util.promisify(fs.readFile.bind(fs))
-// const rm = util.promisify(fs.rm.bind(fs))
+const unlink = util.promisify(fs.unlink.bind(fs))
 
 const JSON_PATH = process.env.MODE === 'development' ? '../customJSON' : './customJSON'
 
@@ -119,7 +119,9 @@ class GatewayController {
         const { gid: gatewayID, did: deviceID } = req.query
         const deleteSubsQuery = `DELETE FROM subscribes WHERE gatewayID = ? AND deviceID = ?`
         const deleteConfigQuery = `DELETE FROM configs WHERE gatewayID = ? AND deviceID = ?`
+
         handler(res, async () => {
+            await unlink(JSON_PATH + '/' + gatewayID + '_' + deviceID + '.json')
             await dbRun(deleteSubsQuery, [gatewayID, deviceID])
             await dbRun(deleteConfigQuery, [gatewayID, deviceID])
             res.json({msg: 'OKE'})

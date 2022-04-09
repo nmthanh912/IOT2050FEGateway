@@ -19,7 +19,7 @@ class GatewayController {
         let ID = uniqueId()
         gatewayData.push(ID)
         gatewayData = gatewayData.concat(infoData).concat(configData)
-        gatewayData[gatewayData.length - 1] = parseInt(gatewayData[gatewayData.length - 1])
+        console.log(gatewayData)
 
         let protocol = req.body.protocol.toUpperCase()
         const sqlQuery = `INSERT INTO ${protocol} VALUES (${'?,'.repeat(gatewayData.length).slice(0, -1)})`
@@ -40,9 +40,7 @@ class GatewayController {
     }
 
     update(req, res) {
-        console.log(req.query.id)
         const data = req.body
-        console.log(data)
         const protocol = data.protocol
 
         const sqlQuery = `UPDATE ${protocol}
@@ -52,7 +50,8 @@ class GatewayController {
                 username = ?,
                 password = ?,
                 IP = ?,
-                port = ?
+                port = ?,
+                QoS = ?
             WHERE ID = ?
         `
         handler(res, async () => {
@@ -63,6 +62,7 @@ class GatewayController {
                 data.config.password,
                 data.config.IP,
                 data.config.port,
+                data.config.QoS,
                 req.query.id,
             ])
             res.json({msg: 'success'})
@@ -75,8 +75,8 @@ class GatewayController {
         handler(res, async () => {
             await dbRun(sqlQuery, [gatewayID])
 
-            const files = fs.readdirSync(JSON_PATH).filter((fn) => fn.slice(0, 8) === gatewayID)
-            const unlinkPromises = files.map((file) => unlink(JSON_PATH + file))
+            const files = fs.readdirSync(JSON_PATH).filter(fn => fn.slice(0, 8) === gatewayID);
+            const unlinkPromises = files.map(file => unlink(JSON_PATH + '/' + file))
             await Promise.all(unlinkPromises)
 
             res.json({msg: 'Success'})
@@ -95,19 +95,28 @@ class GatewayController {
         })
     }
 
-    addSubscribeDevice(req, res) {
-        const {gatewayID, deviceID} = req.body
-        const addSubsQuery = `INSERT INTO SUBSCRIBES VALUES (?, ?, ?)`
-        const addConfigQuery = `INSERT INTO CONFIGS VALUES (?, ?, ?)`
+    addSubscribeDevices(req, res) {
+        const { gatewayID, deviceIDList } = req.body
+        console.log(gatewayID, deviceIDList)
+        const addSubsQuery = `
+            INSERT INTO SUBSCRIBES VALUES 
+            ${"(?, ?, ?),".repeat(deviceIDList.length).slice(0, -1)}
+        `
+        const subsParams = deviceIDList.map(deviceID => [gatewayID, deviceID, null]).flat(1)
+
+        const addConfigQuery = `
+            INSERT INTO CONFIGS VALUES 
+            ${'(?, ?, ?),'.repeat(deviceIDList.length).slice(0, -1)}
+        `
+        const configParams =  deviceIDList.map(deviceID => [gatewayID, deviceID, 0]).flat(1)
         handler(res, async () => {
-            await dbRun(addSubsQuery, [gatewayID, deviceID, null])
-            await dbRun(addConfigQuery, [gatewayID, deviceID, 0])
-            res.json({msg: 'OKE'})
+            await dbRun(addSubsQuery, subsParams)
+            await dbRun(addConfigQuery, configParams)
+            res.json({ msg: 'OKE' })
         })
     }
     removeSubscribeDevice(req, res) {
-        console.log(req.query)
-        const {gid: gatewayID, did: deviceID} = req.query
+        const { gid: gatewayID, did: deviceID } = req.query
         const deleteSubsQuery = `DELETE FROM subscribes WHERE gatewayID = ? AND deviceID = ?`
         const deleteConfigQuery = `DELETE FROM configs WHERE gatewayID = ? AND deviceID = ?`
         handler(res, async () => {
@@ -138,7 +147,6 @@ class GatewayController {
                 return {subscribe, ...val}
             })
 
-            // console.log([gatewayId, deviceId])
             const useCustomQuery = `SELECT toggle FROM configs WHERE gatewayID = ? AND deviceID = ?`
             let useCustom = await dbAll(useCustomQuery, [gatewayId, deviceId])
 
@@ -154,7 +162,6 @@ class GatewayController {
     updateSubcribedDeviceConfig(req, res) {
         const {gid: gatewayID, did: deviceID} = req.params
         const data = req.body // code, tagList, toggle
-        console.log(req.params)
 
         handler(res, async () => {
             const updateToggleQuery = `UPDATE configs SET toggle = ? WHERE gatewayID = ? AND deviceID = ?`

@@ -70,9 +70,10 @@ services:
       - 4002:4002
 
   redis:
-    container_name: cache
+    container_name: redis
     image: redis:alpine
     restart: unless-stopped
-db:
+    
+volumes:
   sqlitedb:
   customJSON:

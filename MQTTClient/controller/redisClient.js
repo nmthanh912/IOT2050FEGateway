@@ -1,13 +1,13 @@
+require('dotenv').config()
 const Redis = require('ioredis')
 const removeAccents = require('../utils/removeAccents')
 const fs = require('fs')
-// const util = require('util')
-// const readFile = util.promisify(fs.readFile.bind(fs))
+const JSON_PATH = process.env.MODE === 'development' ? '../customJSON' : './customJSON'
 
 class RedisClient {
     constructor() {
         this.options = {
-            host: '127.0.0.1',
+            host: process.env.MODE === 'development' ? '127.0.0.1' : 'redis',
             port: 6379,
             maxRetriesPerRequest: null,
             retryStrategy(times) {
@@ -21,7 +21,7 @@ class RedisClient {
         this.redis = null
     }
 
-    sub2Redis(mqtt, listSub) {
+    sub2Redis(mqtt, listSub, pubOption) {
         this.#subConnection()
         listSub.forEach((item) => {
             const deviceName = removeAccents(item.deviceName)
@@ -31,7 +31,7 @@ class RedisClient {
                 }
             })
             if (item.onCustomMode) {
-                fs.readFile(`../customJSON/${item.mqttID}_${item.deviceID}.json`, 'utf-8', (err, content) => {
+                fs.readFile(`${JSON_PATH}/${item.mqttID}_${item.deviceID}.json`, 'utf-8', (err, content) => {
                     let customJSON = content
                     let hasBeenRead = false
                     const obj = {}
@@ -52,25 +52,25 @@ class RedisClient {
                         eval(`
                             sendValue = ${customJSON}
                         `)
-                        mqtt.publish(`/iot2050/${deviceName}`, JSON.stringify(sendValue))
+                        mqtt.publish(`/iot2050/${deviceName}`, JSON.stringify(sendValue), pubOption)
                     })
                 })
             } else {
                 this.redis.on('message', (channel, message) => {
                     const dataList = JSON.parse(message)
                     item.tagNameList.forEach((tagName) => {
-                        this.#normalPublish(mqtt, deviceName, tagName, dataList)
+                        this.#normalPublish(mqtt, deviceName, tagName, dataList, pubOption)
                     })
                 })
             }
         })
     }
 
-    #normalPublish(mqtt, deviceName, tagName, dataList) {
+    #normalPublish(mqtt, deviceName, tagName, dataList, pubOption) {
         const tagData = dataList.find((data) => data.name === tagName)
         if (tagData !== undefined) {
             const topicPub = `data/${deviceName}/` + removeAccents(tagData.name)
-            mqtt.publish(topicPub, JSON.stringify(tagData))
+            mqtt.publish(topicPub, JSON.stringify(tagData), pubOption)
             console.log(tagData)
         }
     }

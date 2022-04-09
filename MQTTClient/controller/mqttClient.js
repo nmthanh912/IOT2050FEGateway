@@ -14,7 +14,7 @@ class MQTTConnection {
             reconnectPeriod: 1000,
         }
         this.pubOption = {
-            qos: mqttConfig.qos,
+            QoS: mqttConfig.QoS,
         }
         this.listSub = listSub
     }
@@ -33,7 +33,7 @@ class MQTTConnection {
                 console.log('Client cannot connect to Broker!', err)
             })
             .on('connect', () => {
-                redis.sub2Redis(this.mqtt, this.listSub)
+                redis.sub2Redis(this.mqtt, this.listSub, this.pubOption)
             })
     }
 

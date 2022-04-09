@@ -6,11 +6,12 @@ services:
       context: ./NodejsApp
       dockerfile: Dockerfile
     volumes:
-      - sqlitedb: /usr/src/app/Database
-      - customJSON: /usr/src/app/customJSON
+      - sqlitedb: /usr/src/app/iot2050cfserver/Database
+      - customJSON: /usr/src/app/iot2050cfserver/customJSON
     restart: always
     ports:
       - 4000:4000
+
   application:
     container_name: application
     build:
@@ -19,7 +20,59 @@ services:
     restart: always
     ports:
       - 3000:3000
+  
+  mqttclient:
+    container_name: mqttclient
+    build:
+      context: ./MQTTClient
+      dockerfile: Dockerfile
+    volumes:
+      - sqlitedb: /usr/src/app/mqttclient/Database
+      - customJSON: /usr/src/app/mqttclient/customJSON
+    restart: always
+    ports:
+      - 4005:4005
 
+  opc_ua:
+    container_name: opc_ua
+    build:
+      context: ./OPC_UA
+      dockerfile: Dockerfile
+    volumes:
+      - sqlitedb: /usr/src/app/opc_ua/Database
+      - customJSON: /usr/src/app/opc_ua/customJSON
+    restart: always
+    ports:
+      - 4004:4004
+  
+  modbustcp:
+    container_name: modbustcp
+    build:
+      context: ./ModbusTCP
+      dockerfile: Dockerfile
+    volumes:
+      - sqlitedb: /usr/src/app/modbustcp/Database
+      - customJSON: /usr/src/app/modbustcp/customJSON
+    restart: always
+    ports:
+      - 4001:4001
+  
+  modbusrtu:
+    container_name: modbusrtu
+    build:
+      context: ./ModbusRTU
+      dockerfile: Dockerfile
+    volumes:
+      - sqlitedb: /usr/src/app/modbusrtu/Database
+      - customJSON: /usr/src/app/modbusrtu/customJSON
+    restart: always
+    ports:
+      - 4002:4002
+
+  redis:
+    container_name: cache
+    image: redis:alpine
+    restart: unless-stopped
 db:
   sqlitedb:
   customJSON:

@@ -11,6 +11,7 @@ const unlink = util.promisify(fs.unlink.bind(fs))
 
 const JSON_PATH = process.env.MODE === 'development' ? '../customJSON' : './customJSON'
 
+
 class GatewayController {
     create(req, res) {
         let gatewayData = []

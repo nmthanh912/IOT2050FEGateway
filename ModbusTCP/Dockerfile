@@ -1,7 +1,7 @@
 FROM node:16-alpine
 
 # Create app directory (physical path in host)
-WORKDIR /usr/src/app/iot2050cfserver
+WORKDIR /usr/src/app/modbustcp
 
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
@@ -9,7 +9,6 @@ WORKDIR /usr/src/app/iot2050cfserver
 COPY package*.json ./
 
 RUN mkdir Database
-RUN mkdir customJSON
 
 RUN npm install
 
@@ -21,6 +20,6 @@ RUN npm i sqlite3
 # Bundle app source
 COPY . .
 
-EXPOSE 4000
+EXPOSE 4001
 
 CMD [ "node", "index.js" ]

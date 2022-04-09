@@ -1,9 +1,10 @@
+require('dotenv').config()
 const Redis = require('ioredis')
 
 class RedisClient {
     constructor() {
         this.options = {
-            host: '127.0.0.1',
+            host: process.env.MODE === "development" ? '127.0.0.1' : 'redis',
             port: 6379,
             maxRetriesPerRequest: null,
             retryStrategy(times) {

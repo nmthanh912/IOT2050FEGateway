@@ -24,6 +24,7 @@ export default function App() {
                 position='top-right'
                 autoClose={1800}
                 containerId={shortId()}
+                newestOnTop={true}
             />
             <Routes>
                 <Route path='/' element={<Navigate to={'/device'} />} />

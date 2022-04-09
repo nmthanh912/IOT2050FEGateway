@@ -94,7 +94,7 @@ export default function EdgeDevice({ data, onDetail }) {
             dispatch(removeDevice(data.ID))
             notifySuccess('Delete device successfully')
         }).catch(err => {
-            notifyFail(err.message)
+            notifyFail(err.response.data.msg)
         })
     }
 
@@ -151,7 +151,6 @@ export default function EdgeDevice({ data, onDetail }) {
                                 }}
                             />
                         </Button>
-
                     </div>
                 </div>
                 <div style={{ display: 'none' }}>

@@ -76,16 +76,33 @@ export default function ConfigModal({ show, onHide, onSubmit, editTarget }) {
                 <h5><b>Configration Info</b></h5>
                 {gatewayInfo.protocol.attrs.map(attr => {
                     const label = attr.name.charAt(0).toUpperCase() + attr.name.slice(1)
-                    return <Form.Group key={attr.name} className='mb-2'>
-                        <Form.Label>{label}:</Form.Label>
-                        <Form.Control
-                            type={attr.type}size="sm"
-                            placeholder={label + ' ...'}
-                            required
-                            value={gatewayInfo.config[attr.name] ? gatewayInfo.config[attr.name] : ''}
-                            onChange={e => setConfig({ ...gatewayInfo.config, [attr.name]: e.target.value })}
-                        />
-                    </Form.Group>
+                    return attr.type !== "select" ?
+                        <Form.Group key={attr.name} className='mb-2'>
+                            <Form.Label>{label}:</Form.Label>
+                            <Form.Control
+                                type={attr.type} size="sm"
+                                placeholder={label + ' ...'}
+                                required
+                                value={gatewayInfo.config[attr.name] ? gatewayInfo.config[attr.name] : ''}
+                                onChange={e => setConfig({
+                                    ...gatewayInfo.config,
+                                    [attr.name]: attr.type === "number" ? parseInt(e.target.value) : e.target.value
+                                })}
+                            />
+                        </Form.Group>
+                        : <Form.Group key={attr.name} className='mb-2'>
+                            <Form.Label>{label}:</Form.Label>
+                            <Form.Select
+                                size="sm"
+                                placeholder={label + ' ...'}
+                                required
+                                value={gatewayInfo.config[attr.name] ? gatewayInfo.config[attr.name] : ''}
+                                onChange={e => setConfig({ ...gatewayInfo.config, [attr.name]: e.target.value })}
+                            >
+                                <option value={''}>--- Pick a QoS ---</option>
+                                {attr.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                            </Form.Select>
+                        </Form.Group>
                 })}
 
                 <Button className="float-end text-white" type="submit">
@@ -111,6 +128,10 @@ const gatewayProtocol = [{
     }, {
         name: 'port',
         type: 'number'
+    }, {
+        name: 'QoS',
+        type: 'select',
+        options: [0, 1, 2]
     }]
 }]
 

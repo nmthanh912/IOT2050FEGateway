@@ -1,13 +1,11 @@
-import DropdownItem from "../components/dropdownItem";
 import Modal from '../components/gateway/modal'
 import SubHeader from "../components/subHeader";
-import MappingList from "../components/gateway/mappingList";
 import { useEffect, useState } from "react";
 import GatewayService from "../services/gateway";
 import { useSelector, useDispatch } from 'react-redux'
 import { toast } from 'react-toastify'
 import removeAccents from "../utils/removeAccents";
-import shortId from "../utils/shortId";
+import Gateway from "../components/gateway/gateway";
 
 export default function GatewayPage() {
   const deviceList = useSelector(state => state.device)
@@ -55,7 +53,8 @@ export default function GatewayPage() {
             username: data.username,
             password: data.password,
             IP: data.IP,
-            port: data.port
+            port: data.port,
+            QoS: data.QoS
           }
         }
         gatewayList.push(gateway)
@@ -111,30 +110,18 @@ export default function GatewayPage() {
     />
     <hr />
 
-    {currGatewatList.map(gateway =>
-      <DropdownItem key={shortId()}
-        onEdit={() => {
-          setShowModal(true)
-          setEditTarget(gateway)
-        }}
-        onDelete={() => {
-          const confirm = window.confirm("Do you want to delete this gateway")
-          confirm && deleteGateway(gateway.ID)
-          setEditTarget(null)
-        }}
-      >
-        <DropdownItem.Header>
-          <div className="row">
-            <div className="text-primary col-3"><u>#{gateway.ID}</u></div>
-            <div className="fw-bold col-4">{gateway.name}</div>
-            <div className="col-5">{gateway.description}</div>
-          </div>
-        </DropdownItem.Header>
-        <DropdownItem.Body>
-          <MappingList gatewayID={gateway.ID} />
-
-        </DropdownItem.Body>
-      </DropdownItem>)}
+    {currGatewatList.map(gateway => <Gateway
+      data={gateway} key={gateway.ID}
+      onEdit={() => {
+        setShowModal(true)
+        setEditTarget(gateway)
+      }}
+      onDelete={() => {
+        const confirm = window.confirm("Do you want to delete this gateway")
+        confirm && deleteGateway(gateway.ID)
+        setEditTarget(null)
+      }}
+    />)}
   </div>
 }
 

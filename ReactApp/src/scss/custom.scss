@@ -85,4 +85,7 @@ $danger: #dc3545;
     border-color: $secondary !important;
 }
 
+.border-primary {
+    border-color: $primary !important; 
+}
 @import "~bootstrap/scss/bootstrap.scss";

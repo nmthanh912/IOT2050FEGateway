@@ -297,7 +297,7 @@ class Device {
             await dbRun(deleteDeviceQuery, [deviceID])
 
             const files = fs.readdirSync(JSON_PATH).filter((fn) => fn.slice(9, 17) === deviceID)
-            const unlinkPromises = files.map((file) => unlink(JSON_PATH + file))
+            const unlinkPromises = files.map((file) => unlink(JSON_PATH + '/' + file))
             await Promise.all(unlinkPromises)
 
             res.json({

@@ -8,11 +8,11 @@ class Service {
     getSubcribedDevices(gatewayId) {
         return configHttp.get(`/gateways/devices?id=${gatewayId}`)
     }
-    addSubscribeDevice(gatewayID, deviceID) {
-        return configHttp.post(`/gateways/device/add?`, { gatewayID, deviceID })
+    addSubscribeDevices(gatewayID, deviceIDList) {
+        return configHttp.post(`/gateways/sub?`, { gatewayID, deviceIDList })
     }
     removeSubscribedDevice(gatewayId, deviceId) {
-        return configHttp.delete(`/gateways/device/delete?gid=${gatewayId}&did=${deviceId}`)
+        return configHttp.delete(`/gateways/unsub?gid=${gatewayId}&did=${deviceId}`)
     }
 
     getSubcribedDeviceConfig(gatewayId, deviceId, protocol) {

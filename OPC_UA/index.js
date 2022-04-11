@@ -3,13 +3,10 @@ const cors = require('cors')
 const port = 4004
 const app = express()
 
+const redis = require('./redis/redisClient')
+
 const DeviceConnection = require('./controllers/opcuaClient')
 const pool = new DeviceConnection()
-pool.poweron('003385db')
-
-// setTimeout(() => pool.poweron('003385dc'), 7000)
-
-// setTimeout(() => pool.shutdown('003385dc'), 15000)
 
 app.use(cors())
 
@@ -24,5 +21,10 @@ app.get('/shutdown', function (req, res) {
 })
 
 app.listen(port, function () {
-    console.log(`Server ModbusTCP is listening on port ${port}!`)
+    redis.pub2Redis('log', {
+        serviceName: 'OPC_UA',
+        level: 'info',
+        errMsg: `Server OPC_UA is listening on port ${port}!`,
+    })
+    console.log(`Server OPC_UA is listening on port ${port}!`)
 })

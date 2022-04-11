@@ -1,7 +1,9 @@
 require('dotenv').config()
 const Redis = require('ioredis')
-const removeAccents = require('../utils/removeAccents')
 const fs = require('fs')
+
+const pubRedis = require('../redis/pubRedisClient')
+const removeAccents = require('../utils/removeAccents')
 const JSON_PATH = process.env.MODE === 'development' ? '../customJSON' : './customJSON'
 
 class RedisClient {
@@ -27,6 +29,7 @@ class RedisClient {
             const deviceName = removeAccents(item.deviceName)
             this.redis.subscribe(`data/${deviceName}`, (err, count) => {
                 if (err) {
+                    pubRedis.pub2Redis('log', {serviceName: 'MQTTClient', level: 'error', errMsg: err})
                     console.log('Subscribe to topic has errror!')
                 }
             })

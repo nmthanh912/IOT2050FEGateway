@@ -1,6 +1,8 @@
 const mqttClient = require('mqtt')
+
 const getConfig = require('./configInfo')
-const redis = require('./redisClient')
+const subRedis = require('../redis/subRedisClient')
+const pubRedis = require('../redis/pubRedisClient')
 
 class MQTTConnection {
     constructor(mqttConfig, listSub) {
@@ -24,16 +26,28 @@ class MQTTConnection {
 
         this.mqtt
             .on('reconnect', () => {
+                pubRedis.pub2Redis('log', {
+                    serviceName: 'MQTTClient',
+                    level: 'info',
+                    errMsg: 'MQTT Client try to reconnect to Broker!',
+                })
                 console.log('MQTT Client try to reconnect to Broker!')
             })
             .on('offline', () => {
+                pubRedis.pub2Redis('log', {
+                    serviceName: 'MQTTClient',
+                    level: 'info',
+                    errMsg: 'MQTT Client went offline!',
+                })
                 console.log('MQTT Client went offline!')
             })
             .on('error', (err) => {
+                pubRedis.pub2Redis('log', {serviceName: 'MQTTClient', level: 'error', errMsg: err})
                 console.log('Client cannot connect to Broker!', err)
             })
             .on('connect', () => {
-                redis.sub2Redis(this.mqtt, this.listSub, this.pubOption)
+                pubRedis.pub2Redis('log', {serviceName: 'MQTTClient', level: 'info', errMsg: 'Connected!'})
+                subRedis.sub2Redis(this.mqtt, this.listSub, this.pubOption)
             })
     }
 
@@ -42,8 +56,8 @@ class MQTTConnection {
     }
 
     shutdown() {
-        if (redis.subRedis !== null) {
-            redis.subDisconnect()
+        if (subRedis.redis !== null) {
+            subRedis.subDisconnect()
         }
         this.mqtt.end()
     }
@@ -65,6 +79,7 @@ class MQTTConnectionPool {
                 this.#pool.push(connection)
             }
         } catch (err) {
+            pubRedis.pub2Redis('log', {serviceName: 'MQTTClient', level: 'error', errMsg: err})
             console.log('Get config info error!', err)
         }
     }

@@ -1,15 +1,17 @@
 const {dbAll} = require('../models/dbConnect')
 
+const redis = require('../redis/redisClient')
+
 const getConfig = async (protocolName, id) => {
     const getDeviceQuery = `SELECT DEVICE.*, 
-        OPC_UA.url,
+        ${protocolName}.url,
         GROUP_CONCAT(
-        OPC_UA_TAG.name || ',' || OPC_UA_TAG.nodeid || ',' || OPC_UA_TAG.unit , ':'
+        ${protocolName}_TAG.name || ',' || ${protocolName}_TAG.nodeid || ',' || ${protocolName}_TAG.unit , ':'
         ) as nodeInfo
     FROM DEVICE 
-        JOIN OPC_UA ON DEVICE.ID = OPC_UA.deviceID
+        JOIN ${protocolName} ON DEVICE.ID = ${protocolName}.deviceID
         JOIN TAG ON TAG.deviceID = DEVICE.ID 
-        JOIN OPC_UA_TAG ON OPC_UA_TAG.deviceID = TAG.deviceID AND OPC_UA_TAG.name = TAG.name
+        JOIN ${protocolName}_TAG ON ${protocolName}_TAG.deviceID = TAG.deviceID AND ${protocolName}_TAG.name = TAG.name
     WHERE DEVICE.ID = ?`
     try {
         const configInfo = await dbAll(getDeviceQuery, id)
@@ -40,6 +42,7 @@ const getConfig = async (protocolName, id) => {
             return []
         }
     } catch (err) {
+        redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'error', errMsg: err})
         console.log(err)
         return []
     }

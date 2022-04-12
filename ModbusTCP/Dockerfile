@@ -1,4 +1,4 @@
-FROM node:16-alpine
+FROM node:16.14.2
 
 # Create app directory (physical path in host)
 WORKDIR /usr/src/app/modbustcp

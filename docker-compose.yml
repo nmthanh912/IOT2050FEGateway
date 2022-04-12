@@ -27,8 +27,8 @@ services:
       context: ./MQTTClient
       dockerfile: Dockerfile
     volumes:
-      -sqlitedb:/usr/src/app/mqttclient/Database
-      -customJSON:/usr/src/app/mqttclient/customJSON
+      - sqlitedb:/usr/src/app/mqttclient/Database
+      - customJSON:/usr/src/app/mqttclient/customJSON
     restart: always
     ports:
       - 4005:4005

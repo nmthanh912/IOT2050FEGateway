@@ -4,6 +4,7 @@ const async = require('async')
 const getConfig = require('./configInfo')
 const removeAccents = require('../utils/removeAccents')
 const redis = require('../redis/redisClient')
+redis.pubConnection()
 
 function getData(deviceConfig, nodeList, callback) {
     const endpoint = deviceConfig.url

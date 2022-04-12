@@ -1,6 +1,7 @@
 const {dbAll} = require('../models/dbConnect')
 
-
+const pubRedis = require('../redis/pubRedisClient')
+pubRedis.pubConnection()
 
 const getConfig = async (id) => {
     const getInfoQuery = `SELECT MQTT_CLIENT.*, 
@@ -38,6 +39,7 @@ const getConfig = async (id) => {
         }
         return []
     } catch (err) {
+        pubRedis.pub2Redis('log', {serviceName: 'MQTTClient', level: 'error', errMsg: err})
         console.log('Get config info errror!', err)
         return []
     }

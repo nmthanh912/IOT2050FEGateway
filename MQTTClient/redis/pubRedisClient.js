@@ -18,17 +18,11 @@ class RedisClient {
         this.redisPub = null
     }
 
-    #pubConnection() {
+    pubConnection() {
         const options = this.options
         this.redisPub = new Redis(options)
 
         this.redisPub.on('connect', () => {
-            this.redisPub.publish('log', {
-                serviceName: 'ModbusTCP',
-                level: 'info',
-                errMsg: 'ModbusTCP container connected to Redis Broker successfully!',
-            })
-
             console.log('ModbusTCP container connected to Redis Broker successfully!')
         })
 
@@ -38,7 +32,6 @@ class RedisClient {
     }
 
     pub2Redis(channel, msg) {
-        this.#pubConnection()
         this.redisPub.publish(channel, JSON.stringify(msg))
     }
 

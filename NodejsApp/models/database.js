@@ -2,6 +2,7 @@ require('dotenv').config()
 var sqlite3 = require('sqlite3').verbose()
 const util = require('util')
 const redis = require('../redis/redisClient')
+redis.pubConnection()
 
 const DB_PATH = process.env.MODE === 'development' ? '../Database/database.db' : './Database/database.db'
 

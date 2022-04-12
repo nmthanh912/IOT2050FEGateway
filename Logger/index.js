@@ -1,9 +1,16 @@
 const Redis = require('ioredis')
 const createServiceLogger = require('./loggerConstructor')
 
-const loggerSubscriber = new Redis('logger')
-
-const SSOServiceLogger = createServiceLogger('SSO', [{filename: 'error.log', level: 'error'}])
+const loggerSubscriber = new Redis()
+const loggerList = []
+const serviceNameList = ['Server', 'ModbusTCP', 'ModbusRTU', 'OPC_UA', 'MQTTClient']
+serviceNameList.forEach((service) => {
+    const serviceLogger = createServiceLogger(service)
+    loggerList.push({
+        serviceName: service,
+        serviceLogger,
+    })
+})
 
 loggerSubscriber.subscribe('log', (err, count) => {
     if (err) {
@@ -13,5 +20,9 @@ loggerSubscriber.subscribe('log', (err, count) => {
 })
 
 loggerSubscriber.on('message', (channel, errMsg) => {
-    SSOServiceLogger.log('error', errMsg)
+    const msg = JSON.parse(errMsg)
+    const service = loggerList.find((service) => service.serviceName === msg.serviceName)
+    if (service !== undefined) {
+        service.serviceLogger.log(msg.level, msg.errMsg)
+    }
 })

@@ -4,6 +4,7 @@ const port = 4000
 const app = express()
 
 const redis = require('./redis/redisClient')
+redis.pubConnection()
 
 app.use(express.static('public'))
 var favicon = require('serve-favicon')
@@ -22,7 +23,6 @@ app.use((req, res, next) => {
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: true}))
 
-// router
 const route = require('./routes/index')
 route(app)
 

@@ -18,17 +18,12 @@ class RedisClient {
         this.redisPub = null
     }
 
-    #pubConnection() {
+    pubConnection() {
         const options = this.options
         this.redisPub = new Redis(options)
 
         this.redisPub.on('connect', () => {
             console.log('ModbusRTU container connected to Redis Broker successfully!')
-            this.redisPub.pub2Redis('log', {
-                serviceName: 'ModbusRTU',
-                level: 'info',
-                errMsg: 'ModbusRTU container connected to Redis Broker successfully!',
-            })
         })
 
         this.redisPub.on('error', (err) => {
@@ -37,7 +32,6 @@ class RedisClient {
     }
 
     pub2Redis(channel, msg) {
-        this.#pubConnection()
         this.redisPub.publish(channel, JSON.stringify(msg))
     }
 

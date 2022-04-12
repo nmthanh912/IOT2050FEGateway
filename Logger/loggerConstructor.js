@@ -1,23 +1,28 @@
+require('winston-daily-rotate-file')
 const {createLogger, format, transports} = require('winston')
-function createServiceLogger(serviceName, logFiles) {
-    const trans = logFiles.map((fileInfo) => {
-        return new transports.File({
-            filename: serviceName + '_' + fileInfo.filename,
-            level: fileInfo.level,
-        })
-    })
+const path = require('path')
+
+function createServiceLogger(serviceName) {
     return createLogger({
         level: 'info',
         format: format.combine(
+            format.splat(),
             format.timestamp({
                 format: 'YYYY-MM-DD HH:mm:ss',
             }),
-            format.errors({stack: true}),
-            format.splat(),
-            format.json()
+            format.printf((log) => {
+                if (log.stack) return `[${log.timestamp}] [${log.level}] ${log.stack}`
+                return `[${log.timestamp}] [${log.level}] ${log.message}`
+            })
         ),
-        defaultMeta: {service: serviceName},
-        transports: trans,
+        transports: [
+            new transports.DailyRotateFile({
+                filename: path.join(__dirname, `/LogFolder/${serviceName}Logs/${serviceName}Logs_%DATE%.log`),
+                datePattern: 'YYYY-MM-DD',
+                maxFiles: '180d',
+                level: 'info',
+            }),
+        ],
     })
 }
 

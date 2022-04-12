@@ -6,6 +6,8 @@ const {DataFormat, DataDecode} = require('../dataParser/index')
 const {RegEncode} = require('./handleRegister')
 const removeAccents = require('../utils/removeAccents')
 const redis = require('../redis/redisClient')
+redis.pubConnection()
+
 class DeviceConnection {
     constructor(deviceConfig, tagList, client) {
         this.deviceConfig = deviceConfig

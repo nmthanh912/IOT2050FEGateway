@@ -4,6 +4,7 @@ const port = 4004
 const app = express()
 
 const redis = require('./redis/redisClient')
+redis.pubConnection()
 
 const DeviceConnection = require('./controllers/opcuaClient')
 const pool = new DeviceConnection()

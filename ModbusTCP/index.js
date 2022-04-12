@@ -3,9 +3,10 @@ const cors = require('cors')
 const port = 4001
 const app = express()
 
-const redis = require('./controllers/redisClient')
+const redis = require('./redis/redisClient')
+redis.pubConnection()
 
-const DeviceConnectionPool = require('./redis/redisClient')
+const DeviceConnectionPool = require('./controllers/modbusTCPClient')
 const pool = new DeviceConnectionPool()
 
 app.use(cors())

@@ -3,6 +3,7 @@ const util = require('util')
 var sqlite3 = require('sqlite3').verbose()
 
 const redis = require('../redis/redisClient')
+redis.pubConnection()
 
 const DB_PATH = process.env.MODE === 'development' ? '../Database/database.db' : './Database/database.db'
 
@@ -20,7 +21,7 @@ let db = new sqlite3.Database(DB_PATH, (err) => {
                 Description TEXT
                 )`,
             (err) => {
-                redis.pub2Redis('log', {serviceName: 'ModbusRTU', level: 'error', errMsg: err})
+                redis.pub2Redis('log', {serviceName: 'ModbusRTU', level: 'error', errMsg: 'Database already created!'})
                 console.log('Database already created!')
             }
         )

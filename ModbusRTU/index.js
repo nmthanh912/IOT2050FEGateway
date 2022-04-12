@@ -4,6 +4,7 @@ const port = 4002
 const app = express()
 
 const redis = require('./redis/redisClient')
+redis.pubConnection()
 
 const DeviceConnectionPool = require('./controller/modbusRTUClient')
 const pool = new DeviceConnectionPool()

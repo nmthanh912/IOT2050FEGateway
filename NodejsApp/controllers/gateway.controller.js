@@ -116,6 +116,7 @@ class GatewayController {
             res.json({ msg: 'OKE' })
         })
     }
+
     removeSubscribeDevice(req, res) {
         const { gid: gatewayID, did: deviceID } = req.query
         const deleteSubsQuery = `DELETE FROM subscribes WHERE gatewayID = ? AND deviceID = ?`
@@ -158,7 +159,6 @@ class GatewayController {
             if (exists) code = await readFile(`${JSON_PATH}/${gatewayId}_${deviceId}.json`, 'utf-8')
 
             res.json({tagList: list, code, toggle: useCustom[0].toggle})
-            // }
         })
     }
 

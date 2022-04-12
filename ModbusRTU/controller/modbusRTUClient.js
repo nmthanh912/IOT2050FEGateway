@@ -5,8 +5,7 @@ const Queue = require('../utils/queue')
 const {DataFormat, DataDecode} = require('../dataParser/index')
 const {RegEncode} = require('./handleRegister')
 const removeAccents = require('../utils/removeAccents')
-const redis = require('./redisClient')
-redis.pubConnection()
+const redis = require('../redis/redisClient')
 class DeviceConnection {
     constructor(deviceConfig, tagList, client) {
         this.deviceConfig = deviceConfig
@@ -64,10 +63,11 @@ class DeviceConnection {
                         })
                     })
                     .catch((err) => {
+                        redis.pub2Redis('log', {serviceName: 'ModbusRTU', level: 'error', errMsg: err})
                         console.error('Read registers error!', err)
                     })
             } catch (err) {
-                console.log(err)
+                redis.pub2Redis('log', {serviceName: 'ModbusRTU', level: 'error', errMsg: err})
             }
             queue.enqueue(regEncoded)
         }, 250)
@@ -103,7 +103,8 @@ class DeviceConnectionPool {
                 await this.client.connectRTUBuffered(comPortNum, options)
                 this.client.setTimeout(500)
             } catch (err) {
-                console.log('error connection', err)
+                redis.pub2Redis('log', {serviceName: 'ModbusRTU', level: 'error', errMsg: err})
+                console.log('Error connection!', err)
             }
         }
     }
@@ -121,6 +122,7 @@ class DeviceConnectionPool {
                 this.#pool.push(connection)
             }
         } catch (err) {
+            redis.pub2Redis('log', {serviceName: 'ModbusRTU', level: 'error', errMsg: err})
             console.log(err)
         }
     }

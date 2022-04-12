@@ -3,8 +3,7 @@ const async = require('async')
 
 const getConfig = require('./configInfo')
 const removeAccents = require('../utils/removeAccents')
-const redis = require('./redisClient')
-redis.pubConnection()
+const redis = require('../redis/redisClient')
 
 function getData(deviceConfig, nodeList, callback) {
     const endpoint = deviceConfig.url
@@ -21,6 +20,11 @@ function getData(deviceConfig, nodeList, callback) {
         if (dataLoopRef) {
             clearInterval(dataLoopRef)
         }
+        redis.pub2Redis('log', {
+            serviceName: 'OPC_UA',
+            level: 'info',
+            errMsg: `still trying to connect to ${endpoint}: retry = ${retry}, next attempt in ${delay / 1000} seconds`,
+        })
         console.log(
             'still trying to connect to ',
             endpoint,
@@ -37,9 +41,11 @@ function getData(deviceConfig, nodeList, callback) {
             function (callback) {
                 client.connect(endpoint, function (err) {
                     if (err) {
-                        console.log(' cannot connect to endpoint :', endpoint)
+                        redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'error', errMsg: err})
+                        console.log(' Cannot connect to endpoint :', endpoint)
                     } else {
-                        console.log('connected!')
+                        redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'info', errMsg: 'Connected!'})
+                        console.log('Connected!')
                     }
                     callback(err)
                 })
@@ -48,6 +54,7 @@ function getData(deviceConfig, nodeList, callback) {
             function (callback) {
                 client.createSession(function (err, session) {
                     if (err) {
+                        redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'error', errMsg: err})
                         return callback(err)
                     }
                     theSession = session
@@ -59,7 +66,14 @@ function getData(deviceConfig, nodeList, callback) {
                 theSession.browse('RootFolder', function (err, browseResult) {
                     if (!err) {
                         console.log('Browsing rootfolder: ')
+                        redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'info', errMsg: 'Browsing rootfolder: '})
+
                         for (let reference of browseResult.references) {
+                            redis.pub2Redis('log', {
+                                serviceName: 'OPC_UA',
+                                level: 'info',
+                                errMsg: `${(reference.browseName.toString(), reference.nodeId.toString())}`,
+                            })
                             console.log(reference.browseName.toString(), reference.nodeId.toString())
                         }
                     }
@@ -78,7 +92,7 @@ function getData(deviceConfig, nodeList, callback) {
 
                 theSession.createSubscription2(subscriptionOptions, (err, subscription) => {
                     if (err) {
-                        console.log('error here')
+                        redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'error', errMsg: err})
                         return callback(err)
                     }
 
@@ -86,15 +100,26 @@ function getData(deviceConfig, nodeList, callback) {
 
                     theSubscription
                         .on('started', () => {
+                            redis.pub2Redis('log', {
+                                serviceName: 'OPC_UA',
+                                level: 'info',
+                                errMsg: `Subscription started for 2 seconds - subscriptionId = ${theSubscription.subscriptionId}`,
+                            })
                             console.log(
                                 'subscription started for 2 seconds - subscriptionId=',
                                 theSubscription.subscriptionId
                             )
                         })
                         .on('keepalive', function () {
+                            redis.pub2Redis('log', {
+                                serviceName: 'OPC_UA',
+                                level: 'info',
+                                errMsg: 'Subscription keepalive',
+                            })
                             console.log('subscription keepalive')
                         })
                         .on('terminated', function () {
+                            redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'info', errMsg: 'Terminated'})
                             console.log('terminated')
                         })
                     callback()
@@ -142,8 +167,10 @@ function getData(deviceConfig, nodeList, callback) {
         ],
         function (err, results) {
             if (err) {
+                redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'error', errMsg: err})
                 console.log('Failure!', err)
             } else {
+                redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'info', errMsg: 'Done'})
                 console.log('Done!')
             }
             callback(err, theSession, theSubscription, client, dataLoopRef)
@@ -176,6 +203,7 @@ class DeviceConnection {
                 )
             }
         } catch (err) {
+            redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'error', errMsg: err})
             console.log(err)
         }
     }
@@ -186,6 +214,7 @@ class DeviceConnection {
             connection.theSubscription.terminate(() => {})
             connection.theSession.close((err) => {
                 if (err) {
+                    redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'error', errMsg: err})
                     console.log('closing session failed!', err)
                 }
             })
@@ -201,7 +230,6 @@ class DeviceConnection {
         })
         return deviceID
     }
-
 }
 
 module.exports = DeviceConnection

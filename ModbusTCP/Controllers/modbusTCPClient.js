@@ -7,8 +7,7 @@ const Queue = require('../utils/queue')
 const {DataFormat, DataDecode} = require('../dataParser/index')
 const {RegEncode} = require('./handleRegister')
 const removeAccents = require('../utils/removeAccents')
-const redis = require('./redisClient')
-redis.pubConnection()
+const redis = require('../redis/redisClient')
 
 class DeviceConnection {
     constructor(configInfo) {
@@ -31,6 +30,7 @@ class DeviceConnection {
         socket.connect(options)
 
         socket.on('connect', () => {
+            redis.pub2Redis('log', {serviceName: 'ModbusTCP', level: 'info', errMsg: 'Socket connected!'})
             const tagNumber = this.tagList.length
             const listRegEncoded = RegEncode(this.tagList)
             const queue = new Queue(listRegEncoded)
@@ -46,12 +46,14 @@ class DeviceConnection {
         })
 
         socket.on('error', (err) => {
+            redis.pub2Redis('log', {serviceName: 'ModbusTCP', level: 'error', errMsg: err})
             console.log('Socket error!', err)
             socket.end()
             socket.destroy()
         })
 
         socket.on('close', (err) => {
+            redis.pub2Redis('log', {serviceName: 'ModbusTCP', level: 'error', errMsg: err})
             console.log('Socket close!', err)
             if (this.dataLoopRef) {
                 clearInterval(this.dataLoopRef)
@@ -96,6 +98,7 @@ class DeviceConnection {
                     })
                 })
                 .catch((err) => {
+                    redis.pub2Redis('log', {serviceName: 'ModbusTCP', level: 'error', errMsg: err})
                     console.log('Read register error!', err)
                 })
             queue.enqueue(regEncoded)
@@ -137,6 +140,7 @@ class DeviceConnectionPool {
                 this.#pool.push(connection)
             }
         } catch (err) {
+            redis.pub2Redis('log', {serviceName: 'ModbusTCP', level: 'error', errMsg: err})
             console.log(err)
         }
     }

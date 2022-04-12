@@ -3,9 +3,10 @@ const cors = require('cors')
 const port = 4002
 const app = express()
 
+const redis = require('./redis/redisClient')
+
 const DeviceConnectionPool = require('./controller/modbusRTUClient')
 const pool = new DeviceConnectionPool()
-pool.poweron('003385da')
 
 app.use(cors())
 
@@ -20,5 +21,10 @@ app.get('/shutdown', function (req, res) {
 })
 
 app.listen(port, function () {
-    console.log(`Server ModbusTCP listening on port ${port}!`)
+    redis.pub2Redis('log', {
+        serviceName: 'ModbusRTU',
+        level: 'info',
+        errMsg: `Server ModbusRTU listening on port ${port}!`,
+    })
+    console.log(`Server ModbusRTU listening on port ${port}!`)
 })

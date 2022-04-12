@@ -1,5 +1,7 @@
 const {dbAll} = require('../models/dbConnect')
 
+
+
 const getConfig = async (id) => {
     const getInfoQuery = `SELECT MQTT_CLIENT.*, 
         GROUP_CONCAT(SUBSCRIBES.tagName) AS tagName, DEVICE.name AS deviceName, 

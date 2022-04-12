@@ -1,17 +1,19 @@
 require('dotenv').config()
 var sqlite3 = require('sqlite3').verbose()
 const util = require('util')
+const redis = require('../redis/redisClient')
 
-const DB_PATH = process.env.MODE === 'development' ? 
-    '../Database/database.db' 
-    : './Database/database.db'
+const DB_PATH = process.env.MODE === 'development' ? '../Database/database.db' : './Database/database.db'
 
 let db = new sqlite3.Database(DB_PATH, (err) => {
     if (err) {
+        redis.pub2Redis('log', {serviceName: 'Server', level: 'error', errMsg: err})
         console.error(err.message)
         throw err
     }
-    console.log('Connected to the SQLite database.')
+    console.log('Connected to the SQLite database!')
+    redis.pub2Redis('log', {serviceName: 'Server', level: 'info', errMsg: 'Connected to the SQLite database!'})
+
     db.serialize(() => {
         db.run(`CREATE TABLE IF NOT EXISTS DEVICE (
             ID            TEXT         PRIMARY KEY,
@@ -193,6 +195,7 @@ let db = new sqlite3.Database(DB_PATH, (err) => {
 
         db.run('PRAGMA foreign_keys = ON', (err) => {
             if (err) {
+                redis.pub2Redis('log', {serviceName: 'Server', level: 'error', errMsg: err})
                 console.log(err)
             }
         })

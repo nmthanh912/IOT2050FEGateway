@@ -3,6 +3,8 @@ const express = require('express')
 const port = 4000
 const app = express()
 
+const redis = require('./redis/redisClient')
+
 app.use(express.static('public'))
 var favicon = require('serve-favicon')
 var path = require('path')
@@ -18,12 +20,13 @@ app.use((req, res, next) => {
 })
 
 app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({extended: true})) 
+app.use(bodyParser.urlencoded({extended: true}))
 
 // router
 const route = require('./routes/index')
 route(app)
 
 app.listen(port, function () {
+    redis.pub2Redis('log', {serviceName: 'Server', level: 'info', errMsg: `Server listening on port ${port}!`})
     console.log(`Server listening on port ${port}!`)
 })

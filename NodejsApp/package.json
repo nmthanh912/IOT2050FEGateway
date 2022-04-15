@@ -29,7 +29,7 @@
     "normalize-port": "^1.0.0",
     "serve-favicon": "^2.5.0",
     "short-unique-id": "^4.4.4",
-    "sqlite3": "^5.0.2",
+    "sqlite3": "^5.0.0",
     "util": "^0.12.4"
   }
 }

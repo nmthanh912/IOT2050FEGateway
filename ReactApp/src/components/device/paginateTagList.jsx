@@ -5,7 +5,7 @@ import { CaretLeft, CaretRight, Trash, Save } from "react-bootstrap-icons";
 import ShortUniqueId from "short-unique-id";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchTags, editTagCell, removeTag, addNewTag } from "../../redux/slices/device";
-import DeviceService from '../../services/device'
+import DeviceService from '../../services/configserver/device'
 
 const uid = new ShortUniqueId({
   length: 5,

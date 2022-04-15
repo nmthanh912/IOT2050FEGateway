@@ -1,11 +1,13 @@
 import Modal from '../components/gateway/modal'
 import SubHeader from "../components/subHeader";
 import { useEffect, useState } from "react";
-import GatewayService from "../services/gateway";
+import GatewayService from "../services/configserver/gateway";
 import { useSelector, useDispatch } from 'react-redux'
 import { toast } from 'react-toastify'
 import removeAccents from "../utils/removeAccents";
 import Gateway from "../components/gateway/gateway";
+
+import mqttClient from "../services/gateway"
 
 export default function GatewayPage() {
   const deviceList = useSelector(state => state.device)
@@ -17,6 +19,13 @@ export default function GatewayPage() {
 
   const [savedQuery, setSavedQuery] = useState('')
   const [currGatewatList, setCurrGatewayList] = useState([])
+
+  const [runningGatewayList, setRunningGatewayList] = useState([])
+  useEffect(() => {
+    mqttClient.getRunningGateways().then(response => {
+      setRunningGatewayList(response.data)
+    }).catch(err => toast.error('Cannot get running gateways')) 
+  }, [])
 
   useEffect(() => {
     if (savedQuery === '') setCurrGatewayList(list)
@@ -121,6 +130,7 @@ export default function GatewayPage() {
         confirm && deleteGateway(gateway.ID)
         setEditTarget(null)
       }}
+      isRunning={runningGatewayList.includes(gateway.ID)}
     />)}
   </div>
 }

@@ -3,7 +3,7 @@ import { Modal, Form, Button } from "react-bootstrap"
 import ReactPrismEditor from 'react-prism-editor'
 import ShortUniqueId from "short-unique-id"
 import removeAccents from "../../utils/removeAccents"
-import GatewayService from "../../services/gateway"
+import GatewayService from "../../services/configserver/gateway"
 
 import { toast } from "react-toastify"
 import ReactPaginate from "react-paginate"

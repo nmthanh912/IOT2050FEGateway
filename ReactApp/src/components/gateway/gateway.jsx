@@ -1,12 +1,18 @@
 import DropdownItem from "../dropdownItem"
 import { Button } from 'react-bootstrap'
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import BootstrapSwitchButton from "bootstrap-switch-button-react"
 import MappingList from "./mappingList"
 
-export default function Gateway({ data, onEdit, onDelete }) {
+
+export default function Gateway({ data, onEdit, onDelete, isRunning }) {
   const [disabledToggle, setDisabledToggle] = useState(false)
-  const [poweron, setPoweron] = useState(false)
+  const [poweron, setPoweron] = useState(isRunning)
+
+  useEffect(() => {
+    setPoweron(isRunning)
+  }, [isRunning])
+
   return <DropdownItem
     onEdit={onEdit}
     onDelete={onDelete}
@@ -32,7 +38,7 @@ export default function Gateway({ data, onEdit, onDelete }) {
                 }
                 setDisabledToggle(true)
                 setTimeout(() => setDisabledToggle(false), 3000)
-                if (poweron) console.log("POWERON GATEWAY")
+                if (!poweron) console.log("POWERON GATEWAY")
                 else console.log("SHUTDOWN GATEWAY")
                 setPoweron(checked)
               }}

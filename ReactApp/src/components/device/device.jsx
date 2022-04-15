@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useDispatch } from "react-redux";
 import { removeDevice, updateTagList } from "../../redux/slices/device";
 
-import DeviceService from "../../services/device";
+import DeviceService from "../../services/configserver/device";
 import HardwareServices from "../../services/protocol";
 
 import { toast } from 'react-toastify'
@@ -85,6 +85,10 @@ export default function EdgeDevice({ data, onDetail, isRunning }) {
     }
 
     useEffect(() => {
+        setPoweron(isRunning)
+    }, [isRunning])
+
+    useEffect(() => {
         if (exportData.length !== 0) downloadCSVRef.current.link.click()
     }, [exportData, downloadCSVRef])
 
@@ -110,7 +114,12 @@ export default function EdgeDevice({ data, onDetail, isRunning }) {
 
     const turnOnDevice = () => {
         console.log("POWERON")
-        HardwareServices.poweron(data.protocol, data.ID).then(res => console.log(res.data))
+        HardwareServices.poweron(data.protocol, data.ID).then(
+            res => console.log(res.data)
+        ).catch(err => {
+            notifyFail("Service error !")
+            setPoweron(false)
+        })
     }
     const shutdownDevice = () => {
         console.log("SHUTDOWN")

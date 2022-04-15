@@ -93,12 +93,12 @@ class MQTTConnectionPool {
         }
     }
 
-    mqttState() {
+    getRunningGateways() {
         const mqttID = []
         this.#pool.forEach((conn) => {
             mqttID.push(conn.mqttID)
         })
-        return mqttID
+        return this.#pool.map(connection => connection.mqttID)
     }
 }
 

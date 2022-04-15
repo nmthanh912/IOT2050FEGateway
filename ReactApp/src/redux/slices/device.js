@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, current } from "@reduxjs/toolkit";
-import DeviceService from "../../services/device";
+import DeviceService from "../../services/configserver/device";
 
 const deviceSlice = createSlice({
     name: 'device',

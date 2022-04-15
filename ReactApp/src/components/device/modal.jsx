@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Modal, Form, Button } from 'react-bootstrap'
-import DeviceService from '../../services/device'
+import DeviceService from '../../services/configserver/device'
 import { useDispatch } from 'react-redux'
 import { addDevice, addManyDevice, updateDevice, updateTagList } from '../../redux/slices/device'
 import CSVReader from './CSVImporter'

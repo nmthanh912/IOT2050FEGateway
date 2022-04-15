@@ -1,36 +1,15 @@
-import { configHttp } from './httpCommon'
+import { mqttClient } from "./httpCommon";
 
-class Service {
-    get() {
-        return configHttp.get('/gateways')
+class MQTTClient {
+    getRunningGateways() {
+        return mqttClient.get('/active-gateways')
     }
-
-    getSubcribedDevices(gatewayId) {
-        return configHttp.get(`/gateways/devices?id=${gatewayId}`)
+    poweron(mqttID) {
+        return mqttClient.get(`/poweron?mqttID=${mqttID}`)
     }
-    addSubscribeDevices(gatewayID, deviceIDList) {
-        return configHttp.post(`/gateways/sub?`, { gatewayID, deviceIDList })
+    shutdown(mqttID) {
+        return mqttClient.get(`/shutdown?mqttID=${mqttID}`)
     }
-    removeSubscribedDevice(gatewayId, deviceId) {
-        return configHttp.delete(`/gateways/unsub?gid=${gatewayId}&did=${deviceId}`)
-    }
-
-    getSubcribedDeviceConfig(gatewayId, deviceId, protocol) {
-        return configHttp.get(`/gateways/devices/config?gid=${gatewayId}&did=${deviceId}&dp=${protocol}`)
-    }
-    add(data) {
-        return configHttp.post('/gateways/new', data)
-    }
-    delete(gatewayId) {
-        return configHttp.delete(`/gateways/delete?id=${gatewayId}`)
-    }
-    update(gatewayId, data) {
-        return configHttp.put(`/gateways/update?id=${gatewayId}`, data)
-    }
-    updateSubcribedDeviceConfig(gatewayId, deviceId, data) {
-        return configHttp.put(`/gateways/${gatewayId}/${deviceId}`, data)
-    }
-
 }
-const GatewayService = new Service()
-export default GatewayService
+
+export default new MQTTClient()

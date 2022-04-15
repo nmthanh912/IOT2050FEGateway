@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react"
 import { Trash, PlusCircle } from "react-bootstrap-icons"
 import { Button, Form, Modal } from "react-bootstrap"
 import TagModal from "./tagModal"
-import GatewayService from '../../services/gateway'
+import GatewayService from '../../services/configserver/gateway'
 import { removeAccentsWithUnderscore } from "../../utils/removeAccents"
 import { useSelector } from "react-redux"
 import Select from 'react-select'

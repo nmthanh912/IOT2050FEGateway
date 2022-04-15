@@ -1,4 +1,4 @@
-import { configHttp } from './httpCommon'
+import { configHttp } from '../httpCommon'
 
 class DeviceService {
     add(data, repNum) {

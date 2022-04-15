@@ -211,10 +211,13 @@ class DeviceConnection {
                         }
                     }
                 )
+            } else {
+                throw new Error('No tags provided!')
             }
         } catch (err) {
             redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'error', errMsg: err})
             console.log(err)
+            throw err
         }
     }
 

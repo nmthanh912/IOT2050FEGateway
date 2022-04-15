@@ -11,9 +11,15 @@ const pool = new DeviceConnectionPool()
 
 app.use(cors({origin: true}))
 
-app.get('/poweron', function (req, res) {
-    pool.poweron(req.query.deviceID)
-    res.json({msg: 'oke'})
+app.get('/poweron', async function (req, res) {
+    try {
+        await pool.poweron(req.query.deviceID)
+        res.json({msg: 'oke'})
+    } catch (err) {
+        res.status(500).json({
+            msg: err.message
+        })
+    }
 })
 
 app.get('/shutdown', function (req, res) {
@@ -21,7 +27,7 @@ app.get('/shutdown', function (req, res) {
     res.json({msg: 'oke'})
 })
 
-app.get('/active-list', function(req, res) {
+app.get('/active-list', function (req, res) {
     let runningDevices = pool.getRunningDevices()
     res.json(runningDevices)
 })

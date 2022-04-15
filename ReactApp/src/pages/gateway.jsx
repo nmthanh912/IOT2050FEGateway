@@ -74,9 +74,7 @@ export default function GatewayPage() {
   }, [dispatch, deviceList])
 
   const addGateway = data => {
-    console.log(data)
     GatewayService.add(data).then(response => {
-      console.log(response.data)
       setList([...list, { ID: response.data.key, ...data }])
       notifySuccess(`Create gateway successfully !`)
     }).catch(err => notifyFail(err.message))

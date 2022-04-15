@@ -155,7 +155,7 @@ class DeviceConnectionPool {
     }
 
     getRunningDevices() {
-        return this.#pool.map(connection => connection.deviceConfig.ID)
+        return this.#pool.map((connection) => connection.deviceConfig.ID)
     }
 }
 

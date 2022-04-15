@@ -9,7 +9,7 @@ redis.pubConnection()
 const DeviceConnectionPool = require('./controller/modbusRTUClient')
 const pool = new DeviceConnectionPool()
 
-app.use(cors())
+app.use(cors({origin: true}))
 
 app.get('/poweron', function (req, res) {
     pool.poweron(req.query.deviceID)

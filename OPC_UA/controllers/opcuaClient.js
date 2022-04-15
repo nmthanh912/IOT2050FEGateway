@@ -6,12 +6,14 @@ const removeAccents = require('../utils/removeAccents')
 const redis = require('../redis/redisClient')
 redis.pubConnection()
 
-function getData(deviceConfig, nodeList, callback) {
-    const endpoint = deviceConfig.url
-    const client = OPCUAClient.create({
+function createClient() {
+    return (client = OPCUAClient.create({
         endpointMustExist: false,
-    })
+    }))
+}
 
+function getData(deviceConfig, nodeList, client, callback) {
+    const endpoint = deviceConfig.url
     const dataList = []
     let dataLoopRef = null
     let theSession = null
@@ -188,18 +190,25 @@ class DeviceConnection {
     async poweron(deviceID) {
         try {
             const configInfo = await getConfig('OPC_UA', deviceID)
+
             if (configInfo.length > 0) {
+                const client = createClient()
+                this.#pool.push({
+                    deviceID,
+                    client,
+                })
+
                 getData(
                     configInfo[0].deviceConfig[0],
                     configInfo[0].nodeInfo,
+                    client,
                     (err, theSession, theSubscription, client, dataLoopRef) => {
-                        this.#pool.push({
-                            deviceID: deviceID,
-                            theSession: theSession,
-                            theSubscription: theSubscription,
-                            client: client,
-                            dataLoopRef: dataLoopRef,
-                        })
+                        const connection = this.#pool.find((conn) => conn.deviceID === deviceID)
+                        if (connection !== undefined) {
+                            connection.theSession = theSession
+                            connection.theSubscription = theSubscription
+                            connection.dataLoopRef = dataLoopRef
+                        }
                     }
                 )
             }
@@ -212,20 +221,25 @@ class DeviceConnection {
     shutdown(deviceID) {
         const connection = this.#pool.find((conn) => conn.deviceID === deviceID)
         if (connection !== undefined) {
-            connection.theSubscription.terminate(() => {})
-            connection.theSession.close((err) => {
-                if (err) {
-                    redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'error', errMsg: err})
-                    console.log('closing session failed!', err)
-                }
-            })
+            this.#pool.splice(this.#pool.indexOf(connection), 1)
             connection.client.disconnect(() => {})
-            clearInterval(connection.dataLoopRef)
+            delete connection.deviceID
+            delete connection.client
+            if (Object.keys(connection).length !== 0) {
+                connection.theSubscription.terminate(() => {})
+                connection.theSession.close((err) => {
+                    if (err) {
+                        redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'error', errMsg: err})
+                        console.log('closing session failed!', err)
+                    }
+                })
+                clearInterval(connection.dataLoopRef)
+            }
         }
     }
 
     getRunningDevices() {
-        return this.#pool.map(connection => connection.deviceID)
+        return this.#pool.map((connection) => connection.deviceID)
     }
 }
 

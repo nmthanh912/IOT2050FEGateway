@@ -89,16 +89,12 @@ class MQTTConnectionPool {
         const connection = this.#pool.find((conn) => conn.mqttID === mqttID)
         if (connection !== undefined) {
             connection.shutdown()
-            this.#pool.slice(this.#pool.indexOf(connection), 1)
+            this.#pool.splice(this.#pool.indexOf(connection), 1)
         }
     }
 
     getRunningGateways() {
-        const mqttID = []
-        this.#pool.forEach((conn) => {
-            mqttID.push(conn.mqttID)
-        })
-        return this.#pool.map(connection => connection.mqttID)
+        return this.#pool.map((connection) => connection.mqttID)
     }
 }
 

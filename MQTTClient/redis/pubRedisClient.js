@@ -23,7 +23,7 @@ class RedisClient {
         this.redisPub = new Redis(options)
 
         this.redisPub.on('connect', () => {
-            console.log('ModbusTCP container connected to Redis Broker successfully!')
+            console.log('MQTT Client container connected to Redis Broker successfully!')
         })
 
         this.redisPub.on('error', (err) => {

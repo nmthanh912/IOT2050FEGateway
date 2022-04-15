@@ -131,17 +131,17 @@ class DeviceConnectionPool {
 
     shutdown(deviceID) {
         const connection = this.#pool.find((conn) => conn.deviceConfig.ID === deviceID)
-        if (connection !== null) {
+        if (connection !== undefined) {
             connection.shutdown()
-            this.#pool.slice(this.#pool.indexOf(connection), 1)
             if (this.#pool.length === 0) {
                 client.close()
             }
+            this.#pool.splice(this.#pool.indexOf(connection), 1)
         }
     }
 
     getRunningDevices() {
-        return this.#pool.map(connection => connection.deviceConfig.ID)
+        return this.#pool.map((connection) => connection.deviceConfig.ID)
     }
 }
 

@@ -9,7 +9,7 @@ redis.pubConnection()
 const DeviceConnection = require('./controllers/opcuaClient')
 const pool = new DeviceConnection()
 
-app.use(cors())
+app.use(cors({origin: true}))
 
 app.get('/poweron', function (req, res) {
     pool.poweron(req.query.deviceID)
@@ -21,7 +21,7 @@ app.get('/shutdown', function (req, res) {
     res.json({msg: 'oke'})
 })
 
-app.get('/active-list', function(req, res) {
+app.get('/active-list', function (req, res) {
     let runningDevices = pool.getRunningDevices()
     res.json(runningDevices)
 })

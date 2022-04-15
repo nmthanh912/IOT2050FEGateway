@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const HOSTNAME = '192.168.19.153'
+const HOSTNAME = 'localhost'
 
 export const configHttp =  axios.create({
     baseURL: `http://${HOSTNAME}:4000`,

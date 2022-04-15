@@ -9,23 +9,22 @@ pubRedis.pubConnection()
 const MQTTConnectionPool = require('./controller/mqttClient')
 const pool = new MQTTConnectionPool()
 
-app.use(cors({ origin: true }))
+app.use(cors({origin: true}))
 
 app.get('/poweron', async function (req, res) {
     try {
         let mqttID = req.query.mqttID
         await pool.poweron(mqttID)
-        res.json({ msg: OKE })
-    }
-    catch (err) {
-        res.status(500).json({ msg: "Cannot turn on gateway" })
+        res.json({msg: 'OKE'})
+    } catch (err) {
+        res.status(500).json({msg: 'Cannot turn on gateway'})
     }
 })
 
 app.get('/shutdown', function (req, res) {
     let mqttID = req.query.mqttID
     pool.shutdown(mqttID)
-    res.json({ msg: OKE })
+    res.json({msg: 'OKE'})
 })
 
 app.get('/active-gateways', function (req, res) {

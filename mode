@@ -3,4 +3,3 @@ echo "MODE="\"$1\""" > ./OPC_UA/.env
 echo "MODE="\"$1\""" > ./MQTTClient/.env
 echo "MODE="\"$1\""" > ./ModbusTCP/.env
 echo "MODE="\"$1\""" > ./ModbusRTU/.env
-echo "REACT_APP_HOST="\"$2\""" > ./ReactApp/.env

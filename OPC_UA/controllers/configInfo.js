@@ -1,3 +1,4 @@
+const { config } = require('dotenv')
 const {dbAll} = require('../models/dbConnect')
 
 const redis = require('../redis/redisClient')
@@ -28,7 +29,7 @@ const getConfig = async (protocolName, id) => {
                 minRespTime: configInfo[0].minRespTime,
                 url: configInfo[0].url,
             })
-
+            console.log(configInfo[0])
             configInfo[0].nodeInfo.split(':').forEach((item) => {
                 const nodeValue = item.split(',')
                 nodeInfo.push({

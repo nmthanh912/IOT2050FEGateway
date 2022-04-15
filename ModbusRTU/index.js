@@ -17,7 +17,7 @@ app.get('/poweron', async function (req, res) {
         res.json({msg: 'oke'})
     } catch (err) {
         res.status(500).json({
-            msg: err.message
+            msg: err.message,
         })
     }
 })

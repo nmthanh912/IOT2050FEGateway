@@ -14,11 +14,11 @@ import PaginateTagList, { TagTable } from "./paginateTagList";
 import { CSVLink } from "react-csv";
 import { Button } from "react-bootstrap";
 
-export default function EdgeDevice({ data, onDetail }) {
+export default function EdgeDevice({ data, onDetail, isRunning }) {
     const downloadCSVRef = useRef(null)
     const dispatch = useDispatch()
     const [exportData, setExportData] = useState([])
-    const [poweron, setPoweron] = useState(false)
+    const [poweron, setPoweron] = useState(isRunning)
     const [disabledToggle, setDisableToggle] = useState(false)
 
     // console.log(data)

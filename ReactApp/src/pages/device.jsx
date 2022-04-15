@@ -1,9 +1,11 @@
 import SubHeader from "../components/subHeader";
 import DeviceModal from '../components/device/modal'
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import EdgeDevice from "../components/device/device";
 import removeAccents from "../utils/removeAccents";
+import HardwareServices from "../services/protocol";
+import { toast } from "react-toastify";
 
 export default function DevicePage() {
 	const [showAdd, setShowAdd] = useState(false)
@@ -14,6 +16,27 @@ export default function DevicePage() {
 
 	const [currDeviceList, setCurrDeviceList] = useState([])
 	const [savedQuery, setSavedQuery] = useState('')
+
+	const [runningDevices, setRunningDevices] = useState([])
+
+	useEffect(() => {
+		let arr = []
+		async function fetchRunningDevice() {
+			try {
+				const modbusTCPRunningDevices = await HardwareServices.getRunningDevices('ModbusTCP')
+				const modbusRTURunningDevices = await HardwareServices.getRunningDevices('ModbusRTU')
+				const opc_uaRunningDevices = await HardwareServices.getRunningDevices('OPC_UA')
+				arr = arr.concat(modbusRTURunningDevices)
+					.concat(modbusTCPRunningDevices).concat(opc_uaRunningDevices)
+				setRunningDevices(arr)
+			}
+			catch (err) {
+				toast.success("Cannot get running device !")
+			}
+		}
+		fetchRunningDevice()
+	}, [])
+
 
 	useEffect(() => {
 		if (savedQuery === '') setCurrDeviceList(deviceList)
@@ -51,11 +74,14 @@ export default function DevicePage() {
 
 		{/* Device List (when click in edit, trigger Edit Modal) */}
 		{currDeviceList.map(device => {
-			return <EdgeDevice key={device.ID} data={device} onDetail={() => {
-				setCurrDevice(device)
-				setShowEdit(true)
-			}
-			} />
+			return <EdgeDevice
+				key={device.ID} data={device}
+				onDetail={() => {
+					setCurrDevice(device)
+					setShowEdit(true)
+				}}
+				isRunning={runningDevices.includes(device.ID)}
+			/>
 		})}
 	</div>
 }

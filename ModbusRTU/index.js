@@ -21,6 +21,11 @@ app.get('/shutdown', function (req, res) {
     res.json({msg: 'oke'})
 })
 
+app.get('/active-list', function(req, res) {
+    let runningDevices = pool.getRunningDevices()
+    res.json(runningDevices)
+})
+
 app.listen(port, function () {
     redis.pub2Redis('log', {
         serviceName: 'ModbusRTU',

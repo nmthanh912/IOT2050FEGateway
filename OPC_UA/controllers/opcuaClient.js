@@ -224,12 +224,8 @@ class DeviceConnection {
         }
     }
 
-    deviceState() {
-        const deviceID = []
-        this.#pool.forEach((conn) => {
-            deviceID.push(conn.deviceID)
-        })
-        return deviceID
+    getRunningDevices() {
+        return this.#pool.map(connection => connection.deviceID)
     }
 }
 

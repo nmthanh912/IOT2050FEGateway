@@ -116,6 +116,7 @@ export default function TagModal({
           data={currentItems} toggleSubscribe={toggleSubscribe}
           toggleSubscribeAll={toggleSubscribeAll}
           subsAll={subsAll}
+          disabled={customMode}
         />}
 
         <div className="d-flex align-items-center justify-content-between my-2">
@@ -179,7 +180,7 @@ export default function TagModal({
 
 }
 
-function TagTable({ data, toggleSubscribe, toggleSubscribeAll, subsAll }) {
+function TagTable({ data, toggleSubscribe, toggleSubscribeAll, subsAll, disabled }) {
   const columns = useMemo(() => {
     return Object.keys(data[0]).map(key => key[0].toUpperCase() + key.slice(1))
   }, [data])
@@ -199,6 +200,7 @@ function TagTable({ data, toggleSubscribe, toggleSubscribeAll, subsAll }) {
                   onChange={toggleSubscribeAll}
                   className='me-2'
                   id="suball"
+                  disabled={disabled}
                 />
                 <label htmlFor="suball">Subscribe</label>
               </th>)
@@ -215,6 +217,7 @@ function TagTable({ data, toggleSubscribe, toggleSubscribeAll, subsAll }) {
                 type="switch"
                 checked={cell}
                 onChange={() => toggleSubscribe(row.name)}
+                disabled={disabled}
               />
             </td>
           )}

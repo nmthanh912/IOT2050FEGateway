@@ -1,4 +1,4 @@
-import { modbusTCPHttp, modbusRTUHttp } from './httpCommon'
+import { modbusTCPHttp, modbusRTUHttp, opcuaHttp } from './httpCommon'
 
 const createService = (serviceHttp) => {
     return {
@@ -7,6 +7,9 @@ const createService = (serviceHttp) => {
         },
         shutdown(deviceID) {
             return serviceHttp.get(`/shutdown?deviceID=${deviceID}`)
+        },
+        getRunningDevices() {
+            return serviceHttp.get(`active-list`)
         }
     }
 }
@@ -17,7 +20,7 @@ class Services {
         this.#service = {}
         let keys = Object.keys(httpObj)
         keys.forEach(key => {
-            this.#service[key.toUpperCase()] = createService(httpObj[key])
+            this.#service[key] = createService(httpObj[key])
         })
     }
     poweron(protocolName, deviceID) {
@@ -26,10 +29,14 @@ class Services {
     shutdown(protocolName, deviceID) {
         return this.#service[protocolName.toUpperCase()].shutdown(deviceID)
     }
+    getRunningDevices(protocolName) {
+        return this.#service[protocolName.toUpperCase()].getRunningDevices()
+    }
 }
 
 const HardwareServices = new Services({
     'MODBUSTCP': modbusTCPHttp,
-    'MODBUSRTU': modbusRTUHttp
+    'MODBUSRTU': modbusRTUHttp,
+    'OPC_UA': opcuaHttp
 })
 export default HardwareServices

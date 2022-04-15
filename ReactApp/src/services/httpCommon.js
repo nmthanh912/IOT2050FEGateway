@@ -19,3 +19,10 @@ export const modbusRTUHttp = axios.create({
         'Content-type': 'application/json',
     },
 })
+
+export const opcuaHttp = axios.create({
+    baseURL: 'http://localhost:4003',
+    headers: {
+        'Content-type': 'application/json',
+    },
+})

@@ -73,7 +73,17 @@ services:
     container_name: redis
     image: redis:alpine
     restart: always
+  
+  logger:
+    container_name: logger
+    build:
+      context: ./Logger
+      dockerfile: Dockerfile
+    volumes:
+      - logfile:/usr/src/app/logger/LogFolder
+    restart: always
     
 volumes:
   sqlitedb:
   customJSON:
+  logfile:

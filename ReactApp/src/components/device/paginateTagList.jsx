@@ -138,7 +138,7 @@ export function TagTable({ data, deviceID, protocol, readOnly }) {
     })
   }
 
-  return <div>
+  return <div className="w-100">
     <table className="styled-table w-100" >
       <thead>
         <tr>

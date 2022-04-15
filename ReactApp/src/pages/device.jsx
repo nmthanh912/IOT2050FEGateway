@@ -21,22 +21,30 @@ export default function DevicePage() {
 
 	useEffect(() => {
 		let arr = []
-		async function fetchRunningDevice() {
-			try {
-				const modbusTCPRunningDevices = await HardwareServices.getRunningDevices('ModbusTCP')
-				arr = arr.concat(modbusTCPRunningDevices.data)
+		// async function fetchRunningDevice() {
+		// 	try {
+		// 		const modbusTCPRunningDevices = await HardwareServices.getRunningDevices('ModbusTCP')
+		// 		arr = arr.concat(modbusTCPRunningDevices.data)
 
-				const modbusRTURunningDevices = await HardwareServices.getRunningDevices('ModbusRTU')
-				arr = arr.concat(modbusRTURunningDevices.data)
+		// 		const modbusRTURunningDevices = await HardwareServices.getRunningDevices('ModbusRTU')
+		// 		arr = arr.concat(modbusRTURunningDevices.data)
 
-				const opc_uaRunningDevices = await HardwareServices.getRunningDevices('OPC_UA')
-				arr = arr.concat(opc_uaRunningDevices.data)
-			}
-			catch (err) {
-				toast.error("Cannot get running device !")
-			}
-		}
-		fetchRunningDevice().then(() => setRunningDevices(arr))
+		// 		const opc_uaRunningDevices = await HardwareServices.getRunningDevices('OPC_UA')
+		// 		arr = arr.concat(opc_uaRunningDevices.data)
+		// 	}
+		// 	catch (err) {
+		// 		toast.error("Cannot get running device !")
+		// 	}
+		// }
+		let protocols = ['ModbusTCP', 'ModbusRTU', 'OPC_UA']
+		const jobs = protocols.map(protocol => HardwareServices.getRunningDevices(protocol))
+		Promise.all(jobs).then(res => {
+			console.log(res)
+		}).catch(err => {
+			toast.error("Service Error")
+		})
+
+		setRunningDevices(arr)
 	}, [])
 
 

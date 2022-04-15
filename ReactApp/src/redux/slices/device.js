@@ -52,8 +52,21 @@ const deviceSlice = createSlice({
         removeTag: (state, action) => {
             const { deviceID, tagName } = action.payload
             const device = state.find(val => val.ID === deviceID)
-            const tagIdx = device.tagList.findIndex(val => val.name === tagName)
-            device.tagList.splice(tagIdx, 1)
+            
+
+            if(device.tagList.length === 1) {
+                const sampleData = {...device.tagList[0]}
+                const keys = Object.keys(sampleData)
+                keys.forEach(key => sampleData[key] = '')
+                device.tagList.unshift(sampleData)
+                device.tagList.pop()
+            }
+            else {
+                const tagIdx = device.tagList.findIndex(val => val.name === tagName)
+                device.tagList.splice(tagIdx, 1)
+            }
+            
+
             return state
         },
         addNewTag: (state, action) => {

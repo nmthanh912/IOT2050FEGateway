@@ -371,14 +371,17 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 
 						{/* Submit button */}
 						<div className='d-flex justify-content-between mt-2'>
-							<Button className='outline-none text-dark' variant='outline-secondary'
-								onClick={() => {
-									setDraftInfo(initState)
-									setDisableProtocol(false)
-								}}
-							>
-								Clear
-							</Button>
+							{mode === 'edit' ?
+								<div></div> :
+								<Button className='outline-none text-dark' variant='outline-secondary'
+									onClick={() => {
+										setDraftInfo(initState)
+										setDisableProtocol(false)
+									}}
+								>
+									Clear
+								</Button>
+							}
 							<Button className='text-white fw-bold' type='submit'>
 								Submit
 							</Button>

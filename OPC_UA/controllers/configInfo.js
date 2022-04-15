@@ -17,7 +17,7 @@ const getConfig = async (protocolName, id) => {
     try {
         const configInfo = await dbAll(getDeviceQuery, id)
 
-        if (configInfo[0].deviceID !== null) {
+        if (configInfo[0].ID !== null) {
             const nodeInfo = []
             const deviceConfig = []
 

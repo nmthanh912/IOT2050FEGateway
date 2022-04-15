@@ -1,4 +1,4 @@
-const {OPCUAClient, makeBrowsePath, AttributeIds, resolveNodeId, TimestampsToReturn} = require('node-opcua')
+const { OPCUAClient, AttributeIds, resolveNodeId, TimestampsToReturn } = require('node-opcua')
 const async = require('async')
 
 const getConfig = require('./configInfo')
@@ -37,141 +37,140 @@ function getData(deviceConfig, nodeList, callback) {
         )
     })
 
-    async.series(
-        [
-            function (callback) {
-                client.connect(endpoint, function (err) {
-                    if (err) {
-                        redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'error', errMsg: err})
-                        console.log(' Cannot connect to endpoint :', endpoint)
-                    } else {
-                        redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'info', errMsg: 'Connected!'})
-                        console.log('Connected!')
-                    }
-                    callback(err)
-                })
-            },
-
-            function (callback) {
-                client.createSession(function (err, session) {
-                    if (err) {
-                        redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'error', errMsg: err})
-                        return callback(err)
-                    }
-                    theSession = session
-                    callback()
-                })
-            },
-
-            function (callback) {
-                theSession.browse('RootFolder', function (err, browseResult) {
-                    if (!err) {
-                        console.log('Browsing rootfolder: ')
-                        redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'info', errMsg: 'Browsing rootfolder: '})
-
-                        for (let reference of browseResult.references) {
-                            redis.pub2Redis('log', {
-                                serviceName: 'OPC_UA',
-                                level: 'info',
-                                errMsg: `${(reference.browseName.toString(), reference.nodeId.toString())}`,
-                            })
-                            console.log(reference.browseName.toString(), reference.nodeId.toString())
-                        }
-                    }
-                    callback(err)
-                })
-            },
-
-            function (callback) {
-                const subscriptionOptions = {
-                    maxNotificationsPerPublish: 1000,
-                    publishingEnabled: true,
-                    requestedLifetimeCount: 100,
-                    requestedMaxKeepAliveCount: 10,
-                    requestedPublishingInterval: 1000,
+    async.series([
+        function (callback) {
+            client.connect(endpoint, function (err) {
+                if (err) {
+                    redis.pub2Redis('log', { serviceName: 'OPC_UA', level: 'error', errMsg: err })
+                    console.log(' Cannot connect to endpoint :', endpoint)
+                } else {
+                    redis.pub2Redis('log', { serviceName: 'OPC_UA', level: 'info', errMsg: 'Connected!' })
+                    console.log('Connected!')
                 }
+                callback(err)
+            })
+        },
 
-                theSession.createSubscription2(subscriptionOptions, (err, subscription) => {
-                    if (err) {
-                        redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'error', errMsg: err})
-                        return callback(err)
-                    }
-
-                    theSubscription = subscription
-
-                    theSubscription
-                        .on('started', () => {
-                            redis.pub2Redis('log', {
-                                serviceName: 'OPC_UA',
-                                level: 'info',
-                                errMsg: `Subscription started for 2 seconds - subscriptionId = ${theSubscription.subscriptionId}`,
-                            })
-                            console.log(
-                                'subscription started for 2 seconds - subscriptionId=',
-                                theSubscription.subscriptionId
-                            )
-                        })
-                        .on('keepalive', function () {
-                            redis.pub2Redis('log', {
-                                serviceName: 'OPC_UA',
-                                level: 'info',
-                                errMsg: 'Subscription keepalive',
-                            })
-                            console.log('subscription keepalive')
-                        })
-                        .on('terminated', function () {
-                            redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'info', errMsg: 'Terminated'})
-                            console.log('terminated')
-                        })
-                    callback()
-                })
-            },
-
-            function (callback) {
-                const monitoringParamaters = {
-                    samplingInterval: 250,
-                    discardOldest: true,
-                    queueSize: 10,
+        function (callback) {
+            client.createSession(function (err, session) {
+                if (err) {
+                    redis.pub2Redis('log', { serviceName: 'OPC_UA', level: 'error', errMsg: err })
+                    return callback(err)
                 }
-
-                let itemToMonitor = {}
-                nodeList.forEach((node, index) => {
-                    {
-                        itemToMonitor = {
-                            nodeId: resolveNodeId(node.nodeid),
-                            attributeId: AttributeIds.Value,
-                        }
-
-                        theSubscription.monitor(
-                            itemToMonitor,
-                            monitoringParamaters,
-                            TimestampsToReturn.Both,
-                            (err, monitoredItem) => {
-                                monitoredItem.on('changed', function (dataValue) {
-                                    dataList[index] = {
-                                        name: node.name,
-                                        value: dataValue.value.value,
-                                        unit: node.unit,
-                                    }
-                                })
-                            }
-                        )
-                    }
-                })
-                dataLoopRef = setInterval(() => {
-                    const deviceName = removeAccents(deviceConfig.name)
-                    redis.pub2Redis(`data/${deviceName}`, dataList)
-                    console.log(dataList)
-                }, deviceConfig.scanningCycle * 1000)
+                theSession = session
                 callback()
-            },
-        ],
+            })
+        },
+
+        function (callback) {
+            theSession.browse('RootFolder', function (err, browseResult) {
+                if (!err) {
+                    console.log('Browsing rootfolder: ')
+                    redis.pub2Redis('log', { serviceName: 'OPC_UA', level: 'info', errMsg: 'Browsing rootfolder: ' })
+
+                    for (let reference of browseResult.references) {
+                        redis.pub2Redis('log', {
+                            serviceName: 'OPC_UA',
+                            level: 'info',
+                            errMsg: `${(reference.browseName.toString(), reference.nodeId.toString())}`,
+                        })
+                        console.log(reference.browseName.toString(), reference.nodeId.toString())
+                    }
+                }
+                callback(err)
+            })
+        },
+
+        function (callback) {
+            const subscriptionOptions = {
+                maxNotificationsPerPublish: 1000,
+                publishingEnabled: true,
+                requestedLifetimeCount: 100,
+                requestedMaxKeepAliveCount: 10,
+                requestedPublishingInterval: 1000,
+            }
+
+            theSession.createSubscription2(subscriptionOptions, (err, subscription) => {
+                if (err) {
+                    redis.pub2Redis('log', { serviceName: 'OPC_UA', level: 'error', errMsg: err })
+                    return callback(err)
+                }
+
+                theSubscription = subscription
+
+                theSubscription
+                    .on('started', () => {
+                        redis.pub2Redis('log', {
+                            serviceName: 'OPC_UA',
+                            level: 'info',
+                            errMsg: `Subscription started for 2 seconds - subscriptionId = ${theSubscription.subscriptionId}`,
+                        })
+                        console.log(
+                            'subscription started for 2 seconds - subscriptionId=',
+                            theSubscription.subscriptionId
+                        )
+                    })
+                    .on('keepalive', function () {
+                        redis.pub2Redis('log', {
+                            serviceName: 'OPC_UA',
+                            level: 'info',
+                            errMsg: 'Subscription keepalive',
+                        })
+                        console.log('subscription keepalive')
+                    })
+                    .on('terminated', function () {
+                        redis.pub2Redis('log', { serviceName: 'OPC_UA', level: 'info', errMsg: 'Terminated' })
+                        console.log('terminated')
+                    })
+                callback()
+            })
+        },
+
+        function (callback) {
+            const monitoringParamaters = {
+                samplingInterval: 250,
+                discardOldest: true,
+                queueSize: 10,
+            }
+
+            let itemToMonitor = {}
+            nodeList.forEach((node, index) => {
+                {
+                    itemToMonitor = {
+                        nodeId: resolveNodeId(node.nodeid),
+                        attributeId: AttributeIds.Value,
+                    }
+
+                    theSubscription.monitor(
+                        itemToMonitor,
+                        monitoringParamaters,
+                        TimestampsToReturn.Both,
+                        (err, monitoredItem) => {
+                            monitoredItem.on('changed', function (dataValue) {
+                                dataList[index] = {
+                                    name: node.name,
+                                    value: dataValue.value.value,
+                                    unit: node.unit,
+                                }
+                            })
+                        }
+                    )
+                }
+            })
+            dataLoopRef = setInterval(() => {
+                const deviceName = removeAccents(deviceConfig.name)
+                redis.pub2Redis(`data/${deviceName}`, dataList)
+                console.log(dataList)
+            }, deviceConfig.scanningCycle * 1000)
+            callback()
+        }
+    ],
         function (err, results) {
             if (err) {
-                redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'error', errMsg: err})
+                redis.pub2Redis('log', { serviceName: 'OPC_UA', level: 'error', errMsg: err })
                 console.log('Failure!', err)
             } else {
-                redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'info', errMsg: 'Done'})
+                redis.pub2Redis('log', { serviceName: 'OPC_UA', level: 'info', errMsg: 'Done' })
                 console.log('Done!')
             }
             callback(err, theSession, theSubscription, client, dataLoopRef)
@@ -204,7 +203,7 @@ class DeviceConnection {
                 )
             }
         } catch (err) {
-            redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'error', errMsg: err})
+            redis.pub2Redis('log', { serviceName: 'OPC_UA', level: 'error', errMsg: err })
             console.log(err)
         }
     }
@@ -212,14 +211,14 @@ class DeviceConnection {
     shutdown(deviceID) {
         const connection = this.#pool.find((conn) => conn.deviceID === deviceID)
         if (connection !== undefined) {
-            connection.theSubscription.terminate(() => {})
+            connection.theSubscription.terminate(() => { })
             connection.theSession.close((err) => {
                 if (err) {
-                    redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'error', errMsg: err})
+                    redis.pub2Redis('log', { serviceName: 'OPC_UA', level: 'error', errMsg: err })
                     console.log('closing session failed!', err)
                 }
             })
-            connection.client.disconnect(() => {})
+            connection.client.disconnect(() => { })
             clearInterval(connection.dataLoopRef)
         }
     }

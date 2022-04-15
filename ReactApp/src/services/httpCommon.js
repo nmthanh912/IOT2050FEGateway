@@ -1,37 +1,37 @@
 import axios from 'axios'
 
-const HOSTNAME = '192.168.19.153'
+const HOST = window.location.hostname
 
 export const configHttp =  axios.create({
-    baseURL: `http://${HOSTNAME}:4000`,
+    baseURL: `http://${HOST}:4000`,
     headers: {
         'Content-type': 'application/json',
     },
 })
 
 export const modbusTCPHttp = axios.create({
-    baseURL: `http://${HOSTNAME}:4001`,
+    baseURL: `http://${HOST}:4001`,
     headers: {
         'Content-type': 'application/json',
     },
 })
 
 export const modbusRTUHttp = axios.create({
-    baseURL: `http://${HOSTNAME}:4002`,
+    baseURL: `http://${HOST}:4002`,
     headers: {
         'Content-type': 'application/json',
     },
 })
 
 export const opcuaHttp = axios.create({
-    baseURL: `http://${HOSTNAME}:4004`,
+    baseURL: `http://${HOST}:4004`,
     headers: {
         'Content-type': 'application/json',
     },
 })
 
 export const mqttClient = axios.create({
-    baseURL: `http://${HOSTNAME}:4005`,
+    baseURL: `http://${HOST}:4005`,
     headers: {
         'Content-type': 'application/json',
     },

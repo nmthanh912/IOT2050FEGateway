@@ -33,7 +33,6 @@ export default function DevicePage() {
 				arr = arr.concat(opc_uaRunningDevices.data)
 			}
 			catch (err) {
-				console.log(err)
 				toast.error("Cannot get running device !")
 			}
 		}
@@ -77,7 +76,6 @@ export default function DevicePage() {
 
 		{/* Device List (when click in edit, trigger Edit Modal) */}
 		{currDeviceList.map(device => {
-			console.log(runningDevices.includes(device.ID))
 			return <EdgeDevice
 				key={device.ID} data={device}
 				onDetail={() => {

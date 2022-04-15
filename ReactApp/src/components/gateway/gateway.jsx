@@ -3,6 +3,8 @@ import { Button } from 'react-bootstrap'
 import { useEffect, useState } from "react"
 import BootstrapSwitchButton from "bootstrap-switch-button-react"
 import MappingList from "./mappingList"
+import mqttClient from "../../services/gateway"
+import { toast } from "react-toastify"
 
 
 export default function Gateway({ data, onEdit, onDelete, isRunning }) {
@@ -12,6 +14,25 @@ export default function Gateway({ data, onEdit, onDelete, isRunning }) {
   useEffect(() => {
     setPoweron(isRunning)
   }, [isRunning])
+
+  const turnOnGateway = () => {
+    console.log("POWERON")
+    mqttClient.poweron(data.ID).then(
+      res => console.log(res.data)
+    ).catch(err => {
+      toast.error("Service error !")
+      setPoweron(false)
+    })
+  }
+  const shutdownGateway = () => {
+    console.log("SHUTDOWN")
+    mqttClient.shutdown(data.ID).then(res =>
+      console.log(res.data)
+    ).catch(err => {
+      toast.error("Service error !")
+      setPoweron(false)
+    })
+  }
 
   return <DropdownItem
     onEdit={onEdit}
@@ -38,8 +59,8 @@ export default function Gateway({ data, onEdit, onDelete, isRunning }) {
                 }
                 setDisabledToggle(true)
                 setTimeout(() => setDisabledToggle(false), 3000)
-                if (!poweron) console.log("POWERON GATEWAY")
-                else console.log("SHUTDOWN GATEWAY")
+                if (!poweron) turnOnGateway()
+                else shutdownGateway()
                 setPoweron(checked)
               }}
             />
@@ -48,7 +69,7 @@ export default function Gateway({ data, onEdit, onDelete, isRunning }) {
       </div>
     </DropdownItem.Header>
     <DropdownItem.Body>
-      <MappingList gatewayID={data.ID} name={data.name}/>
+      <MappingList gatewayID={data.ID} name={data.name} />
     </DropdownItem.Body>
   </DropdownItem>
 }

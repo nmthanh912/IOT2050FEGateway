@@ -78,7 +78,7 @@ class MQTTConnectionPool {
                 const connection = new MQTTConnection(mqttConfig[0], listSub)
                 connection.poweron()
                 this.#pool.push(connection)
-            }
+            }  
         } catch (err) {
             pubRedis.pub2Redis('log', {serviceName: 'MQTTClient', level: 'error', errMsg: err})
             console.log('Get config info error!', err)

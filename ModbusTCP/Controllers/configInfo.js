@@ -15,8 +15,7 @@ const getConfig = async (protocolName, id) => {
         JOIN ${protocolName}_TAG ON ${protocolName}_TAG.deviceID = TAG.deviceID AND ${protocolName}_TAG.name = TAG.name
     WHERE DEVICE.ID = ?`
     try {
-        const configInfo = await dbAll(getDeviceQuery, id)
-
+        const configInfo = await dbAll(getDeviceQuery, id)  
         if (configInfo[0].deviceID !== null) {
             const tagInfo = []
             const deviceConfig = []

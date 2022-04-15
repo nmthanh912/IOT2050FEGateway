@@ -139,10 +139,13 @@ class DeviceConnectionPool {
                 const connection = new DeviceConnection(configInfo[0])
                 connection.poweron()
                 this.#pool.push(connection)
+            } else {
+                throw new Error('No tags provided!')
             }
         } catch (err) {
             redis.pub2Redis('log', {serviceName: 'ModbusTCP', level: 'error', errMsg: err})
             console.log(err)
+            throw err
         }
     }
 

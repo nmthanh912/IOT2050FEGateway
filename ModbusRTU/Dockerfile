@@ -9,6 +9,7 @@ WORKDIR /usr/src/app/modbusrtu
 COPY package*.json ./
 
 RUN mkdir Database
+RUN mkdir customJSON
 
 RUN npm install
 

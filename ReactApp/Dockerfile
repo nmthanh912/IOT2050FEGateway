@@ -1,4 +1,4 @@
-FROM node:16-buster
+FROM node:17-buster
 
 # Create app directory (physical path in container)
 WORKDIR /usr/src/app/iot2050app

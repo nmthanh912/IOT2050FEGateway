@@ -1,5 +1,4 @@
-FROM node:16-buster
-
+FROM node:17-buster
 WORKDIR /usr/src/app/logger
 
 COPY . .

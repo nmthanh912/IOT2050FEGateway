@@ -9,6 +9,7 @@ RUN rm package-lock.json
 RUN mkdir Database
 RUN mkdir customJSON
 
+RUN npm install sqlite3@4.2.0
 RUN npm install
 
 EXPOSE 4005

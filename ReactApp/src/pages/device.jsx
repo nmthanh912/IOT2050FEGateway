@@ -20,31 +20,21 @@ export default function DevicePage() {
 	const [runningDevices, setRunningDevices] = useState([])
 
 	useEffect(() => {
-		let arr = []
-		// async function fetchRunningDevice() {
-		// 	try {
-		// 		const modbusTCPRunningDevices = await HardwareServices.getRunningDevices('ModbusTCP')
-		// 		arr = arr.concat(modbusTCPRunningDevices.data)
-
-		// 		const modbusRTURunningDevices = await HardwareServices.getRunningDevices('ModbusRTU')
-		// 		arr = arr.concat(modbusRTURunningDevices.data)
-
-		// 		const opc_uaRunningDevices = await HardwareServices.getRunningDevices('OPC_UA')
-		// 		arr = arr.concat(opc_uaRunningDevices.data)
-		// 	}
-		// 	catch (err) {
-		// 		toast.error("Cannot get running device !")
-		// 	}
-		// }
 		let protocols = ['ModbusTCP', 'ModbusRTU', 'OPC_UA']
 		const jobs = protocols.map(protocol => HardwareServices.getRunningDevices(protocol))
-		Promise.all(jobs).then(res => {
-			console.log(res)
-		}).catch(err => {
-			toast.error("Service Error")
+		Promise.allSettled(jobs).then(results => {
+			let fulfilled_arr = []
+			// console.log(results)
+			for(let i of results) {
+				if(i.status === 'rejected') {
+					toast.error(i.reason.message)
+				}
+				else {
+					fulfilled_arr = fulfilled_arr.concat(i.value.data)
+				}
+			}
+			setRunningDevices(fulfilled_arr)
 		})
-
-		setRunningDevices(arr)
 	}, [])
 
 
@@ -83,7 +73,7 @@ export default function DevicePage() {
 		<hr />
 
 		{/* Device List (when click in edit, trigger Edit Modal) */}
-		{currDeviceList.map(device => {
+		{currDeviceList.length !== 0 ? currDeviceList.map(device => {
 			return <EdgeDevice
 				key={device.ID} data={device}
 				onDetail={() => {
@@ -92,6 +82,10 @@ export default function DevicePage() {
 				}}
 				isRunning={runningDevices.includes(device.ID)}
 			/>
-		})}
+		}) : <div className='w-100 d-flex justify-content-between'>
+			<div className='mx-auto text-secondary mt-5 fs-3'>
+				Empty device list
+			</div>
+		</div>}
 	</div>
 }

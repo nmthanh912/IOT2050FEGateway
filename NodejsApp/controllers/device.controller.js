@@ -123,11 +123,6 @@ class Device {
             configList.push([...config], deviceID)
         }
 
-        // console.log(insertManyDeviceQuery, deviceList)
-        // console.log(insertManyDeviceConfigQuery, configList)
-        // console.log(insertManyTagQuery, tagListAll.flat(2))
-        // console.log(insertManyProtocolTagQuery, protocolTagListAll.flat(2))
-
         deviceList = deviceList.flat()
         tagListAll = tagListAll.flat(2)
         protocolTagListAll = protocolTagListAll.flat(2)
@@ -136,8 +131,12 @@ class Device {
         handler(res, async () => {
             await dbRun(insertManyDeviceQuery, deviceList)
             await dbRun(insertManyDeviceConfigQuery, configList)
-            await dbRun(insertManyTagQuery, tagListAll)
-            await dbRun(insertManyProtocolTagQuery, protocolTagListAll)
+
+            if (data.tagList) {
+                await dbRun(insertManyTagQuery, tagListAll)
+                await dbRun(insertManyProtocolTagQuery, protocolTagListAll)
+            }
+
             res.json({
                 keyList
             })
@@ -147,6 +146,7 @@ class Device {
     create(req, res) {
         const id = uniqueId()
         const { data } = req.body
+        console.log(data.tagList)
         const deviceQuery = `INSERT INTO DEVICE 
             (ID, name, description, protocolType, byteOrder, wordOrder, scanningCycle, minRespTime) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`

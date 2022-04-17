@@ -19,7 +19,6 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 		let protocol = deviceConfigInfo.find((p) => p.value === value)
 		setDraftInfo({ ...draftInfo, protocol, config: {} })
 	}
-
 	const setConfig = (config) => setDraftInfo({ ...draftInfo, config })
 
 	const updateToDB = async () => {
@@ -127,18 +126,24 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 
 	const handleUploadFile = file => {
 		try {
-			const removedNullData = file.data.map(row => row.filter(val => val !== ''))
-			const deviceInfoOffset = removedNullData.findIndex(val => val[0] === 'Device Info') + 2
+			// Find the first line which taglist/config begin in excel file
+			const tagListOffset = file.data.findIndex(val => val[0] === 'Tag List') + 1
+			const configOffset = file.data.findIndex(val => val[0] === 'Configurations') + 1
+			const deviceInfoOffset = file.data.findIndex(val => val[0] === 'Device Info') + 2
+
+			const tagListLength = file.data.length - tagListOffset - 2
+
+			const removedNullData = file.data.map((row, index) => {
+				if(index <= deviceInfoOffset) return row
+				return row.filter(val => val !== '')
+			})
+			
 			if (mode === 'edit') {
 				if (removedNullData[deviceInfoOffset][7].toLowerCase() !== draftInfo.protocol.value.toLowerCase())
 					throw new Error('Protocol cannot be changed')
 			}
 
-			// Find the first line which taglist/config begin in excel file
-			const tagListOffset = removedNullData.findIndex(val => val[0] === 'Tag List') + 1
-			const configOffset = removedNullData.findIndex(val => val[0] === 'Configurations') + 1
 
-			const tagListLength = file.data.length - tagListOffset - 2
 
 			const newTagList = []
 			for (let i = 0; i < tagListLength; ++i) {

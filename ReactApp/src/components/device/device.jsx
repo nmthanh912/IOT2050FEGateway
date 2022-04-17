@@ -1,5 +1,3 @@
-
-
 import { useEffect, useState, useRef } from "react";
 import { useDispatch } from "react-redux";
 import { removeDevice, updateTagList } from "../../redux/slices/device";
@@ -98,7 +96,8 @@ export default function EdgeDevice({ data, onDetail, isRunning }) {
             dispatch(removeDevice(data.ID))
             notifySuccess('Delete device successfully')
         }).catch(err => {
-            notifyFail(err.response.data.msg)
+            console.log(err)
+            // notifyFail(err.response.data.msg)
         })
     }
 
@@ -162,7 +161,7 @@ export default function EdgeDevice({ data, onDetail, isRunning }) {
                         </Button>
                     </div>
                 </div>
-                <div style={{ display: 'none' }}>
+                <div style={{ display: 'none' }}> 
                     <CSVLink
                         filename={data.name}
                         data={exportData}

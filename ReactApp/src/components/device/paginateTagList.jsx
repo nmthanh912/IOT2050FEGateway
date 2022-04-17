@@ -16,14 +16,13 @@ export default function PaginateTagList({ deviceID, protocol, Table, readOnly })
   const dispatch = useDispatch()
   const tagList = useSelector(state => {
     const device = state.device.find(val => val.ID === deviceID)
-    return device.tagList
+    return device ? device.tagList : []
   })
 
   const [currentItems, setCurrentItems] = useState(tagList);
   const [pageCount, setPageCount] = useState(0);
   const [beginIdx, setBeginIdx] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(10)
-
 
   useEffect(() => {
     const endIdx = beginIdx + itemsPerPage;
@@ -101,8 +100,9 @@ export function TagTable({ data, deviceID, protocol, readOnly }) {
 
   const dispatch = useDispatch()
   const rawColumns = useMemo(() => {
-    return Object.keys(data[0])
-  }, [data])
+    let tagDataFormat = tagDataFormats.find(format => format.protocol === protocol)
+    return tagDataFormat
+  }, [protocol])
 
   const deleteTag = tagName => {
     DeviceService.deleteTag(deviceID, tagName).then(response => {
@@ -115,16 +115,15 @@ export function TagTable({ data, deviceID, protocol, readOnly }) {
 
   useEffect(() => {
     const obj = {}
-    rawColumns.forEach(col => obj[col] = '')
+    rawColumns.attrs.forEach(col => obj[col.name] = '')
     setNewTagAttrs(obj)
   }, [rawColumns])
 
   const addTag = () => {
-    for (let i = 0; i < rawColumns.length; ++i) {
-      let col = rawColumns[i]
-      console.log(col)
-      if (newTagAttrs[col] === '') {
-        let form = document.getElementById(deviceID + col)
+    for (let i = 0; i < rawColumns.attrs.length; ++i) {
+      let colName = rawColumns.attrs[i].name
+      if (newTagAttrs[colName] === '') {
+        let form = document.getElementById(deviceID + colName)
         form.reportValidity()
         return
       }
@@ -132,7 +131,7 @@ export function TagTable({ data, deviceID, protocol, readOnly }) {
     DeviceService.addTag(deviceID, protocol, newTagAttrs).then(response => {
       console.log(response.data)
       const obj = {}
-      rawColumns.forEach(col => obj[col] = '')
+      rawColumns.attrs.forEach(col => obj[col.name] = '')
       dispatch(addNewTag({ deviceID, tag: newTagAttrs }))
       setNewTagAttrs(obj)
     })
@@ -155,13 +154,23 @@ export function TagTable({ data, deviceID, protocol, readOnly }) {
           borderBottom: '2px solid hsl(180, 100%, 30%)',
           display: readOnly ? 'none' : ''
         }}>
-          {rawColumns.map((col, index) => {
+          {rawColumns.attrs.map((col, index) => {
             return <td key={index}>
-              <Form.Control size='sm' placeholder={col}
-                value={newTagAttrs[col] ? newTagAttrs[col] : ''}
-                onChange={e => setNewTagAttrs({ ...newTagAttrs, [col]: e.target.value })}
-                id={deviceID + col} required
-              />
+              {col.type !== 'select' ? <Form.Control
+                type={col.type}
+                size='sm' placeholder={col.name}
+                value={newTagAttrs[col.name] ? newTagAttrs[col.name] : ''}
+                onChange={e => setNewTagAttrs({ ...newTagAttrs, [col.name]: e.target.value })}
+                id={deviceID + col.name} required
+              /> : <Form.Select
+                size='sm' placeholder={col.name}
+                value={newTagAttrs[col.name] ? newTagAttrs[col.name] : ''}
+                onChange={e => setNewTagAttrs({ ...newTagAttrs, [col.name]: e.target.value })}
+                id={deviceID + col.name} required
+              >
+                <option value=''>---</option>
+                {col.options.map(opt => <option key={deviceID + col.name + opt}>{opt}</option>)}
+              </Form.Select>}
             </td>
           })}
           <td className="text-end hover">
@@ -206,11 +215,9 @@ function EditableCell({ initValue, deviceID, tagName, attr, protocol, readOnly }
   // If the initialValue is changed external, sync it up with our state
   const updateValue = () => {
     setEditable(false)
-    console.log(value)
-    console.log(deviceID, tagName, attr)
 
     DeviceService.editTagCell(deviceID, protocol, tagName, attr, value).then(response => {
-      console.log(response.data)
+      // console.log(response.data)
       dispatch(editTagCell({
         deviceID,
         tagName, attr,
@@ -247,10 +254,67 @@ function EditableCell({ initValue, deviceID, tagName, attr, protocol, readOnly }
         </Form.Group>
       </Form>
       : <span onDoubleClick={() => {
-        
         !readOnly && setEditable(true)
       }} className='hover'>
         {value}
       </span>}
   </td>
 }
+
+const tagDataFormats = [{
+  protocol: 'MODBUSTCP',
+  attrs: [{
+    type: 'text',
+    name: 'name'
+  }, {
+    type: 'number',
+    name: 'address'
+  }, {
+    type: 'text',
+    name: 'unit'
+  }, {
+    type: 'select',
+    name: 'dataType',
+    options: ['int16', 'uint16', 'float32', 'int32', 'uint32', 'double', 'string']
+  }, {
+    type: 'number',
+    name: 'PF',
+  }, {
+    type: 'number',
+    name: 'size',
+  }]
+}, {
+  protocol: 'MODBUSTCP',
+  attrs: [{
+    type: 'text',
+    name: 'name'
+  }, {
+    type: 'number',
+    name: 'address'
+  }, {
+    type: 'text',
+    name: 'unit'
+  }, {
+    type: 'select',
+    name: 'dataType',
+    options: ['int16', 'uint16', 'float32', 'int32', 'uint32', 'double', 'string']
+  }, {
+    type: 'number',
+    name: 'PF',
+  }, {
+    type: 'number',
+    name: 'size',
+  }]
+}, {
+  protocol: 'OPC_UA',
+  attrs: [{
+    type: 'text',
+    name: 'name',
+  }, {
+    type: 'text',
+    name: 'nodeid',
+  }, {
+    type: 'text',
+    name: 'unit',
+  }]
+}]

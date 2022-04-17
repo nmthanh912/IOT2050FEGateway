@@ -72,6 +72,7 @@ const deviceSlice = createSlice({
         addNewTag: (state, action) => {
             const { deviceID, tag } = action.payload
             const device = state.find(val => val.ID === deviceID)
+            if(device.tagList[0].name === '') device.tagList.shift()
             device.tagList.push(tag)
             return state
         }

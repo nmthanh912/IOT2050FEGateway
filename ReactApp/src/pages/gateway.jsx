@@ -24,7 +24,7 @@ export default function GatewayPage() {
   useEffect(() => {
     mqttClient.getRunningGateways().then(response => {
       setRunningGatewayList(response.data)
-    }).catch(err => toast.error('Cannot get running gateways')) 
+    }).catch(err => toast.error('Cannot get running gateways'))
   }, [])
 
   useEffect(() => {
@@ -117,7 +117,7 @@ export default function GatewayPage() {
     />
     <hr />
 
-    {currGatewatList.map(gateway => <Gateway
+    {currGatewatList.length !== 0 ? currGatewatList.map(gateway => <Gateway
       data={gateway} key={gateway.ID}
       onEdit={() => {
         setShowModal(true)
@@ -129,7 +129,11 @@ export default function GatewayPage() {
         setEditTarget(null)
       }}
       isRunning={runningGatewayList.includes(gateway.ID)}
-    />)}
+    />) : <div className='w-100 d-flex justify-content-between'>
+      <div className='mx-auto text-secondary mt-5 fs-3'>
+        Empty gateway list
+      </div>
+    </div>}
   </div>
 }
 

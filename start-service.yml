@@ -1,0 +1,75 @@
+version: '3.8'
+services:
+  configserver:
+    container_name: configserver
+    image: nguyenthanh912/iot2050fegateway:configserver
+    volumes:
+      - sqlitedb:/usr/src/app/iot2050cfserver/Database
+      - customJSON:/usr/src/app/iot2050cfserver/customJSON
+    restart: always
+    ports:
+      - 4000:4000
+
+  application:
+    container_name: application
+    image: nguyenthanh912/iot2050fegateway:application
+    restart: always
+    ports:
+      - 3000:3000
+
+  mqttclient:
+    container_name: mqttclient
+    image: nguyenthanh912/iot2050fegateway:mqttclient
+    volumes:
+      - sqlitedb:/usr/src/app/mqttclient/Database
+      - customJSON:/usr/src/app/mqttclient/customJSON
+    restart: always
+    ports:
+      - 4005:4005
+
+  opc_ua:
+    container_name: opc_ua
+    image: nguyenthanh912/iot2050fegateway:opc_ua
+    volumes:
+      - sqlitedb:/usr/src/app/opc_ua/Database
+      - customJSON:/usr/src/app/opc_ua/customJSON
+    restart: always
+    ports:
+      - 4004:4004
+
+  modbustcp:
+    container_name: modbustcp
+    image: nguyenthanh912/iot2050fegateway:modbustcp
+    volumes:
+      - sqlitedb:/usr/src/app/modbustcp/Database
+      - customJSON:/usr/src/app/modbustcp/customJSON
+    restart: always
+    ports:
+      - 4001:4001
+
+  modbusrtu:
+    container_name: modbusrtu
+    image: nguyenthanh912/iot2050fegateway:modbusrtu
+    volumes:
+      - sqlitedb:/usr/src/app/modbusrtu/Database
+      - customJSON:/usr/src/app/modbusrtu/customJSON
+    restart: always
+    ports:
+      - 4002:4002
+
+  redis:
+    container_name: redis
+    image: redis:alpine
+    restart: always
+
+  logger:
+    container_name: logger
+    image: nguyenthanh912/iot2050fegateway:logger
+    volumes:
+      - logfile:/usr/src/app/logger/LogFolder
+    restart: always
+
+volumes:
+  sqlitedb:
+  customJSON:
+  logfile:

@@ -43,7 +43,7 @@ To remove all services, run:
 docker-compose -f start-service.yml down -v
 ```
 
-After running services successfully, you can watch this [video](https://github.com/nmthanh912/IOT2050FEGateway) to get a guideline, or try to explore by yourself.
+After running services successfully, you can watch this [video](https://www.youtube.com/watch?v=MRA54vUQ7KU) to get a guideline, or try to explore by yourself.
 
 # Deployment guideline
 

@@ -50,7 +50,13 @@ After running services successfully, you can watch this [video](https://github.c
 This project must be deployed on Debian v10+ operating system.
 Please install **docker**, **docker-compose** before deploying.
 
-In the project directory, run the command below to build and run all images in background mode:
+In the project directory, change environment mode to production:
+
+```console
+bash mode production
+```
+
+Then, build images from source code:
 
 ```console
 docker-compose build

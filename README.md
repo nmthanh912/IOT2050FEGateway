@@ -27,20 +27,35 @@ As you can see, we have many processes running now:
 
 # Usage guideline
 
+We have prebuilt all images and push to a [repository](https://hub.docker.com/r/nguyenthanh912/iot2050fegateway/tags) on DockerHub.
+
+Assume that, your IOT2050 device has already been installed [docker](https://docs.docker.com/engine/install/) and [docker-compose](https://docs.docker.com/compose/install/). You don't have to pull this Github repository, just copy/download a file `start-service.yml`.
+
+Run this command to pull all prebuilt images and start:
+
+```console
+docker-compose -f start-service.yml up -d
+```
+
+To remove all services, run:
+
+```console
+docker-compose -f start-service.yml down -v
+```
+
+After running services successfully, you can watch this [video](https://github.com/nmthanh912/IOT2050FEGateway) to get a guideline, or try to explore by yourself.
+
 # Deployment guideline
 
-This project must be deployed on Linux operating system.
+This project must be deployed on Debian v10+ operating system.
 Please install **docker**, **docker-compose** before deploying.
 
 In the project directory, run the command below to build and run all images in background mode:
 
 ```console
-docker-compose up -d --build
+docker-compose build
 ```
 
-If you want to stop the entire system (include volume), run this command:
+If your computer, which is building images, has restrictive RAM, you should not build all images at once. Instead, try to build in sequence.
 
-```console
-docker-compose down --volume
-```
-
+Finally, to push images to a repository on Docker Hub, visit this [tutorial](https://docs.docker.com/get-started/04_sharing_app/).

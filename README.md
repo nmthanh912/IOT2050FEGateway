@@ -1,7 +1,7 @@
 
 # Description of project source code
 
-Our project uses microservice architecture, with each folder contains source code of a service.
+Our project uses microservice architecture, with each folder is a subproject implementing a service.
 
 In this repo, we have ReactApp folder, which contains source code of web application and NodejsApp, which contains source code of configuration server. The other folders contain source code of remoting device, reading data and sending to other end users. These folders are differentiated by which protocol using.
 

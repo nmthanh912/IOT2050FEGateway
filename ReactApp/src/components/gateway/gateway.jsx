@@ -10,33 +10,34 @@ import { toast } from "react-toastify"
 export default function Gateway({ data, onEdit, onDelete, isRunning }) {
   const [disabledToggle, setDisabledToggle] = useState(false)
   const [poweron, setPoweron] = useState(isRunning)
-
   useEffect(() => {
     setPoweron(isRunning)
   }, [isRunning])
 
   const turnOnGateway = () => {
     console.log("POWERON")
-    mqttClient.poweron(data.ID).then(
-      res => console.log(res.data)
-    ).catch(err => {
-      toast.error("Service error !")
+    mqttClient.poweron(data.ID).then(res => {
+      console.log(res.data)
+      setPoweron(true)
+    }).catch(err => {
+      toast.error(err.response.data.msg)
       setPoweron(false)
     })
   }
   const shutdownGateway = () => {
     console.log("SHUTDOWN")
-    mqttClient.shutdown(data.ID).then(res =>
+    mqttClient.shutdown(data.ID).then(res => {
       console.log(res.data)
-    ).catch(err => {
-      toast.error("Service error !")
       setPoweron(false)
+    }).catch(err => {
+      toast.error("Service error !")
+      setPoweron(true)
     })
   }
 
   return <DropdownItem
-    onEdit={onEdit}
-    onDelete={onDelete}
+    onEdit={!poweron ? onEdit : null}
+    onDelete={!poweron ? onDelete : null}
   >
     <DropdownItem.Header>
       <div className="row">
@@ -69,7 +70,7 @@ export default function Gateway({ data, onEdit, onDelete, isRunning }) {
       </div>
     </DropdownItem.Header>
     <DropdownItem.Body>
-      <MappingList gatewayID={data.ID} name={data.name} />
+      <MappingList gatewayID={data.ID} name={data.name} editable={!poweron} />
     </DropdownItem.Body>
   </DropdownItem>
 }

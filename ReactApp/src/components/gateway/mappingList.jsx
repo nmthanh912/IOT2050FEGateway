@@ -8,7 +8,7 @@ import { useSelector } from "react-redux"
 import Select from 'react-select'
 
 
-export default function MappingList({ gatewayID, name }) {
+export default function MappingList({ gatewayID, name, editable }) {
 	const allDeviceData = useSelector(state => state.device)
 
 	const [showTagModal, setShowTagModal] = useState(false)
@@ -83,7 +83,7 @@ export default function MappingList({ gatewayID, name }) {
 				<tr>
 					<th>Device ID</th>
 					<th>Device Name</th>
-					<th className="text-end">Action</th>
+					{editable && <th className="text-end">Action</th>}
 				</tr>
 			</thead>
 			<tbody>
@@ -93,6 +93,7 @@ export default function MappingList({ gatewayID, name }) {
 					name={device.name}
 					openConfig={() => openTagModal(device)}
 					removeSubscribe={() => removeSubscribedDevice(device.ID)}
+					editable={editable}
 				/>)}
 			</tbody>
 		</table>
@@ -115,7 +116,7 @@ export default function MappingList({ gatewayID, name }) {
 		<div className="d-flex justify-content-end m-2">
 			<Button className="text-white d-flex align-items-center" size="sm"
 				onClick={() => setShowSubscribeModal(true)}
-				disabled={restDevices.length === 0}
+				disabled={restDevices.length === 0 || !editable}
 			>
 				Subscribe
 				<PlusCircle size={18} className='ms-1' />
@@ -145,24 +146,28 @@ export default function MappingList({ gatewayID, name }) {
 					>
 						Add
 					</Button>
+					
 				</Form.Group>
 			</Modal.Body>
 		</Modal>
 	</div>
 }
 
-function Device({ name, ID, openConfig, removeSubscribe }) {
+function Device({ name, ID, openConfig, removeSubscribe, editable }) {
 	return <tr
-		onClick={openConfig}
+		onClick={editable ? openConfig : () => { }}
 		className='hover'
 	>
 		<td className="text-primary"><u>#{ID}</u></td>
 		<td>{name}</td>
-		<td className="text-end">
-			<Trash className="hover" size={18} onClick={e => {
-				e.stopPropagation()
-				removeSubscribe()
-			}} />
-		</td>
+		{editable && <td className="text-end">
+			<Trash className="hover" size={18}
+				onClick={e => {
+					e.stopPropagation()
+					removeSubscribe()
+				}}
+			/>
+		</td>}
+		
 	</tr>
 }

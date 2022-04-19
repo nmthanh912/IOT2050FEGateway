@@ -45,7 +45,7 @@ class Tag {
     async deleteTag(req, res) {
         const deviceID = req.params.id
         const tagName = req.query.tagName
-        // console.log(deviceID, tagName)
+        console.log(deviceID, tagName)
         const query = `DELETE FROM TAG WHERE deviceID = ? AND name = ?`
         handler(res, async () => {
             await dbRun(query, [deviceID, tagName])
@@ -59,8 +59,7 @@ class Tag {
         const colNumber = Object.keys(data).length
         const query1 = `INSERT INTO TAG (deviceID, name) VALUES (?, ?)`
         const query2 = `INSERT INTO ${protocol}_TAG VALUES (${'?,'.repeat(colNumber).slice(0, -1)})`
-        console.log(data)
-        console.log(query2)
+
         handler(res, async () => {
             await dbRun(query1, [deviceID, data.name])
             await dbRun(query2, Object.values(data))

@@ -15,6 +15,7 @@ export default function App() {
     useEffect(() => {
         dispatch(fetchDevices())
     }, [dispatch])
+
     return <div>
         <NavBar />
         <Container className="my-3">

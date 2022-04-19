@@ -18,7 +18,7 @@ app.get('/poweron', async function (req, res) {
         res.json({ msg: 'OKE' })
     }
     catch (err) {
-        res.status(500).json({ msg: "Cannot turn on gateway" })
+        res.status(500).json({ msg: err.message })
     }
 })
 

@@ -17,10 +17,10 @@ class GatewayController {
         let gatewayData = []
         let infoData = [req.body.description, req.body.name]
         let configData = Object.values(req.body.config)
+        // console.log(configData)
         let ID = uniqueId()
         gatewayData.push(ID)
         gatewayData = gatewayData.concat(infoData).concat(configData)
-        console.log(gatewayData)
 
         let protocol = req.body.protocol.toUpperCase()
         const sqlQuery = `INSERT INTO ${protocol} VALUES (${'?,'.repeat(gatewayData.length).slice(0, -1)})`

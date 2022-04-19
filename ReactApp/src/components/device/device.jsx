@@ -19,7 +19,6 @@ export default function EdgeDevice({ data, onDetail, isRunning }) {
     const [poweron, setPoweron] = useState(isRunning)
     const [disabledToggle, setDisableToggle] = useState(false)
 
-    // console.log(data)
     const exportToCSV = () => {
 
         const list = [
@@ -112,16 +111,14 @@ export default function EdgeDevice({ data, onDetail, isRunning }) {
     })
 
     const turnOnDevice = () => {
-        console.log("POWERON")
         HardwareServices.poweron(data.protocol, data.ID).then(
             res => console.log(res.data)
         ).catch(err => {
-            notifyFail("Service error !")
+            notifyFail(err.response ? err.response.data.msg : err.message)
             setPoweron(false)
         })
     }
     const shutdownDevice = () => {
-        console.log("SHUTDOWN")
         HardwareServices.shutdown(data.protocol, data.ID).then(res => console.log(res.data))
     }
 

@@ -31,6 +31,7 @@ export default function ConfigModal({ show, onHide, onSubmit, editTarget }) {
                     protocol: gatewayInfo.protocol.value
                 })
                 setGatewayInfo(initState)
+                console.log(gatewayInfo)
                 onHide()
             }}>
                 <div className="row mb-2">
@@ -96,7 +97,7 @@ export default function ConfigModal({ show, onHide, onSubmit, editTarget }) {
                                 size="sm"
                                 placeholder={label + ' ...'}
                                 required
-                                value={gatewayInfo.config[attr.name] ? gatewayInfo.config[attr.name] : ''}
+                                value={gatewayInfo.config[attr.name] ? gatewayInfo.config[attr.name] : 0}
                                 onChange={e => setConfig({ ...gatewayInfo.config, [attr.name]: e.target.value })}
                             >
                                 <option value={''}>--- Pick a QoS ---</option>

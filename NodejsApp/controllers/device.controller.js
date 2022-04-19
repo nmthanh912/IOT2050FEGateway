@@ -146,7 +146,6 @@ class Device {
     create(req, res) {
         const id = uniqueId()
         const { data } = req.body
-        console.log(data.tagList)
         const deviceQuery = `INSERT INTO DEVICE 
             (ID, name, description, protocolType, byteOrder, wordOrder, scanningCycle, minRespTime) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`

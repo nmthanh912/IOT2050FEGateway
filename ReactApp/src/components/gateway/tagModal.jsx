@@ -112,12 +112,14 @@ export default function TagModal({
         <h5 className="m-auto text-white">Config device's tags</h5>
       </Modal.Header>
       <Modal.Body>
-        {currentItems.length !== 0 && <TagTable
-          data={currentItems} toggleSubscribe={toggleSubscribe}
-          toggleSubscribeAll={toggleSubscribeAll}
-          subsAll={subsAll}
-          disabled={customMode}
-        />}
+        {currentItems.length !== 0 && <div style={{boxSizing: 'content-box'}}>
+          <TagTable
+            data={currentItems} toggleSubscribe={toggleSubscribe}
+            toggleSubscribeAll={toggleSubscribeAll}
+            subsAll={subsAll}
+            disabled={customMode}
+          />
+        </div>}
 
         <div className="d-flex align-items-center justify-content-between my-2">
           <ReactPaginate
@@ -185,45 +187,43 @@ function TagTable({ data, toggleSubscribe, toggleSubscribeAll, subsAll, disabled
     return Object.keys(data[0]).map(key => key[0].toUpperCase() + key.slice(1))
   }, [data])
 
-  return <div>
-    <table className="styled-table w-100">
-      <thead>
-        <tr>
-          {
-            columns.map((col, index) => index !== 0 ? <th key={uid()} >
-              {col}
-            </th> :
-              <th className="d-flex align-items-center" key={uid()}>
-                <Form.Check
-                  type="checkbox"
-                  checked={subsAll}
-                  onChange={toggleSubscribeAll}
-                  className='me-2'
-                  id="suball"
-                  disabled={disabled}
-                />
-                <label htmlFor="suball">Subscribe</label>
-              </th>)
-          }
-        </tr>
-      </thead>
-      <tbody>
-        {data.map(row => <tr key={uid()}>
-          {Object.values(row).map(cell => typeof cell !== 'boolean' ?
-            <td key={uid()}>
-              <span className='hover'>{cell}</span>
-            </td> : <td key={uid()}>
+  return <table className="styled-table w-100">
+    <thead>
+      <tr>
+        {
+          columns.map((col, index) => index !== 0 ? <th key={uid()} >
+            {col}
+          </th> :
+            <th className="d-flex align-items-center" key={uid()}>
               <Form.Check
-                type="switch"
-                checked={cell}
-                onChange={() => toggleSubscribe(row.name)}
+                type="checkbox"
+                checked={subsAll}
+                onChange={toggleSubscribeAll}
+                className='me-2'
+                id="suball"
                 disabled={disabled}
               />
-            </td>
-          )}
-        </tr>
+              <label htmlFor="suball">Subscribe</label>
+            </th>)
+        }
+      </tr>
+    </thead>
+    <tbody>
+      {data.map(row => <tr key={uid()}>
+        {Object.values(row).map(cell => typeof cell !== 'boolean' ?
+          <td key={uid()}>
+            <span className='hover'>{cell}</span>
+          </td> : <td key={uid()}>
+            <Form.Check
+              type="switch"
+              checked={cell}
+              onChange={() => toggleSubscribe(row.name)}
+              disabled={disabled}
+            />
+          </td>
         )}
-      </tbody>
-    </table>
-  </div>
+      </tr>
+      )}
+    </tbody>
+  </table>
 }

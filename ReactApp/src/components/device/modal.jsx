@@ -134,16 +134,15 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 			const tagListLength = file.data.length - tagListOffset - 2
 
 			const removedNullData = file.data.map((row, index) => {
-				if(index <= deviceInfoOffset) return row
-				return row.filter(val => val !== '')
+				let trimmedRow = row.map(cell => cell.trim())
+				if(index <= deviceInfoOffset) return trimmedRow
+				return trimmedRow.filter(val => val !== '')
 			})
 			
 			if (mode === 'edit') {
 				if (removedNullData[deviceInfoOffset][7].toLowerCase() !== draftInfo.protocol.value.toLowerCase())
 					throw new Error('Protocol cannot be changed')
 			}
-
-
 
 			const newTagList = []
 			for (let i = 0; i < tagListLength; ++i) {

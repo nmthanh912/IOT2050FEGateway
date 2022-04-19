@@ -6,6 +6,7 @@ import ShortUniqueId from "short-unique-id";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchTags, editTagCell, removeTag, addNewTag } from "../../redux/slices/device";
 import DeviceService from '../../services/configserver/device'
+import { toast } from "react-toastify";
 
 const uid = new ShortUniqueId({
   length: 5,
@@ -106,9 +107,8 @@ export function TagTable({ data, deviceID, protocol, readOnly }) {
 
   const deleteTag = tagName => {
     DeviceService.deleteTag(deviceID, tagName).then(response => {
-      console.log(response.data)
       dispatch(removeTag({ deviceID, tagName }))
-    }).catch(err => console.log(err))
+    }).catch(err => toast.error(err.response.data.msg))
   }
 
   const [newTagAttrs, setNewTagAttrs] = useState({})
@@ -129,7 +129,6 @@ export function TagTable({ data, deviceID, protocol, readOnly }) {
       }
     }
     DeviceService.addTag(deviceID, protocol, newTagAttrs).then(response => {
-      console.log(response.data)
       const obj = {}
       rawColumns.attrs.forEach(col => obj[col.name] = '')
       dispatch(addNewTag({ deviceID, tag: newTagAttrs }))
@@ -188,7 +187,7 @@ export function TagTable({ data, deviceID, protocol, readOnly }) {
               key={uid()} initValue={cell}
               deviceID={deviceID}
               tagName={row.name}
-              attr={rawColumns[index]}
+              attr={rawColumns.attrs[index].name}
               protocol={protocol}
               readOnly={readOnly}
             />)}
@@ -217,14 +216,13 @@ function EditableCell({ initValue, deviceID, tagName, attr, protocol, readOnly }
     setEditable(false)
 
     DeviceService.editTagCell(deviceID, protocol, tagName, attr, value).then(response => {
-      // console.log(response.data)
       dispatch(editTagCell({
         deviceID,
         tagName, attr,
         newValue: value
       }))
     }).catch(err => {
-      console.log(err.message)
+      toast.error(err.response.data.msg)
       setValue(initValue)
     })
   }

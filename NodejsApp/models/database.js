@@ -88,7 +88,7 @@ let db = new sqlite3.Database(DB_PATH, (err) => {
         )`)
         db.run(`CREATE TABLE IF NOT EXISTS MODBUSRTU_TAG (
             name     TEXT,
-            address  INTEGER,
+            address  INTEGER UNIQUE,
             unit     TEXT,
             dataType TEXT,
             PF       INTEGER,
@@ -122,7 +122,7 @@ let db = new sqlite3.Database(DB_PATH, (err) => {
         )`)
         db.run(`CREATE TABLE IF NOT EXISTS MODBUSTCP_TAG (
             name     TEXT,
-            address  INTEGER,
+            address  INTEGER UNIQUE,
             unit     TEXT,
             dataType TEXT,
             PF       INTEGER,

@@ -219,7 +219,7 @@ function EditableCell({ initValue, deviceID, tagName, attr, protocol, readOnly }
       dispatch(editTagCell({
         deviceID,
         tagName, attr,
-        newValue: value
+        newValue: value.trim()
       }))
     }).catch(err => {
       toast.error(err.response.data.msg)

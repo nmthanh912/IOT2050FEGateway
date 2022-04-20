@@ -37,10 +37,22 @@ Run this command to pull all prebuilt images and start:
 docker-compose -f start-service.yml up -d
 ```
 
-To remove all services, run:
+To remove all running services without saving data, run:
 
 ```console
 docker-compose -f start-service.yml down -v
+```
+
+To remove all running services but keep data insistence, run:
+
+```console
+docker-compose -f start-service.yml down
+```
+
+To remove all images, run:
+
+```console
+docker-compose rmi -f $(docker images -aq)
 ```
 
 After running services successfully, you can watch this [video](https://www.youtube.com/watch?v=MRA54vUQ7KU) to get a guideline, or try to explore by yourself.

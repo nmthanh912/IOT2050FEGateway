@@ -133,7 +133,7 @@ export function TagTable({ data, deviceID, protocol, readOnly }) {
       rawColumns.attrs.forEach(col => obj[col.name] = '')
       dispatch(addNewTag({ deviceID, tag: newTagAttrs }))
       setNewTagAttrs(obj)
-    })
+    }).catch(err => toast.error(err.response.data.msg))
   }
 
   return <div className="w-100">

@@ -88,7 +88,7 @@ let db = new sqlite3.Database(DB_PATH, (err) => {
         )`)
         db.run(`CREATE TABLE IF NOT EXISTS MODBUSRTU_TAG (
             name     TEXT,
-            address  INTEGER UNIQUE,
+            address  INTEGER,
             unit     TEXT,
             dataType TEXT,
             PF       INTEGER,
@@ -104,7 +104,8 @@ let db = new sqlite3.Database(DB_PATH, (err) => {
             PRIMARY KEY (
                 name,
                 deviceID
-            )
+            ),
+            CONSTRAINT unique_address UNIQUE(deviceID, address)
         )`)
         db.run(`CREATE TABLE IF NOT EXISTS MODBUSTCP (
             ip       TEXT,
@@ -122,7 +123,7 @@ let db = new sqlite3.Database(DB_PATH, (err) => {
         )`)
         db.run(`CREATE TABLE IF NOT EXISTS MODBUSTCP_TAG (
             name     TEXT,
-            address  INTEGER UNIQUE,
+            address  INTEGER,
             unit     TEXT,
             dataType TEXT,
             PF       INTEGER,
@@ -138,7 +139,8 @@ let db = new sqlite3.Database(DB_PATH, (err) => {
             PRIMARY KEY (
                 name,
                 deviceID
-            )
+            ),
+            CONSTRAINT unique_address UNIQUE(deviceID, address)
         )`)
         db.run(`CREATE TABLE IF NOT EXISTS OPC_UA (
             url      TEXT,

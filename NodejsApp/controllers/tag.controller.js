@@ -61,9 +61,16 @@ class Tag {
         const query2 = `INSERT INTO ${protocol}_TAG VALUES (${'?,'.repeat(colNumber).slice(0, -1)})`
 
         handler(res, async () => {
-            await dbRun(query1, [deviceID, data.name])
-            await dbRun(query2, Object.values(data))
-            res.json({ msg: "OKE" })
+            try {
+                await dbRun('BEGIN TRANSACTION')
+                await dbRun(query1, [deviceID, data.name])
+                await dbRun(query2, Object.values(data))
+                await dbRun('COMMIT')
+                res.json({ msg: "OKE" })
+            } catch(err) {
+                await dbRun('ROLLBACK')
+                throw err
+            }
         })
     }
 }

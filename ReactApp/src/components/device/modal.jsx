@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux'
 import { addDevice, addManyDevice, updateDevice, updateTagList } from '../../redux/slices/device'
 import CSVReader from './CSVImporter'
 import { toast } from 'react-toastify'
+import deviceProtocolConfig from '../../format/deviceProtocolConfig'
 
 export default function DeviceModal({ show, onHide, device, mode }) {
 	const [draftInfo, setDraftInfo] = useState(initState)
@@ -16,7 +17,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 	const setName = (name) => setDraftInfo({ ...draftInfo, name })
 	const setDescription = (description) => setDraftInfo({ ...draftInfo, description })
 	const setProtocol = (value) => {
-		let protocol = deviceConfigInfo.find((p) => p.value === value)
+		let protocol = deviceProtocolConfig.find((p) => p.value === value)
 		setDraftInfo({ ...draftInfo, protocol, config: {} })
 	}
 	const setConfig = (config) => setDraftInfo({ ...draftInfo, config })
@@ -60,17 +61,15 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 
 	useEffect(() => {
 		if (mode === 'edit') {
-			DeviceService.getConfigInfoById(device.ID, device.protocol)
-				.then((res) => {
-					setDraftInfo({
-						...device,
-						protocol: deviceConfigInfo.find((cInfo) => cInfo.value.toUpperCase() === device.protocol),
-						config: res.data,
-					})
+			DeviceService.getConfigInfoById(device.ID, device.protocol).then((res) => {
+				setDraftInfo({
+					...device,
+					protocol: deviceProtocolConfig.find((cInfo) => cInfo.value.toUpperCase() === device.protocol),
+					config: res.data,
 				})
-				.catch((err) => {
-					console.log(err)
-				})
+			}).catch((err) => {
+				console.log(err)
+			})
 		}
 	}, [device, mode])
 
@@ -122,8 +121,6 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 			})
 	}
 
-
-
 	const handleUploadFile = file => {
 		try {
 			// Find the first line which taglist/config begin in excel file
@@ -135,10 +132,10 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 
 			const removedNullData = file.data.map((row, index) => {
 				let trimmedRow = row.map(cell => cell.trim())
-				if(index <= deviceInfoOffset) return trimmedRow
+				if (index <= deviceInfoOffset) return trimmedRow
 				return trimmedRow.filter(val => val !== '')
 			})
-			
+
 			if (mode === 'edit') {
 				if (removedNullData[deviceInfoOffset][7].toLowerCase() !== draftInfo.protocol.value.toLowerCase())
 					throw new Error('Protocol cannot be changed')
@@ -165,7 +162,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 				wordOrder: removedNullData[deviceInfoOffset][4],
 				scanningCycle: removedNullData[deviceInfoOffset][5],
 				minRespTime: removedNullData[deviceInfoOffset][6],
-				protocol: deviceConfigInfo.find(
+				protocol: deviceProtocolConfig.find(
 					(val) => val.value.toLowerCase() === removedNullData[deviceInfoOffset][7].toLowerCase()
 				),
 				tagList: newTagList,
@@ -218,7 +215,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 									required
 									disabled={mode === 'edit' || disableProtocol}
 								>
-									{deviceConfigInfo.map((protocol) => {
+									{deviceProtocolConfig.map((protocol) => {
 										return (
 											<option value={protocol.value} key={protocol.value}>
 												{protocol.label}
@@ -397,55 +394,6 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 	)
 }
 
-const deviceConfigInfo = [
-	{
-		value: 'MODBUSRTU',
-		label: 'Modbus RTU',
-		attrs: [{
-			name: 'com_port_num',
-			type: 'text',
-		}, {
-			name: 'parity',
-			options: ['none', 'odd', 'even'],
-		}, {
-			name: 'slaveID',
-			type: 'number',
-		}, {
-			name: 'baudrate',
-			type: 'number',
-		}, {
-			name: 'stopbits',
-			type: 'number',
-		}, {
-			name: 'databits',
-			type: 'number',
-		},],
-	},
-	{
-		value: 'MODBUSTCP',
-		label: 'Modbus TCP',
-		attrs: [
-			{
-				name: 'IP',
-				type: 'text',
-			},
-			{
-				name: 'port',
-				type: 'number',
-			},
-			{
-				name: 'slaveID',
-				type: 'number',
-			},
-		],
-	},
-	{
-		value: 'OPC_UA',
-		label: 'OPC UA',
-		attrs: [{ name: 'URL', type: 'url' }],
-	},
-]
-
 const initState = {
 	name: '',
 	description: '',
@@ -453,7 +401,7 @@ const initState = {
 	wordOrder: '',
 	scanningCycle: '',
 	minRespTime: '',
-	protocol: deviceConfigInfo[0],
+	protocol: deviceProtocolConfig[0],
 	tagList: [],
 	config: {},
 }

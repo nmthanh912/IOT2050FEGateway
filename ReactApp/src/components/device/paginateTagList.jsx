@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchTags, editTagCell, removeTag, addNewTag } from "../../redux/slices/device";
 import DeviceService from '../../services/configserver/device'
 import { toast } from "react-toastify";
+import tagDataFormats from "../../format/tagDataFormat";
 
 const uid = new ShortUniqueId({
   length: 5,
@@ -259,60 +260,3 @@ function EditableCell({ initValue, deviceID, tagName, attr, protocol, readOnly }
   </td>
 }
 
-const tagDataFormats = [{
-  protocol: 'MODBUSTCP',
-  attrs: [{
-    type: 'text',
-    name: 'name'
-  }, {
-    type: 'number',
-    name: 'address'
-  }, {
-    type: 'text',
-    name: 'unit'
-  }, {
-    type: 'select',
-    name: 'dataType',
-    options: ['int16', 'uint16', 'float32', 'int32', 'uint32', 'double', 'string']
-  }, {
-    type: 'number',
-    name: 'PF',
-  }, {
-    type: 'number',
-    name: 'size',
-  }]
-}, {
-  protocol: 'MODBUSTCP',
-  attrs: [{
-    type: 'text',
-    name: 'name'
-  }, {
-    type: 'number',
-    name: 'address'
-  }, {
-    type: 'text',
-    name: 'unit'
-  }, {
-    type: 'select',
-    name: 'dataType',
-    options: ['int16', 'uint16', 'float32', 'int32', 'uint32', 'double', 'string']
-  }, {
-    type: 'number',
-    name: 'PF',
-  }, {
-    type: 'number',
-    name: 'size',
-  }]
-}, {
-  protocol: 'OPC_UA',
-  attrs: [{
-    type: 'text',
-    name: 'name',
-  }, {
-    type: 'text',
-    name: 'nodeid',
-  }, {
-    type: 'text',
-    name: 'unit',
-  }]
-}]

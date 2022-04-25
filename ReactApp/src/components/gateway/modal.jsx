@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { Modal, Form, Button } from "react-bootstrap"
+import gatewayProtocol from "../../format/gatewayProtocolConfig"
 
 export default function ConfigModal({ show, onHide, onSubmit, editTarget }) {
     const [gatewayInfo, setGatewayInfo] = useState(initState)
@@ -114,27 +115,6 @@ export default function ConfigModal({ show, onHide, onSubmit, editTarget }) {
     </Modal>
 }
 
-const gatewayProtocol = [{
-    value: 'MQTT_Client',
-    label: 'MQTT Client',
-    attrs: [{
-        name: 'username',
-        type: 'text'
-    }, {
-        name: 'password',
-        type: 'pass'
-    }, {
-        name: 'IP',
-        type: 'text'
-    }, {
-        name: 'port',
-        type: 'number'
-    }, {
-        name: 'QoS',
-        type: 'select',
-        options: [0, 1, 2]
-    }]
-}]
 
 const initState = {
     name: '',

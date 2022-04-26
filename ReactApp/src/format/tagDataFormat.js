@@ -1,5 +1,5 @@
 const tagDataFormats = [{
-    protocol: 'MODBUSTCP',
+    protocol: 'MODBUSRTU',
     attrs: [{
         type: 'text',
         name: 'name'

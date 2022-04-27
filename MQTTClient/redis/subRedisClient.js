@@ -37,25 +37,32 @@ class RedisClient {
                 fs.readFile(`${JSON_PATH}/${item.mqttID}_${item.deviceID}.json`, 'utf-8', (err, content) => {
                     let customJSON = content
                     let hasBeenRead = false
+                    let jsonStr = ''
                     const obj = {}
 
                     this.redis.on('message', (channel, message) => {
                         const dataList = JSON.parse(message)
+                        dataList.forEach((data) => {
+                            obj[removeAccents(data.name)] = data
+                        })
+                        const objDataStr = `const obj = ${JSON.stringify(obj)}\n`
                         if (!hasBeenRead) {
-                            dataList.forEach((data) => {
-                                obj[removeAccents(data.name)] = data
-                            })
-                            const objKeys = Object.keys(obj)
                             hasBeenRead = true
-                            objKeys.forEach((key) => {
-                                customJSON = customJSON.replaceAll(key, 'obj.' + key)
+
+                            Object.keys(obj).forEach((key) => {
+                                jsonStr += `const ${key} = obj.${key}\n`
                             })
+                            jsonStr += `const data = ${customJSON}\n` + 'return data'
                         }
-                        let sendValue
-                        eval(`
-                            sendValue = ${customJSON}
-                        `)
-                        mqtt.publish(`/iot2050/${deviceName}`, JSON.stringify(sendValue), pubOption)
+                        const executeStr = objDataStr + jsonStr
+
+                        try {
+                            const getCustomJson = new Function(executeStr)
+                            mqtt.publish(`/iot2050fe/${deviceName}`, JSON.stringify(getCustomJson(-1)), pubOption)
+                        } catch (err) {
+                            console.log(err.message)
+                            console.log('hello')
+                        }
                     })
                 })
             } else {
@@ -72,7 +79,7 @@ class RedisClient {
     #normalPublish(mqtt, deviceName, tagName, dataList, pubOption) {
         const tagData = dataList.find((data) => data.name === tagName)
         if (tagData !== undefined) {
-            const topicPub = `data/${deviceName}/` + removeAccents(tagData.name)
+            const topicPub = `/iot2050fe/${deviceName}/` + removeAccents(tagData.name)
             mqtt.publish(topicPub, JSON.stringify(tagData), pubOption)
             console.log(tagData)
         }

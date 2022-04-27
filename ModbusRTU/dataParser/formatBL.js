@@ -9,22 +9,22 @@ class FormatBL {
 
     Float = function (buf) {
         buf.swap16()
-        return buf.readFloatBE()
+        return buf.readFloatLE()
     }
 
     Int32 = function (buf) {
         buf.swap16()
-        return buf.readInt32BE()
+        return buf.readInt32LE()
     }
 
     UInt32 = function (buf) {
         buf.swap16()
-        return buf.readUInt32BE()
+        return buf.readUInt32LE()
     }
 
     Double = function (buf) {
         buf.swap16()
-        return buf.readDoubleBE()
+        return buf.readDoubleLE()
     }
 
     String = function (buf) {

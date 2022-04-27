@@ -9,8 +9,8 @@ const getConfig = async (id) => {
         DEVICE.ID AS deviceID, CONFIGS.toggle AS onCustomMode
         FROM MQTT_CLIENT 
             JOIN SUBSCRIBES ON MQTT_CLIENT.ID = SUBSCRIBES.gatewayID 
-            JOIN TAG ON TAG.deviceID = SUBSCRIBES.deviceID AND TAG.name = SUBSCRIBES.tagName
-            JOIN DEVICE ON DEVICE.ID = TAG.deviceID
+            LEFT JOIN TAG ON TAG.deviceID = SUBSCRIBES.deviceID AND TAG.name = SUBSCRIBES.tagName
+            JOIN DEVICE ON DEVICE.ID = SUBSCRIBES.deviceID
             JOIN CONFIGS ON CONFIGS.gatewayID = MQTT_CLIENT.ID AND CONFIGS.deviceID = DEVICE.ID
         WHERE MQTT_CLIENT.ID = ?
         GROUP BY DEVICE.name
@@ -26,13 +26,15 @@ const getConfig = async (id) => {
                     deviceName: config.deviceName,
                     deviceID: config.deviceID,
                     mqttID: config.ID,
-                    tagNameList: config.tagName.split(','),
-                    onCustomMode: config.onCustomMode
+                    tagNameList: config.tagName !== null ? config.tagName.split(',') : null,
+                    onCustomMode: config.onCustomMode,
                 })
             })
 
             delete configInfo[0].tagName
             delete configInfo[0].deviceName
+            delete configInfo[0].deviceID
+            delete configInfo[0].onCustomMode
             mqttConfig.push(configInfo[0])
 
             return [{mqttConfig, listSub}]

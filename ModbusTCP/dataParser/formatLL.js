@@ -1,6 +1,6 @@
 class FormatLL {
     Int16 = function (buf) {
-        return buf.readInt16BE()
+        return buf.readInt16LE()
     }
 
     UInt16 = function (buf) {

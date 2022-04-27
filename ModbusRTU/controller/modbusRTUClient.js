@@ -117,7 +117,9 @@ class DeviceConnectionPool {
             if (configInfo.length > 0) {
                 const deviceConfig = configInfo[0].deviceConfig[0]
                 const tagList = configInfo[0].tagInfo
-                await this.#connection(deviceConfig.comPortNum, deviceConfig.options)
+                if (this.#pool.length === 0) {
+                    await this.#connection(deviceConfig.comPortNum, deviceConfig.options)
+                }
 
                 const connection = new DeviceConnection(deviceConfig, tagList, this.client)
                 connection.poweron()
@@ -136,10 +138,10 @@ class DeviceConnectionPool {
         const connection = this.#pool.find((conn) => conn.deviceConfig.ID === deviceID)
         if (connection !== undefined) {
             connection.shutdown()
-            if (this.#pool.length === 0) {
-                client.close()
-            }
             this.#pool.splice(this.#pool.indexOf(connection), 1)
+            if (this.#pool.length === 0) {
+                this.client.close()
+            }
         }
     }
 

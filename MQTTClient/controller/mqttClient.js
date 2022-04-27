@@ -43,11 +43,11 @@ class MQTTConnection {
                 console.log('MQTT Client went offline!')
             })
             .on('error', (err) => {
-                pubRedis.pub2Redis('log', { serviceName: 'MQTTClient', level: 'error', errMsg: err })
+                pubRedis.pub2Redis('log', {serviceName: 'MQTTClient', level: 'error', errMsg: err})
                 console.log('Client cannot connect to Broker!', err)
             })
             .on('connect', () => {
-                pubRedis.pub2Redis('log', { serviceName: 'MQTTClient', level: 'info', errMsg: 'Connected!' })
+                pubRedis.pub2Redis('log', {serviceName: 'MQTTClient', level: 'info', errMsg: 'Connected!'})
                 subRedis.sub2Redis(this.mqtt, this.listSub, this.pubOption)
             })
     }
@@ -74,18 +74,15 @@ class MQTTConnectionPool {
         try {
             const configInfo = await getConfig(mqttID)
             if (configInfo.length > 0) {
-                const { mqttConfig, listSub } = configInfo[0]
-                
-                console.log(mqttConfig)
+                const {mqttConfig, listSub} = configInfo[0]
                 const connection = new MQTTConnection(mqttConfig[0], listSub)
                 connection.poweron()
                 this.#pool.push(connection)
-            }
-            else {
-                throw new Error("There are no tags subscribed !")
+            } else {
+                throw new Error('There are no tags subscribed !')
             }
         } catch (err) {
-            pubRedis.pub2Redis('log', { serviceName: 'MQTTClient', level: 'error', errMsg: err })
+            pubRedis.pub2Redis('log', {serviceName: 'MQTTClient', level: 'error', errMsg: err})
             throw err
         }
     }

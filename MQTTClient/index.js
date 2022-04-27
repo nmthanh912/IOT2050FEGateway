@@ -15,10 +15,9 @@ app.get('/poweron', async function (req, res) {
     try {
         let mqttID = req.query.mqttID
         await pool.poweron(mqttID)
-        res.json({ msg: 'OKE' })
-    }
-    catch (err) {
-        res.status(500).json({ msg: err.message })
+        res.json({msg: 'OKE'})
+    } catch (err) {
+        res.status(500).json({msg: err.message})
     }
 })
 

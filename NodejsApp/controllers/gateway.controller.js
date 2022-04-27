@@ -1,6 +1,6 @@
 require('dotenv').config()
 const uniqueId = require('../utils/uniqueId')
-const {dbRun, dbAll, db} = require('../models/database')
+const { dbRun, dbAll, db } = require('../models/database')
 const handler = require('../utils/handler')
 const fs = require('fs')
 const util = require('util')
@@ -66,7 +66,7 @@ class GatewayController {
                 data.config.QoS,
                 req.query.id,
             ])
-            res.json({msg: 'success'})
+            res.json({ msg: 'success' })
         })
     }
 
@@ -76,11 +76,12 @@ class GatewayController {
         handler(res, async () => {
             await dbRun(sqlQuery, [gatewayID])
 
+
             const files = fs.readdirSync(JSON_PATH).filter(fn => fn.slice(0, 8) === gatewayID);
             const unlinkPromises = files.map(file => unlink(JSON_PATH + '/' + file))
-            await Promise.all(unlinkPromises)
+            await Promise.allSettled(unlinkPromises)
 
-            res.json({msg: 'Success'})
+            res.json({ msg: 'Success' })
         })
     }
 
@@ -109,7 +110,7 @@ class GatewayController {
             INSERT INTO CONFIGS VALUES 
             ${'(?, ?, ?),'.repeat(deviceIDList.length).slice(0, -1)}
         `
-        const configParams =  deviceIDList.map(deviceID => [gatewayID, deviceID, 0]).flat(1)
+        const configParams = deviceIDList.map(deviceID => [gatewayID, deviceID, 0]).flat(1)
         handler(res, async () => {
             await dbRun(addSubsQuery, subsParams)
             await dbRun(addConfigQuery, configParams)
@@ -123,10 +124,13 @@ class GatewayController {
         const deleteConfigQuery = `DELETE FROM configs WHERE gatewayID = ? AND deviceID = ?`
 
         handler(res, async () => {
-            await unlink(JSON_PATH + '/' + gatewayID + '_' + deviceID + '.json')
+            const fileExists = fs.existsSync(JSON_PATH + '/' + gatewayID + '_' + deviceID + '.json')
+            if (fileExists) {
+                await unlink(JSON_PATH + '/' + gatewayID + '_' + deviceID + '.json')
+            }
             await dbRun(deleteSubsQuery, [gatewayID, deviceID])
             await dbRun(deleteConfigQuery, [gatewayID, deviceID])
-            res.json({msg: 'OKE'})
+            res.json({ msg: 'OKE' })
         })
     }
 
@@ -148,7 +152,7 @@ class GatewayController {
             const list = tagConfigList.map((val) => {
                 let subscribe = val.gatewayID !== null
                 delete val.gatewayID
-                return {subscribe, ...val}
+                return { subscribe, ...val }
             })
 
             const useCustomQuery = `SELECT toggle FROM configs WHERE gatewayID = ? AND deviceID = ?`
@@ -158,12 +162,12 @@ class GatewayController {
             let code = null
             if (exists) code = await readFile(`${JSON_PATH}/${gatewayId}_${deviceId}.json`, 'utf-8')
 
-            res.json({tagList: list, code, toggle: useCustom[0].toggle})
+            res.json({ tagList: list, code, toggle: useCustom[0].toggle })
         })
     }
 
     updateSubcribedDeviceConfig(req, res) {
-        const {gid: gatewayID, did: deviceID} = req.params
+        const { gid: gatewayID, did: deviceID } = req.params
         const data = req.body // code, tagList, toggle
 
         handler(res, async () => {
@@ -188,7 +192,7 @@ class GatewayController {
                     db.run('INSERT INTO subscribes VALUES (?, ?, ?)', [gatewayID, deviceID, null])
                 }
             })
-            res.json({msg: 'OK'})
+            res.json({ msg: 'OK' })
         })
     }
 }

@@ -56,9 +56,12 @@ class Tag {
         const deviceID = req.params.id
         const protocol = req.query.protocol
         const data = { ...req.body, deviceID }
+        console.log(protocol)
         const colNumber = Object.keys(data).length
         const query1 = `INSERT INTO TAG (deviceID, name) VALUES (?, ?)`
         const query2 = `INSERT INTO ${protocol}_TAG VALUES (${'?,'.repeat(colNumber).slice(0, -1)})`
+
+        console.log(data)
 
         handler(res, async () => {
             try {

@@ -94,17 +94,18 @@ export default function PaginateTagList({ deviceID, protocol, Table, readOnly })
 }
 
 export function TagTable({ data, deviceID, protocol, readOnly }) {
-  const columns = useMemo(() => {
-    const keys = Object.keys(data[0]).map(key => key[0].toUpperCase() + key.slice(1))
-    keys.push('Action')
-    return keys
-  }, [data])
-
   const dispatch = useDispatch()
   const rawColumns = useMemo(() => {
     let tagDataFormat = tagDataFormats.find(format => format.protocol === protocol)
+    console.log(tagDataFormat)
     return tagDataFormat
   }, [protocol])
+
+  const columns = useMemo(() => {
+    const keys = rawColumns.attrs.map(key => key.name[0].toUpperCase() + key.name.slice(1))
+    keys.push('Action')
+    return keys
+  }, [rawColumns])
 
   const deleteTag = tagName => {
     DeviceService.deleteTag(deviceID, tagName).then(response => {
@@ -130,9 +131,9 @@ export function TagTable({ data, deviceID, protocol, readOnly }) {
       }
     }
     DeviceService.addTag(deviceID, protocol, newTagAttrs).then(response => {
+      dispatch(addNewTag({ deviceID, tag: newTagAttrs }))
       const obj = {}
       rawColumns.attrs.forEach(col => obj[col.name] = '')
-      dispatch(addNewTag({ deviceID, tag: newTagAttrs }))
       setNewTagAttrs(obj)
     }).catch(err => toast.error(err.response.data.msg))
   }

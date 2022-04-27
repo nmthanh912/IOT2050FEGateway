@@ -65,7 +65,6 @@ const deviceSlice = createSlice({
                 const tagIdx = device.tagList.findIndex(val => val.name === tagName)
                 device.tagList.splice(tagIdx, 1)
             }
-            
 
             return state
         },
@@ -91,6 +90,7 @@ const deviceSlice = createSlice({
             const device = state.find(val => val.ID === deviceID)
             device.tagList = []
             action.payload.data.forEach(val => device.tagList.push(val))
+            console.log(action.payload.data)
             return state
         })
     }

@@ -158,9 +158,6 @@ let db = new sqlite3.Database(DB_PATH, (err) => {
             name     TEXT,
             node     TEXT,
             unit     TEXT,
-            dataType TEXT,
-            PF       INTEGER,
-            size     INTEGER,
             deviceID TEXT,
             FOREIGN KEY (
                 name,

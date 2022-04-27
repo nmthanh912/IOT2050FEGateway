@@ -297,7 +297,7 @@ class Device {
 
             const files = fs.readdirSync(JSON_PATH).filter((fn) => fn.slice(9, 17) === deviceID)
             const unlinkPromises = files.map((file) => unlink(JSON_PATH + '/' + file))
-            await Promise.all(unlinkPromises)
+            await Promise.allSettled(unlinkPromises)
 
             res.json({
                 key: deviceID,

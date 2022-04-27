@@ -115,6 +115,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 					notifySuccess('Add many devices successfully !')
 				setDraftInfo(initState)
 				setReplicateNumber(1)
+				setDisableProtocol(false)
 			})
 			.catch((err) => {
 				notifyFail(err.response.data.msg)

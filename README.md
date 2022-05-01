@@ -37,6 +37,12 @@ Run this command to pull all prebuilt images and start:
 docker-compose -f start-service.yml up -d
 ```
 
+To run a certain service, run:
+
+```console
+docker-compose up -d [service name]
+```
+
 To remove all running services without saving data, run:
 
 ```console

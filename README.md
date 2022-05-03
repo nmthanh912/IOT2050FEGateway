@@ -81,5 +81,10 @@ docker-compose build
 ```
 
 If your computer, which is building images, has restrictive RAM, you should not build all images at once. Instead, try to build in sequence.
+```console
+docker-compose build <service_name> ... <service_name>
+```
+With service names are **configserver**, **application**, **modbustcp**, **modbusrtu**, **opc_ua**, **logger**, **mqttclient** (see in file [docker-compose.yml](https://github.com/nmthanh912/IOT2050FEGateway/blob/version2/docker-compose.yml)). For example, run `docker-compose build configserver application` to build configserver and application services.
+
 
 Finally, to push images to a repository on Docker Hub, visit this [tutorial](https://docs.docker.com/get-started/04_sharing_app/).

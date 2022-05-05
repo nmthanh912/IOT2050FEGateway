@@ -18,11 +18,16 @@ let db = new sqlite3.Database(DB_PATH, (err) => {
         })
         console.log('Connected to the SQLite database!')
         db.run(
-            `CREATE TABLE IF NOT EXISTS device (
-                ID INTEGER PRIMARY KEY AUTOINCREMENT,
-                Name VARCHAR(50),
-                Description TEXT
-                )`,
+            `CREATE TABLE IF NOT EXISTS DEVICE (
+                ID            TEXT         PRIMARY KEY,
+                name          VARCHAR (50) UNIQUE,
+                description   TEXT,
+                protocolType  TEXT,
+                byteOrder     TEXT,
+                wordOrder     TEXT,
+                scanningCycle INTEGER,
+                minRespTime   INTEGER
+            )`,
             (err) => {
                 pubRedis.pub2Redis('log', {serviceName: 'MQTTClient', level: 'error', errMsg: 'Database already created!'})
                 console.log('Database already created!')

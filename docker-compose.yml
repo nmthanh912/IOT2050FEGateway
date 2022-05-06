@@ -98,7 +98,6 @@ services:
     volumes:
       - logfile:/usr/src/app/logger/LogFolder
     depends_on:
-      - configserver
       - redis
     restart: always
     

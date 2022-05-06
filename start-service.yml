@@ -7,6 +7,8 @@ services:
       - sqlitedb:/usr/src/app/iot2050cfserver/Database
       - customJSON:/usr/src/app/iot2050cfserver/customJSON
     restart: always
+    depends_on:
+      - redis
     ports:
       - 4000:4000
 
@@ -14,6 +16,8 @@ services:
     container_name: application
     image: nguyenthanh912/iot2050fegateway:application
     restart: always
+    depends_on:
+      - configserver
     ports:
       - 3000:3000
 
@@ -26,7 +30,9 @@ services:
     restart: always
     ports:
       - 4005:4005
-
+    depends_on:
+      - configserver
+      - redis
   opc_ua:
     container_name: opc_ua
     image: nguyenthanh912/iot2050fegateway:opc_ua
@@ -34,6 +40,9 @@ services:
       - sqlitedb:/usr/src/app/opc_ua/Database
       - customJSON:/usr/src/app/opc_ua/customJSON
     restart: always
+    depends_on:
+      - configserver
+      - redis
     ports:
       - 4004:4004
 
@@ -44,6 +53,9 @@ services:
       - sqlitedb:/usr/src/app/modbustcp/Database
       - customJSON:/usr/src/app/modbustcp/customJSON
     restart: always
+    depends_on:
+      - configserver
+      - redis
     ports:
       - 4001:4001
 
@@ -54,6 +66,9 @@ services:
       - sqlitedb:/usr/src/app/modbusrtu/Database
       - customJSON:/usr/src/app/modbusrtu/customJSON
     restart: always
+    depends_on:
+      - configserver
+      - redis
     ports:
       - 4002:4002
 
@@ -67,6 +82,8 @@ services:
     image: nguyenthanh912/iot2050fegateway:logger
     volumes:
       - logfile:/usr/src/app/logger/LogFolder
+    depends_on:
+      - redis
     restart: always
 
 volumes:

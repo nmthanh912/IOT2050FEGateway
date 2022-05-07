@@ -61,7 +61,10 @@ services:
 
   modbusrtu:
     container_name: modbusrtu
+    devices:
+      - "/dev/ttyS2:/dev/ttyS2"
     image: nguyenthanh912/iot2050fegateway:modbusrtu
+    tty: true
     volumes:
       - sqlitedb:/usr/src/app/modbusrtu/Database
       - customJSON:/usr/src/app/modbusrtu/customJSON

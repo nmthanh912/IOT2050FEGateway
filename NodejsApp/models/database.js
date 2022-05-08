@@ -156,7 +156,7 @@ let db = new sqlite3.Database(DB_PATH, (err) => {
         )`)
         db.run(`CREATE TABLE IF NOT EXISTS OPC_UA_TAG (
             name     TEXT,
-            node     TEXT,
+            nodeid     TEXT,
             unit     TEXT,
             deviceID TEXT,
             FOREIGN KEY (

@@ -49,6 +49,7 @@ class MQTTConnection {
             .on('connect', () => {
                 pubRedis.pub2Redis('log', {serviceName: 'MQTTClient', level: 'info', errMsg: 'Connected!'})
                 subRedis.sub2Redis(this.mqtt, this.listSub, this.pubOption)
+                console.log('MQTT is connected to Broker!')
             })
     }
 

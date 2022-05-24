@@ -36,7 +36,7 @@ app.listen(port, function () {
     redis.pub2Redis('log', {
         serviceName: 'ModbusRTU',
         level: 'info',
-        errMsg: `Server ModbusRTU listening on port ${port}!`,
+        errMsg: `Server ModbusRTU is listening on port ${port}!`,
     })
-    console.log(`Server ModbusRTU listening on port ${port}!`)
+    console.log(`Server ModbusRTU is listening on port ${port}!`)
 })

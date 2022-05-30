@@ -64,6 +64,7 @@ export default function MappingList({ gatewayID, name, editable }) {
 			console.log(subList)
 
 			setDeviceList([...deviceList, ...subList])
+			setShowSubscribeModal(false)
 		})
 	}
 

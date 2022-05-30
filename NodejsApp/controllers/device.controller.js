@@ -66,6 +66,7 @@ class Device {
 
     createMany(req, res) {
         const { data, repNum: replicateNumber } = req.body
+        const hasTag = data.tagList.length > 0
 
         let deviceList = []
         const insertManyDeviceQuery = `
@@ -89,7 +90,9 @@ class Device {
         `
 
         let protocolTagListAll = []
-        let proTagBracketValue = '(' + ',?'.repeat(Object.values(data.tagList[0]).length + 1).slice(1) + '),'
+        let proTagBracketValue = hasTag ? 
+            '(' + ',?'.repeat(Object.values(data.tagList[0]).length + 1).slice(1) + '),'
+            : '()'
         const insertManyProtocolTagQuery = `
             INSERT INTO ${protocolName}_TAG VALUES
             ${proTagBracketValue.repeat(replicateNumber * data.tagList.length).slice(0, -1)}
@@ -132,7 +135,7 @@ class Device {
             await dbRun(insertManyDeviceQuery, deviceList)
             await dbRun(insertManyDeviceConfigQuery, configList)
 
-            if (data.tagList) {
+            if (hasTag) {
                 await dbRun(insertManyTagQuery, tagListAll)
                 await dbRun(insertManyProtocolTagQuery, protocolTagListAll)
             }

@@ -120,5 +120,7 @@ const initState = {
     name: '',
     description: '',
     protocol: gatewayProtocol[0],
-    config: {}
+    config: {
+        QoS: 0
+    }
 }

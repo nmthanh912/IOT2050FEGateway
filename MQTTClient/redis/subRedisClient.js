@@ -1,6 +1,7 @@
 require('dotenv').config()
 const Redis = require('ioredis')
 const fs = require('fs')
+const _ = require('lodash')
 
 const pubRedis = require('../redis/pubRedisClient')
 const removeAccents = require('../utils/removeAccents')
@@ -68,9 +69,11 @@ class RedisClient {
             } else {
                 this.redis.on('message', (channel, message) => {
                     const dataList = JSON.parse(message)
-                    item.tagNameList.forEach((tagName) => {
-                        this.#normalPublish(mqtt, deviceName, tagName, dataList, pubOption)
-                    })
+                    if (!_.isNull(item.tagNameList)) {
+                        item.tagNameList.forEach((tagName) => {
+                            this.#normalPublish(mqtt, deviceName, tagName, dataList, pubOption)
+                        })
+                    }
                 })
             }
         })

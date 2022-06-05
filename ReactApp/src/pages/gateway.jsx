@@ -41,15 +41,6 @@ export default function GatewayPage() {
     setCurrGatewayList(arr)
   }
 
-  const notifySuccess = msg => toast.success(msg, {
-    progressClassName: 'Toastify__progress-bar--success',
-    toastId: 'gatewaySuccess'
-  })
-  const notifyFail = msg => toast.error(msg, {
-    progressClassName: 'Toastify__progress-bar--error',
-    toastId: 'gatewayFail'
-  })
-
   useEffect(() => {
     GatewayService.get().then(response => {
       const gatewayList = []
@@ -76,8 +67,8 @@ export default function GatewayPage() {
   const addGateway = data => {
     GatewayService.add(data).then(response => {
       setList([...list, { ID: response.data.key, ...data }])
-      notifySuccess(`Create gateway successfully !`)
-    }).catch(err => notifyFail(err.message))
+      toast.success(`Create gateway successfully !`)
+    }).catch(err => toast.error(err.message))
   }
 
   const editGateway = data => {
@@ -86,8 +77,8 @@ export default function GatewayPage() {
       const edittedGateway = newList.find(gateway => gateway.ID === editTarget.ID)
       Object.assign(edittedGateway, data)
       setList(newList)
-      notifySuccess(`Update successfully !`)
-    }).catch(err => notifyFail(err.message))
+      toast.success(`Update successfully !`)
+    }).catch(err => toast.error(err.message))
   }
 
   const deleteGateway = gatewayID => {
@@ -96,8 +87,8 @@ export default function GatewayPage() {
       const idx = newList.findIndex(gateway => gateway.ID === gatewayID)
       newList.splice(idx, 1)
       setList(newList)
-      notifySuccess(`Delete successfully !`)
-    }).catch(err => notifyFail(err.message))
+      toast.success(`Delete successfully !`)
+    }).catch(err => toast.error(err.message))
   }
 
   return <div>

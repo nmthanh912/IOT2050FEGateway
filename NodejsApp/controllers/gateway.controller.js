@@ -11,7 +11,6 @@ const unlink = util.promisify(fs.unlink.bind(fs))
 
 const JSON_PATH = process.env.MODE === 'development' ? '../customJSON' : './customJSON'
 
-
 class GatewayController {
     create(req, res) {
         let gatewayData = []
@@ -90,9 +89,11 @@ class GatewayController {
             FROM DEVICE JOIN SUBSCRIBES ON DEVICE.ID = SUBSCRIBES.deviceID
             WHERE SUBSCRIBES.gatewayID = ?
             GROUP BY DEVICE.ID
+            ORDER BY DEVICE.name ASC
         `
         handler(res, async () => {
             const deviceList = await dbAll(sqlQuery, [req.query.id])
+            console.log(deviceList)
             res.json(deviceList)
         })
     }
@@ -147,6 +148,7 @@ class GatewayController {
                 )
             WHERE ${deviceProtocol}_TAG.deviceID = ?
         `
+
         handler(res, async () => {
             const tagConfigList = await dbAll(sqlQuery, [gatewayId, deviceId])
             const list = tagConfigList.map((val) => {

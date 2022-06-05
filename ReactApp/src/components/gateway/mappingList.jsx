@@ -6,17 +6,18 @@ import GatewayService from '../../services/configserver/gateway'
 import { removeAccentsWithUnderscore } from "../../utils/removeAccents"
 import { useSelector } from "react-redux"
 import Select from 'react-select'
+import { toast } from "react-toastify"
 
 
 export default function MappingList({ gatewayID, name, editable }) {
 	const allDeviceData = useSelector(state => state.device)
 
 	const [showTagModal, setShowTagModal] = useState(false)
+	// Current device's data for configuring tags (use on opening modal)
 	const [configuringDevice, setConfiguringDevice] = useState(null)
+	// For render subscribed devices
 	const [deviceList, setDeviceList] = useState([])
 	const [showSubscribeModal, setShowSubscribeModal] = useState(false)
-
-	// const [selectSubsDevice, setSelectSubsDevice] = useState('')
 
 	const [inputSubList, setInputSubList] = useState([])
 
@@ -34,7 +35,7 @@ export default function MappingList({ gatewayID, name, editable }) {
 	useEffect(() => {
 		GatewayService.getSubcribedDevices(gatewayID).then(response => {
 			setDeviceList(response.data)
-		}).catch(err => setDeviceList([]))
+		}).catch(err => toast.err(err))
 	}, [gatewayID])
 
 	const openTagModal = device => {

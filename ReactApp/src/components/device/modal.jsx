@@ -53,9 +53,9 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 					...data,
 				})
 			)
-			notifySuccess('Update device successfully')
+			toast.success('Update device successfully')
 		} catch (err) {
-			notifyFail(err.response.data.msg)
+			toast.error(err.response.data.msg)
 		}
 	}
 
@@ -72,15 +72,6 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 			})
 		}
 	}, [device, mode])
-
-	const notifySuccess = (msg) => toast.success(msg, {
-		progressClassName: 'Toastify__progress-bar--success',
-		toastId: 'deviceModalSuccess'
-	})
-	const notifyFail = msg => toast.error(msg, {
-		progressClassName: 'Toastify__progress-bar--error',
-		toastId: 'deviceModalFail'
-	})
 
 	const addDeviceToDB = () => {
 		const newDevice = {
@@ -111,14 +102,14 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 					dispatch(addManyDevice(deviceList))
 				}
 				response.data.keyList.length === 1 ?
-					notifySuccess('Add a device successfully !') :
-					notifySuccess('Add many devices successfully !')
+					toast.success('Add a device successfully !') :
+					toast.success('Add many devices successfully !')
 				setDraftInfo(initState)
 				setReplicateNumber(1)
 				setDisableProtocol(false)
 			})
 			.catch((err) => {
-				notifyFail(err.response.data.msg)
+				toast.error(err.response.data.msg)
 			})
 	}
 
@@ -129,7 +120,17 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 			const configOffset = file.data.findIndex(val => val[0] === 'Configurations') + 1
 			const deviceInfoOffset = file.data.findIndex(val => val[0] === 'Device Info') + 2
 
-			const tagListLength = file.data.length - tagListOffset - 2
+			// Reading file CSV is different between OS
+			// In Linux, there are no empty last line in reading
+			let tagListLength
+			if(file.data[file.data.length - 1][0] === '') {
+				// Window reading
+				tagListLength = file.data.length - tagListOffset - 2
+			}
+			else {
+				// Linux reading
+				tagListLength = file.data.length - tagListOffset - 1
+			}
 
 			const removedNullData = file.data.map((row, index) => {
 				let trimmedRow = row.map(cell => cell.trim())
@@ -172,7 +173,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 			setDraftInfo(obj)
 			setDisableProtocol(true)
 		} catch (err) {
-			notifyFail(err.message)
+			toast.error(err.message)
 		}
 	}
 

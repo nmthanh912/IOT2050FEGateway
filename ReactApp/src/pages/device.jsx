@@ -29,7 +29,7 @@ export default function DevicePage() {
 			for(let i of results) {
 				if(i.status === 'rejected') {
 					console.log(i)
-					toast.error(i.reason.message)
+					// toast.error(i.reason.message)
 				}
 				else {
 					fulfilled_arr = fulfilled_arr.concat(i.value.data)

@@ -75,7 +75,6 @@ class GatewayController {
         handler(res, async () => {
             await dbRun(sqlQuery, [gatewayID])
 
-
             const files = fs.readdirSync(JSON_PATH).filter(fn => fn.slice(0, 8) === gatewayID);
             const unlinkPromises = files.map(file => unlink(JSON_PATH + '/' + file))
             await Promise.allSettled(unlinkPromises)

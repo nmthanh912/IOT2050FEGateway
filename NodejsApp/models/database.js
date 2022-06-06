@@ -67,7 +67,6 @@ let db = new sqlite3.Database(DB_PATH, (err) => {
                 gatewayID
             )
             REFERENCES MQTT_CLIENT (ID) ON DELETE CASCADE
-                                        ON UPDATE NO ACTION
         )`)
         db.run(`CREATE TABLE IF NOT EXISTS MODBUSRTU (
             com_port_num VARCHAR (15),
@@ -183,7 +182,7 @@ let db = new sqlite3.Database(DB_PATH, (err) => {
             FOREIGN KEY (
                 gatewayID
             )
-            REFERENCES MQTT_CLIENT (ID),
+            REFERENCES MQTT_CLIENT (ID) ON DELETE CASCADE,
             FOREIGN KEY (
                 deviceID,
                 tagName

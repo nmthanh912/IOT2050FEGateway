@@ -60,9 +60,9 @@ class RedisClient {
                         try {
                             const getCustomJson = new Function(executeStr)
                             mqtt.publish(`/iot2050fe/${deviceName}`, JSON.stringify(getCustomJson(-1)), pubOption)
+                            console.log(JSON.stringify(getCustomJson(-1)))
                         } catch (err) {
                             console.log(err.message)
-                            console.log('hello')
                         }
                     })
                 })

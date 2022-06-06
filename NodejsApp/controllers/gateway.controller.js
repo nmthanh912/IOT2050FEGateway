@@ -16,7 +16,7 @@ class GatewayController {
         let gatewayData = []
         let infoData = [req.body.description, req.body.name]
         let configData = Object.values(req.body.config)
-        // console.log(configData)
+
         let ID = uniqueId()
         gatewayData.push(ID)
         gatewayData = gatewayData.concat(infoData).concat(configData)
@@ -100,7 +100,7 @@ class GatewayController {
 
     addSubscribeDevices(req, res) {
         const { gatewayID, deviceIDList } = req.body
-        console.log(gatewayID, deviceIDList)
+        // console.log(gatewayID, deviceIDList)
         const addSubsQuery = `
             INSERT INTO SUBSCRIBES VALUES 
             ${"(?, ?, ?),".repeat(deviceIDList.length).slice(0, -1)}
@@ -171,6 +171,8 @@ class GatewayController {
     updateSubcribedDeviceConfig(req, res) {
         const { gid: gatewayID, did: deviceID } = req.params
         const data = req.body // code, tagList, toggle
+
+        console.log(req.body)
 
         handler(res, async () => {
             const updateToggleQuery = `UPDATE configs SET toggle = ? WHERE gatewayID = ? AND deviceID = ?`

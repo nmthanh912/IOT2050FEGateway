@@ -26,13 +26,12 @@ export default function DevicePage() {
 		Promise.allSettled(jobs).then(results => {
 			let fulfilled_arr = []
 			// console.log(results)
-			for(let i of results) {
-				if(i.status === 'rejected') {
-					console.log(i)
-					// toast.error(i.reason.message)
+			for(let i in results) {
+				if(results[i].status === 'rejected') {
+					toast.error(protocols[i] + " occurs error")
 				}
 				else {
-					fulfilled_arr = fulfilled_arr.concat(i.value.data)
+					fulfilled_arr = fulfilled_arr.concat(results[i].value.data)
 				}
 			}
 			console.log(fulfilled_arr)

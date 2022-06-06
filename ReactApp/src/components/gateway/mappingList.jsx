@@ -35,7 +35,10 @@ export default function MappingList({ gatewayID, name, editable }) {
 	useEffect(() => {
 		GatewayService.getSubcribedDevices(gatewayID).then(response => {
 			setDeviceList(response.data)
-		}).catch(err => toast.err(err))
+		}).catch(err => {
+			console.log(err.response.data)
+			toast.err(err)
+		})
 	}, [gatewayID])
 
 	const openTagModal = device => {

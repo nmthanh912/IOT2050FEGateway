@@ -112,7 +112,7 @@ export default function TagModal({
         <h5 className="m-auto text-white">Config device's tags</h5>
       </Modal.Header>
       <Modal.Body>
-        {currentItems.length !== 0 && <div style={{boxSizing: 'content-box'}}>
+        {currentItems.length !== 0 && <div style={{ boxSizing: 'content-box' }}>
           <TagTable
             data={currentItems} toggleSubscribe={toggleSubscribe}
             toggleSubscribeAll={toggleSubscribeAll}
@@ -142,7 +142,7 @@ export default function TagModal({
             activeClassName={'active'}
           />
 
-          <Form.Group className="d-flex">
+          <Form.Group className="d-flex mt-2">
             <Form.Check
               type="switch"
               checked={customMode}
@@ -154,7 +154,11 @@ export default function TagModal({
 
         {/* Custom code */}
         {customMode && <div>
-          <div className="mb-2">Topic: <i className="text-primary">{prefixTopic}</i></div>
+          <div className="d-flex justify-content-between mb-2">
+            <div>Topic: <i className="text-primary">{prefixTopic}</i></div>
+            <div className="text-danger">Please turn off Unikey before coding !</div>
+          </div>
+
           <ReactPrismEditor
             language={'javascript'}
             theme={'okaidia'}
@@ -164,7 +168,9 @@ export default function TagModal({
             clipboard={false}
             changeCode={code => {
               if (code !== '') setCode(code)
+              console.log(code)
             }}
+
           />
         </div>}
         <div className="d-flex justify-content-end">

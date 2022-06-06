@@ -13,16 +13,24 @@ const JSON_PATH = process.env.MODE === 'development' ? '../customJSON' : './cust
 
 class GatewayController {
     create(req, res) {
-        let gatewayData = []
-        let infoData = [req.body.description, req.body.name]
-        let configData = Object.values(req.body.config)
-
-        let ID = uniqueId()
-        gatewayData.push(ID)
-        gatewayData = gatewayData.concat(infoData).concat(configData)
+        const configData = req.body.config
+        const ID = uniqueId()
+        let gatewayData = [
+            ID, 
+            req.body.description, 
+            req.body.name,
+            configData.username,
+            configData.password,
+            configData.IP,
+            configData.port,
+            configData.QoS
+        ]
 
         let protocol = req.body.protocol.toUpperCase()
-        const sqlQuery = `INSERT INTO ${protocol} VALUES (${'?,'.repeat(gatewayData.length).slice(0, -1)})`
+        const sqlQuery = `
+            INSERT INTO ${protocol} VALUES 
+            (${'?,'.repeat(gatewayData.length).slice(0, -1)})
+        `
 
         handler(res, async () => {
             await dbRun(sqlQuery, gatewayData)

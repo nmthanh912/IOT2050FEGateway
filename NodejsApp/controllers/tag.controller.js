@@ -55,19 +55,27 @@ class Tag {
     async addTag(req, res) {
         const deviceID = req.params.id
         const protocol = req.query.protocol
-        const data = { ...req.body, deviceID }
-        console.log(protocol)
-        const colNumber = Object.keys(data).length
+        const data = [
+            req.body.name,
+            req.body.address,
+            req.body.unit,
+            req.body.dataType,
+            req.body.PF,
+            req.body.size,
+            deviceID
+        ]
+
+        const colNumber = data.length
         const query1 = `INSERT INTO TAG (deviceID, name) VALUES (?, ?)`
         const query2 = `INSERT INTO ${protocol}_TAG VALUES (${'?,'.repeat(colNumber).slice(0, -1)})`
 
-        console.log(data)
+        // console.log(data)
 
         handler(res, async () => {
             try {
                 await dbRun('BEGIN TRANSACTION')
-                await dbRun(query1, [deviceID, data.name])
-                await dbRun(query2, Object.values(data))
+                await dbRun(query1, [deviceID, data[0]/*tag name*/])
+                await dbRun(query2, data)
                 await dbRun('COMMIT')
                 res.json({ msg: "OKE" })
             } catch(err) {

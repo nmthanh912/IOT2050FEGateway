@@ -9,7 +9,7 @@ const writeFile = util.promisify(fs.writeFile.bind(fs))
 const readFile = util.promisify(fs.readFile.bind(fs))
 const unlink = util.promisify(fs.unlink.bind(fs))
 
-const JSON_PATH = process.env.MODE === 'development' ? '../customJSON' : './customJSON'
+const JSON_PATH = process.env.CUSTOM_JSON_PATH
 
 class GatewayController {
     create(req, res) {

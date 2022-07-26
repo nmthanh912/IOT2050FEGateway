@@ -4,7 +4,7 @@ const util = require('util')
 
 const pubRedis = require('../redis/pubRedisClient')
 pubRedis.pubConnection()
-const DB_PATH = process.env.MODE === 'development' ? '../Database/database.db' : './Database/database.db'
+const DB_PATH = process.env.DB_PATH
 
 let db = new sqlite3.Database(DB_PATH, (err) => {
     if (err) {
@@ -17,22 +17,6 @@ let db = new sqlite3.Database(DB_PATH, (err) => {
             errMsg: 'Connected to the SQLite database!',
         })
         console.log('Connected to the SQLite database!')
-        // db.run(
-        //     `CREATE TABLE IF NOT EXISTS DEVICE (
-        //         ID            TEXT         PRIMARY KEY,
-        //         name          VARCHAR (50) UNIQUE,
-        //         description   TEXT,
-        //         protocolType  TEXT,
-        //         byteOrder     TEXT,
-        //         wordOrder     TEXT,
-        //         scanningCycle INTEGER,
-        //         minRespTime   INTEGER
-        //     )`,
-        //     (err) => {
-        //         pubRedis.pub2Redis('log', {serviceName: 'MQTTClient', level: 'error', errMsg: 'Database already created!'})
-        //         console.log('Database already created!')
-        //     }
-        // )
     }
 })
 

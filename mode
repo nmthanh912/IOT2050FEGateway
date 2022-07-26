@@ -1,7 +1,0 @@
-echo "MODE="\"$1\""" > ./NodejsApp/.env
-echo "MODE="\"$1\""" > ./OPC_UA/.env
-echo "MODE="\"$1\""" > ./MQTTClient/.env
-echo "MODE="\"$1\""" > ./ModbusTCP/.env
-echo "MODE="\"$1\""" > ./ModbusRTU/.env
-echo "MODE="\"$1\""" > ./Logger/.env
-

@@ -7,8 +7,7 @@ const util = require("util");
 const fs = require("fs");
 const unlink = util.promisify(fs.unlink.bind(fs));
 
-const JSON_PATH =
-	process.env.MODE === "development" ? "../customJSON" : "./customJSON";
+const JSON_PATH = process.env.CUSTOM_JSON_PATH;
 
 class Device {
 	handleErrCreate = async (id) => {
@@ -144,10 +143,6 @@ class Device {
 		tagListAll = tagListAll.flat(2);
 		protocolTagListAll = protocolTagListAll.flat(2);
 		configList = configList.flat();
-
-		// console.log(insertManyDeviceQuery)
-		// console.log(insertManyDeviceConfigQuery)
-		console.log(insertManyTagQuery);
 
 		handler(res, async () => {
 			try {

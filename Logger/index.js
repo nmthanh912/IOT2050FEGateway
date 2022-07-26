@@ -3,7 +3,7 @@ const Redis = require('ioredis')
 const createServiceLogger = require('./loggerConstructor')
 
 const loggerSubscriber = new Redis({
-    host: process.env.MODE === 'development' ? '127.0.0.1' : 'redis',
+    host: process.env.REDIS_HOST,
     port: 6379,
     maxRetriesPerRequest: null,
     retryStrategy(times) {

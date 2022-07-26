@@ -1,3 +1,5 @@
 node_modules
 Database
 customJSON
+.vscode
+*/.env

@@ -4,7 +4,7 @@ const Redis = require('ioredis')
 class RedisClient {
     constructor() {
         this.options = {
-            host: process.env.MODE === 'development' ? '127.0.0.1' : 'redis',
+            host: process.env.REDIS_PATH,
             port: 6379,
             maxRetriesPerRequest: null,
             retryStrategy(times) {

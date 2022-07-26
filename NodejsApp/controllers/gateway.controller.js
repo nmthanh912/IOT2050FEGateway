@@ -100,14 +100,12 @@ class GatewayController {
         `
         handler(res, async () => {
             const deviceList = await dbAll(sqlQuery, [req.query.id])
-            console.log(deviceList)
             res.json(deviceList)
         })
     }
 
     addSubscribeDevices(req, res) {
         const { gatewayID, deviceIDList } = req.body
-        // console.log(gatewayID, deviceIDList)
         const addSubsQuery = `
             INSERT INTO SUBSCRIBES VALUES 
             ${"(?, ?, ?),".repeat(deviceIDList.length).slice(0, -1)}
@@ -178,8 +176,6 @@ class GatewayController {
     updateSubcribedDeviceConfig(req, res) {
         const { gid: gatewayID, did: deviceID } = req.params
         const data = req.body // code, tagList, toggle
-
-        console.log(req.body)
 
         handler(res, async () => {
             const updateToggleQuery = `UPDATE configs SET toggle = ? WHERE gatewayID = ? AND deviceID = ?`

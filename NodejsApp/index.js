@@ -17,5 +17,5 @@ route(app)
 
 app.listen(PORT, function () {
     redis.pub2Redis('log', { serviceName: 'Server', level: 'info', errMsg: `Server listening on port ${PORT}!` })
-    console.log(`Server is  listening on port ${PORT}!`)
+    console.log(`Server is listening on port ${PORT}!`)
 })

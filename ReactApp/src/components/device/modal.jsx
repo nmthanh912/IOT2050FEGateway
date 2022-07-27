@@ -32,14 +32,14 @@ export default function DeviceModal({ show, onHide, device, mode }) {
     try {
       let tagList = [];
       if (device.tagList.length === 0) {
-        const res1 = await DeviceService.getTags(device.ID, device.protocol);
+        const res = await DeviceService.getTags(device.ID, device.protocol);
         dispatch(
           updateTagList({
             deviceID: device.ID,
-            data: res1.data,
+            data: res.data,
           })
         );
-        tagList = res1.data;
+        tagList = res.data;
       } else {
         tagList = device.tagList;
       }

@@ -7,8 +7,8 @@ class DeviceService {
     get() {
         return configHttp.get('/devices')
     }
-    getConfigInfoById(id, protocol) {
-        return configHttp.get(`/devices/${id}/config?protocol=${protocol}`)
+    getConfigInfoById(deviceID, protocol) {
+        return configHttp.get(`/devices/${deviceID}/config?protocol=${protocol}`)
     }
     getTags(deviceID, protocol) {
         return configHttp.get(`/devices/${deviceID}/tags?protocol=${protocol}`)

@@ -1,0 +1,284 @@
+openapi: 3.0.0
+info:
+  title: TickFund API Gateway
+  description: A scalable and re-use service
+  version: 1.0.0
+
+servers:
+  - url: http://<IOT's IP Address>:4000
+    description: API Gateway
+
+tags:
+  - name: device
+    description: API for device
+  - name: gateway
+    description: API for gateway
+  - name: tag
+    description: API for tag
+
+paths:
+  # DEVICE
+  /devices:
+    get: 
+      summary: Get list of devices
+      tags:
+        - device
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Device"
+        404:
+          description: Not Found
+        500:
+          description: Query Fail
+    post:
+      summary: Create one or many devices (with config & tags)
+      tags:
+        - device
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDeviceRequestBody"
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  keyList:
+                    type: array
+                    items:
+                      type: string
+                      example: 897f0f67
+        404:
+          description: Not Found
+        500:
+          description: Query Fail
+  
+  /devices/config?id={id}&protocol={protocolName}:
+    get:
+      tags:
+        - device
+      summary: Get detail configurations of a device
+      parameters:
+        - in: query
+          name: id
+          schema:
+            type: string
+            example: 494e92fc
+        - in: query
+          name: protocol
+          schema:
+            $ref: "#/components/schemas/Protocol"
+          example:  MODBUSTCP
+      responses:
+        200:
+          description: Return config base on device's protocol
+          content:
+            application/json:
+              schema:
+                type: object
+                oneOf:
+                  - $ref: "#/components/schemas/ModbusTCPDeviceConfig"
+                  - $ref: "#/components/schemas/ModbusRTUDeviceConfig"
+                  - $ref: "#/components/schemas/OPCUADeviceConfig"
+        404:
+          description: Not Found
+        500:
+          description: Query Fail
+
+  /devices/edit?id={id}:
+    put:
+      description: Can be partial update (only modify device info & config) or fully update (modify tags via upload)
+      tags:
+        - device
+      parameters:
+        - in: path
+          name: id
+          schema: 
+            type: string
+          example: 494e92fc
+          required: true
+      
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDeviceRequestBody"
+
+      responses:
+        200:
+          description: Update successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key: 
+                    type: string
+                    description: Updated device's ID
+                    example: 494e92fc
+
+components:
+  schemas:
+    ModbusTCPDeviceConfig:
+      type: object
+      properties:
+        IP:
+          type: string
+          example: 127.0.0.1
+        port:
+          type: integer
+          example: 8000
+        slaveID:
+          type: number
+          minimum: 1
+          maximum: 247
+          example: 1
+    ModbusRTUDeviceConfig:
+      type: object
+      properties:
+        com_port_num:
+          type: string
+          example: COM1
+        parity:
+          type: string
+          enum:
+            - none
+            - odd
+            - even
+        slaveID:
+          type: integer
+          minimum: 0
+          maximum: 247
+          example: 1
+        baudrate:
+          type: integer
+          example: 9600
+        stopbits:
+          type: integer
+          example: 1
+        databits:
+          type: integer
+          example: 4
+    
+    OPCUADeviceConfig:
+      type: object
+      properties:
+        url: 
+          type: string
+          example: opc.tcp://hostname:4841
+
+    Device:
+      type: object
+      properties:
+        ID:
+          type: string
+          example: 897f0f67
+        name:
+          type: string
+          example: TEST_TCP
+        description:
+          type: string
+          example: This device use TCP protocol
+        byteOrder:
+          $ref: "#/components/schemas/Order"
+        wordOrder:
+          $ref: "#/components/schemas/Order"
+        scanningCycle:
+          type: integer
+          minimum: 60
+          example: 60
+        minRespTime:
+          type: integer
+          example: 300
+        protocol:
+          $ref: "#/components/schemas/Protocol"
+
+    DeviceRequestBody:
+      type: object
+      properties:
+        name:
+          type: string
+          example: TEST_TCP
+        description:
+          type: string
+          example: This device use TCP protocol
+        byteOrder:
+          $ref: "#/components/schemas/Order"
+        wordOrder:
+          $ref: "#/components/schemas/Order"
+        scanningCycle:
+          type: integer
+          minimum: 60
+          example: 60
+        minRespTime:
+          type: integer
+          example: 300
+        protocol:
+          $ref: "#/components/schemas/Protocol"
+        tagList:
+          type: array
+          nullable: true
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/ModbusTCPOrRTUTag"
+        config:
+          $ref: "#/components/schemas/ModbusTCPDeviceConfig"
+    
+    CreateDeviceRequestBody:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/DeviceRequestBody"
+        repNum:
+          type: integer
+          example: 1
+          minimum: 1
+
+    ModbusTCPOrRTUTag:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'test_1'
+        address:
+          type: integer
+          example: 1
+        unit:
+          type: string
+          example: Pa
+        dataType:
+          $ref: "#/components/schemas/DataType"
+        PF:
+          type: integer
+          example: 1
+        size:
+          type: integer
+          example: 4
+        
+    Order:
+      type: string
+      enum:
+        - 'BigEndian'
+        - 'LittleEndian'
+      example: BigEndian
+    
+    Protocol:
+      type: string
+      enum:
+        - MODBUSTCP
+        - MODBUSRTU
+        - OPC_UA
+    
+    DataType:
+      type: string
+      enum: [int16, uint16, float32, int32, uint32, double, string]

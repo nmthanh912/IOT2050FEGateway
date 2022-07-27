@@ -1,15 +1,21 @@
 require("dotenv").config();
-const { dbRun, dbAll } = require("../models/database");
-const handler = require("../utils/handler");
-const uniqueId = require("../utils/uniqueId");
-
 const util = require("util");
 const fs = require("fs");
+
+const { dbRun, dbAll } = require("../models/database");
+
+const uniqueId = require("../utils/uniqueId");
+const deviceModel = require("../models/device.model");
+const { INTERNAL_SERVER_ERROR } = require("../constants/errCode");
+
+const { renameObjectKey } = require("../utils/renameKey");
+const handler = require("../utils/handler");
+
 const unlink = util.promisify(fs.unlink.bind(fs));
 
 const JSON_PATH = process.env.CUSTOM_JSON_PATH;
 
-class Device {
+class DeviceController {
 	handleErrCreate = async (id) => {
 		const getDevice = `SELECT * FROM DEVICE WHERE ID = ?`;
 		const device = await dbAll(getDevice, id);
@@ -48,24 +54,18 @@ class Device {
 		return { proTagQuery, proTagParams, tagQuery, tagParams };
 	};
 
-	getAll = function (req, res) {
-		const deviceQuery = `SELECT * FROM DEVICE`;
-		var data = [];
-
-		handler(res, async () => {
-			const devices = await dbAll(deviceQuery, []);
-
-			devices.map((device) => {
-				const obj = {
-					...device,
-					protocol: device.protocolType,
-				};
-				delete obj.protocolType;
-				data.push(obj);
-			});
-
+	getAll = async function (req, res) {
+		try {
+			const devices = await deviceModel.getAll();
+			const data = devices.map(device => renameObjectKey(
+				device, "protocolType", "protocol"
+			));
+			console.log(data)
 			res.json(data);
-		});
+		} catch (err) {
+			// Log message
+			res.status(INTERNAL_SERVER_ERROR).json({ msg: "Query fail" })
+		}
 	};
 
 	createMany(req, res) {
@@ -169,6 +169,7 @@ class Device {
 	create(req, res) {
 		const id = uniqueId();
 		const { data } = req.body;
+		console.log(req.body)
 		const deviceQuery = `INSERT INTO DEVICE 
             (ID, name, description, protocolType, byteOrder, wordOrder, scanningCycle, minRespTime) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -187,13 +188,16 @@ class Device {
 		let protocolParams = Object.values(data.config);
 
 		const tagList = data.tagList;
+		console.log(tagList[0])
 
 		handler(res, async () => {
 			if (protocolParams.length === 0) {
 				const proInfoQuery = `PRAGMA table_info(${protocolName})`;
 				const infoProTable = await dbAll(proInfoQuery);
+				console.log(infoProTable)
 				protocolParams = Array(infoProTable.length - 1).fill(null);
 			}
+
 			protocolParams.push(id);
 			const protocolQuery = `INSERT INTO ${protocolName} VALUES (${",?"
 				.repeat(protocolParams.length)
@@ -231,8 +235,16 @@ class Device {
 		});
 	}
 
+
+	/*
+	?????????????
 	getById = function (req, res) {
-		const deviceQuery = "SELECT * FROM DEVICE WHERE DEVICE.ID = ?";
+		const deviceQuery = `SELECT 
+			ID, name, description,
+			protocolType
+			FROM DEVICE 
+				WHERE DEVICE.ID = ?
+		`;
 		const deviceParams = req.params.id;
 
 		handler(res, async () => {
@@ -245,7 +257,7 @@ class Device {
 				protocol: device[0].protocolType,
 			});
 		});
-	};
+	};*/
 
 	getConfigById = function (req, res) {
 		const deviceID = req.params.id;
@@ -263,7 +275,8 @@ class Device {
 		});
 	};
 
-	editInfo = (req, res) => {
+	updateById = (req, res) => {
+		console.log(req.body)
 		const id = req.params.id;
 		const deviceQuery = `UPDATE DEVICE 
             SET name = ?, 
@@ -302,9 +315,14 @@ class Device {
 			const deleteQuery = `DELETE FROM TAG WHERE deviceID = ?`;
 			await dbRun(deleteQuery, id);
 
+			// ?
 			if (tagList.length !== 0 && tagList[0].name !== "") {
-				const { proTagQuery, proTagParams, tagQuery, tagParams } =
-					this.setupTagSql(tagList, protocolName, id);
+				const {
+					proTagQuery,
+					proTagParams,
+					tagQuery,
+					tagParams
+				} = this.setupTagSql(tagList, protocolName, id);
 				await Promise.all([
 					dbRun(deviceQuery, deviceParams),
 					dbRun(protocolQuery, protocolParams),
@@ -346,4 +364,6 @@ class Device {
 	};
 }
 
-module.exports = new Device();
+const deviceController = new DeviceController()
+
+module.exports = deviceController;

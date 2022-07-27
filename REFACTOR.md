@@ -1,6 +1,8 @@
 # Target
 
-In this refactor phase, we will do these things
+- Fix bugs
+- Enhance source code quality
+- Improve performances
 
 ## Write API Specifications
 
@@ -36,7 +38,7 @@ To-do list:
 
 - [x] Write Makefile
 - [x] Rewrite shellscript to switch mode
-- [x] Refactor API convention
+- [ ] Refactor API convention
 - [ ] Separate controller logic into controller & model
 - [x] Replace hardcode by variables which are declared in folder `constants`
 - [ ] Validate & cast type some input (if necessary)

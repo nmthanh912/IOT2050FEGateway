@@ -1,6 +1,8 @@
 # Target
 
-In this refactor phase, we will do these things
+- Fix bugs
+- Enhance source code quality
+- Improve performances
 
 ## Write API Specifications
 

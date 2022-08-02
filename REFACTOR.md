@@ -13,7 +13,7 @@ make api_specs
 
 To-do list:
 
-- [ ] Write API Specs
+- [x] Write API Specs
 
 ## Refactor NodejsApp
 
@@ -36,13 +36,14 @@ To-do list:
 
 - [x] Write Makefile
 - [x] Rewrite shellscript to switch mode
-- [x] Refactor API convention
+- [ ] Refactor API convention
 - [ ] Separate controller logic into controller & model
 - [x] Replace hardcode by variables which are declared in folder `constants`
 - [ ] Validate & cast type some input (if necessary)
 - [ ] Seperate partial update device & fully update device
 - [ ] Resolve function `deviceController.editInfo` (lead to lost data in `SUBSCRIBES` table)
 - [ ] Wrap many queries in controllers into a transaction
+- [ ] Fix bug create OPC_UA tag
 
 ## Refactor React App
 
@@ -51,3 +52,7 @@ The application is quite stable now, so in current phase we just modify somethin
 ## Refactor Protocol Services
 
 In the current version in branch `version2`, we faced off performance problems. Nodejs is not suitable for working with hard device. But in time constraint, we must try to find some optimizations for these services. In the worst case, we must rewrite these services by C++ based on old logics.
+
+Current problems:
+
+- RAM

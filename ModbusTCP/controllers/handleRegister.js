@@ -1,12 +1,12 @@
 function RegEncode(tagList) {
     tagList.sort((a, b) => (a.address > b.address ? 1 : -1))
 
-    var init = tagList[0].address
-    var size = tagList[0].size
-    var count = init + size
+    let init = tagList[0].address
+    let size = tagList[0].size
+    let count = init + size
 
     const listRegEncoded = []
-    var tagListEncoded = [tagList.shift()]
+    let tagListEncoded = [tagList.find((tag, index) => { if (index === 0) return tag })]
 
     tagList.forEach((tag) => {
         if (count === tag.address) {
@@ -15,10 +15,7 @@ function RegEncode(tagList) {
             size += tag.size
         } else {
             listRegEncoded.push({
-                init: {
-                    address: init,
-                    size,
-                },
+                init: { address: init, size, },
                 tagList: tagListEncoded,
             })
             tagListEncoded = [tag]
@@ -30,13 +27,11 @@ function RegEncode(tagList) {
     })
 
     listRegEncoded.push({
-        init: {
-            address: init,
-            size,
-        },
+        init: { address: init, size, },
         tagList: tagListEncoded,
     })
+
     return listRegEncoded
 }
 
-module.exports = {RegEncode}
+module.exports = { RegEncode }

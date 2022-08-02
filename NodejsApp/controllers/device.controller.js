@@ -60,7 +60,6 @@ class DeviceController {
 			const data = devices.map(device => renameObjectKey(
 				device, "protocolType", "protocol"
 			));
-			console.log(data)
 			res.json(data);
 		} catch (err) {
 			// Log message
@@ -169,7 +168,6 @@ class DeviceController {
 	create(req, res) {
 		const id = uniqueId();
 		const { data } = req.body;
-		console.log(req.body)
 		const deviceQuery = `INSERT INTO DEVICE 
             (ID, name, description, protocolType, byteOrder, wordOrder, scanningCycle, minRespTime) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -188,13 +186,11 @@ class DeviceController {
 		let protocolParams = Object.values(data.config);
 
 		const tagList = data.tagList;
-		console.log(tagList[0])
 
 		handler(res, async () => {
 			if (protocolParams.length === 0) {
 				const proInfoQuery = `PRAGMA table_info(${protocolName})`;
 				const infoProTable = await dbAll(proInfoQuery);
-				console.log(infoProTable)
 				protocolParams = Array(infoProTable.length - 1).fill(null);
 			}
 
@@ -276,7 +272,6 @@ class DeviceController {
 	};
 
 	updateById = (req, res) => {
-		console.log(req.body)
 		const id = req.params.id;
 		const deviceQuery = `UPDATE DEVICE 
             SET name = ?, 

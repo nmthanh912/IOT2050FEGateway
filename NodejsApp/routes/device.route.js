@@ -15,6 +15,7 @@ router.get('/:id/config', deviceController.getConfigById)
 router.put('/:id/edit', deviceController.updateById)
 router.delete('/:id', deviceController.drop)
 
+
 router.get('/:id/tags', Tag.getAll)
 router.put('/:id/tags/edit', Tag.editAttribute)
 router.delete('/:id/tag', Tag.deleteTag)

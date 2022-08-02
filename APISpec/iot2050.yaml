@@ -95,7 +95,7 @@ paths:
         500:
           description: Query Fail
 
-  /devices/edit?id={id}:
+  /devices?id={id}:
     put:
       description: Can be partial update (only modify device info & config) or fully update (modify tags via upload)
       tags:
@@ -112,7 +112,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateDeviceRequestBody"
+              $ref: "#/components/schemas/DeviceRequestBody"
 
       responses:
         200:
@@ -126,9 +126,365 @@ paths:
                     type: string
                     description: Updated device's ID
                     example: 494e92fc
+    delete:
+      tags:
+        - device
+      summary: Delete a service by ID
+      parameters:
+      - in: query
+        name: id
+        schema:
+          type: string
+          example: 494e92fc
+      responses:
+        200:
+          description: Delete successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key: 
+                    type: string
+                    description: Deleted device's ID
+                    example: 494e92fc
+
+  /gateways:
+    post:
+      tags:
+        - gateway
+      summary: Create a new gateway
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Gateway"
+      responses:
+        200:
+          description: Return new Gateway ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key:
+                    type: string
+                    example: 494e92fc
+    get:
+      tags:
+        - gateway
+      summary: Get list of gateways
+      responses:
+        200:
+          description: Return list of gateways
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    ID: 
+                      type: string
+                      example: 343a4csd
+                    data:
+                      $ref: "#/components/schemas/Gateway"
+    put:
+      tags:
+        - gateway
+      summary: Update gateway by ID
+      requestBody:
+        content:
+          application/json:
+            schema: 
+              $ref: "#/components/schemas/Gateway"
+      responses:
+        200:
+          description: Update successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key:
+                    type: string
+                    description: Updated gateway's ID
+                    example: 346a2xca
+
+  /gateways?id={id}:
+    delete:
+      tags:
+        - gateway
+      summary: Delete a gateway by ID
+      parameters:
+        - in: query
+          name: id
+          schema:
+            type: string
+            example: 343a4csd
+      responses:
+        200:
+          description: Return deleted gateway ID's
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key:
+                    type: string
+                    example: 343a4csd
+
+  /gateways/subscribed-devices?id={id}:
+    get:
+      description: Get all subscribed devices
+      tags:
+        - gateway
+      parameters:
+        - in: query
+          schema:
+            type: string
+          name: id
+          description: Gateway's ID
+          example: 343acbd
+      responses:
+        200:
+          description: Return gateway's list of subscribed devices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SubscribedDeviceInfo"
+
+  /gateways/devices/configs?gatewayId={gatewayId}&deviceId={deviceId}:
+    put:
+      tags:
+        - gateway
+      summary: Get tag configs of a device, which is subscribed by a specific gateway
+      parameters:
+        - in: query
+          name: gatewayId
+          schema:
+            type: string
+          example: 343a4csd
+      responses:
+        200:
+          description: Return OK
+  
+  /gateways/subscribes:
+    post:
+      tags:
+        - gateway
+      summary: Subcribe multiple devices for a gateway
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                gatewayId:
+                  type: string
+                  example: 4asd59qw
+                deviceIdList:
+                  type: array
+                  items:
+                    type: string
+                    example: 658zxca5qw
+      responses:
+        200:
+          description: Return message OKE
+    
+  /gateways/unsubscribes:
+    delete:
+      tags:
+        - gateway
+      summary: Unsubscribe a device in a gateway
+      parameters:
+        - in: query
+          name: gatewayId
+          schema:
+            type: string
+            example: h123ozu43
+        - in: query
+          name: deviceId
+          schema:
+            type: string
+            example: sdj124fsw
+      responses:
+        200:
+          description: Return message OKE
+    
+  # TAGS
+  /devices/{id}/tags?protocol={protocol}:
+    post:
+      tags:
+        - tag
+      summary: Create new a tag
+      parameters:
+        - in: path
+          name: id
+          description: Device ID
+          schema:
+            type: string
+            example: 13asd56
+          required: true
+        - in: query
+          name: protocol
+          schema:
+            $ref: "#/components/schemas/Protocol"
+            
+      requestBody:
+        content:
+          application/json:
+            schema: 
+              oneOf:
+                - $ref: "#/components/schemas/ModbusTCPOrRTUTag"
+                - $ref: "#/components/schemas/OPCUATag"
+      responses:
+        200:
+          description: Return message OKE
+    get:
+      tags:
+        - tag
+      summary: Get all tags of a device
+      parameters:
+        - in: path
+          name: id
+          description: Device ID
+          schema:
+            type: string
+            example: 13asd56
+          required: true
+        - in: query
+          name: protocol
+          schema:
+            $ref: "#/components/schemas/Protocol"
+      responses:
+        200:
+          description: Return tag list of a device
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/ModbusTCPOrRTUTag"
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/OPCUATag"
+  
+  /devices/{id}/tags?protocol={protocol}&tagName={tagName}&attr={attr}:
+    put:
+      tags:
+        - tag
+      summary: Edit a tag
+      parameters:
+        - in: path
+          name: id
+          description: Device ID
+          schema:
+            type: string
+            example: 13asd56
+          required: true
+        - in: query
+          name: protocol
+          schema:
+            $ref: "#/components/schemas/Protocol"
+        - in: query
+          name: tagName
+          schema:
+            type: string
+            example: test_50
+        - in: query
+          name: attr
+          description: Attribute of a tag which is modified
+          schema:
+            type: string
+            example: address
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newValue:
+                  oneOf:
+                    - type: string
+                    - type: integer
+                  example: 15
+      responses:
+        200:
+          description: Return message OKE
+  /devices/{id}/tags?tagName={tagName}:
+    delete:
+      tags:
+        - tag
+      summary: Delete a tag
+      parameters:
+        - in: path
+          name: id
+          description: Device ID
+          schema:
+            type: string
+            example: 13asd56
+          required: true
+        - in: query
+          name: tagName
+          schema:
+            type: string
+            example: tag_15
+      responses:
+        200:
+          description: Return message OKE
+
+                    
+
+
+
 
 components:
   schemas:
+    SubscribedDeviceInfo:
+      type: object
+      properties:
+        ID:
+          type: string
+          example: 494e92fc
+        name:
+          type: string
+          example: TEST_TCP
+        protocol:
+          $ref: "#/components/schemas/Protocol"
+    Gateway:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'MQTT_TEST'
+        description:
+          type: string
+          example: ''
+        protocol:
+          $ref: "#/components/schemas/Protocol"
+        config:
+          type: object
+          properties:
+            IP:
+              type: string
+              example: 192.168.10.11
+            port:
+              type: integer
+              example: 3000
+            username:
+              type: string
+              example: 'phucvinh'
+            password:
+              type: string
+              example: abcdefghjkl
+            QoS:
+              type: integer
+              enum: [0, 1, 2]
+
     ModbusTCPDeviceConfig:
       type: object
       properties:
@@ -143,6 +499,7 @@ components:
           minimum: 1
           maximum: 247
           example: 1
+    
     ModbusRTUDeviceConfig:
       type: object
       properties:
@@ -232,7 +589,10 @@ components:
             oneOf:
               - $ref: "#/components/schemas/ModbusTCPOrRTUTag"
         config:
-          $ref: "#/components/schemas/ModbusTCPDeviceConfig"
+          oneOf:
+            - $ref: "#/components/schemas/ModbusTCPDeviceConfig"
+            - $ref: "#/components/schemas/ModbusRTUDeviceConfig"
+            - $ref: "#/components/schemas/OPCUADeviceConfig"
     
     CreateDeviceRequestBody:
       type: object
@@ -264,6 +624,19 @@ components:
         size:
           type: integer
           example: 4
+    
+    OPCUATag:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'test_1'
+        nodeid:
+          type: string
+          example: com1
+        unit:
+          type: string
+          example: Pa
         
     Order:
       type: string

@@ -6,10 +6,11 @@ const { dbRun, dbAll } = require("../models/database");
 
 const uniqueId = require("../utils/uniqueId");
 const deviceModel = require("../models/device.model");
-const { INTERNAL_SERVER_ERROR } = require("../constants/errCode");
+const { INTERNAL_SERVER_ERROR_CODE } = require("../constants/errCode");
 
 const { renameObjectKey } = require("../utils/renameKey");
 const handler = require("../utils/handler");
+const { logError } = require("../utils/logger");
 
 const unlink = util.promisify(fs.unlink.bind(fs));
 
@@ -27,7 +28,7 @@ class DeviceController {
 	};
 
 	setupTagSql = (tagList, protocolName, id) => {
-		tagList.forEach((tag) => {
+		tagList.forEach(tag => {
 			tag.deviceID = id;
 		});
 
@@ -36,6 +37,7 @@ class DeviceController {
 		const proTagQuery =
 			`INSERT INTO ${protocolName}_TAG VALUES ` +
 			bracketValue.repeat(tagList.length).slice(0, -2);
+
 		const proTagParams = tagList.map((tag) => Object.values(tag)).flat();
 
 		const bracketValueTag = "(" + ",?".repeat(2).slice(1) + "), ";
@@ -55,6 +57,7 @@ class DeviceController {
 	};
 
 	getAll = async function (req, res) {
+		console.log(await deviceModel.update())
 		try {
 			const devices = await deviceModel.getAll();
 			const data = devices.map(device => renameObjectKey(
@@ -63,10 +66,11 @@ class DeviceController {
 			res.json(data);
 		} catch (err) {
 			// Log message
-			res.status(INTERNAL_SERVER_ERROR).json({ msg: "Query fail" })
+			res.status(INTERNAL_SERVER_ERROR_CODE).json({ msg: "Query fail" })
 		}
 	};
 
+	// Refactor
 	createMany(req, res) {
 		const { data, repNum: replicateNumber } = req.body;
 		const hasTag = data.tagList.length > 0;
@@ -165,6 +169,7 @@ class DeviceController {
 		});
 	}
 
+	// Refactor
 	create(req, res) {
 		const id = uniqueId();
 		const { data } = req.body;
@@ -231,48 +236,30 @@ class DeviceController {
 		});
 	}
 
-
-	/*
-	?????????????
-	getById = function (req, res) {
-		const deviceQuery = `SELECT 
-			ID, name, description,
-			protocolType
-			FROM DEVICE 
-				WHERE DEVICE.ID = ?
-		`;
-		const deviceParams = req.params.id;
-
-		handler(res, async () => {
-			const device = await dbAll(deviceQuery, deviceParams);
-
-			res.json({
-				ID: device[0].ID,
-				name: device[0].name,
-				description: device[0].description,
-				protocol: device[0].protocolType,
-			});
-		});
-	};*/
-
-	getConfigById = function (req, res) {
-		const deviceID = req.params.id;
+	getConfigById = async function (req, res) {
+		const deviceID = req.query.id;
 		const protocolName = req.query.protocol.toUpperCase();
-		const configQuery = `SELECT * FROM ${protocolName} WHERE ${protocolName}.deviceID = ?`;
-
-		handler(res, async () => {
-			const config = await dbAll(configQuery, deviceID);
-			if (config.length == 0) {
-				res.json(config);
-			} else {
-				delete config[0].deviceID;
-				res.json(config[0]);
-			}
-		});
+		try {
+			const configs = await deviceModel.getConfig(deviceID, protocolName)
+			configs.length === 0 ? res.json([]) : res.json(configs[0])
+		}
+		catch (err) {
+			logError(err.message)
+			res.status(INTERNAL_SERVER_ERROR_CODE).send({ msg: err.message })
+		}
 	};
 
-	updateById = (req, res) => {
-		const id = req.params.id;
+	/** This function does the following steps
+	 * 1. Update data of device (in DEVICE table)
+	 * 2. Update config of device (in @param {*} protocolName table) 
+	 * 3. If fully update (request body include tag),
+	 * 		3.1. Delete all tag of device
+	 * 		3.2. Insert all tag to TAG tables
+	 * 		3.3. Insert all tag info to "@param {*} protocolName"_"TAG" table
+	 */
+	// Must refactor
+	updateById = async (req, res) => {
+		const deviceID = req.query.id;
 		const deviceQuery = `UPDATE DEVICE 
             SET name = ?, 
             description = ?,
@@ -288,7 +275,7 @@ class DeviceController {
 			req.body.wordOrder,
 			req.body.scanningCycle,
 			req.body.minRespTime,
-			id,
+			deviceID,
 		];
 
 		var setString = "SET ";
@@ -302,60 +289,51 @@ class DeviceController {
 			setString.length - 2
 		)} WHERE deviceID = ?`;
 		const protocolParams = Object.values(req.body.config);
-		protocolParams.push(id);
+		protocolParams.push(deviceID);
 
 		const tagList = req.body.tagList;
 
-		handler(res, async () => {
-			const deleteQuery = `DELETE FROM TAG WHERE deviceID = ?`;
-			await dbRun(deleteQuery, id);
-
-			// ?
+		try {
+			await dbRun(`BEGIN TRANSACTION`)
+			await Promise.all([
+				dbRun(deviceQuery, deviceParams),
+				dbRun(protocolQuery, protocolParams),
+			]);
 			if (tagList.length !== 0 && tagList[0].name !== "") {
+				await dbRun(`DELETE FROM TAG WHERE deviceID = ?`, deviceID);
 				const {
 					proTagQuery,
 					proTagParams,
 					tagQuery,
 					tagParams
-				} = this.setupTagSql(tagList, protocolName, id);
+				} = this.setupTagSql(tagList, protocolName, deviceID);
 				await Promise.all([
-					dbRun(deviceQuery, deviceParams),
-					dbRun(protocolQuery, protocolParams),
 					dbRun(tagQuery, tagParams),
 					dbRun(proTagQuery, proTagParams),
 				]);
-			} else {
-				await Promise.all([
-					dbRun(deviceQuery, deviceParams),
-					dbRun(protocolQuery, protocolParams),
-				]);
 			}
-
-			res.json({
-				key: id,
-			});
-		});
+			res.json({ key: deviceID });
+			await dbRun(`COMMIT`)
+		} catch (err) {
+			await dbRun("ROLLBACK TRANSACTION")
+			logError(err.message)
+			console.error(err)
+			res.status(INTERNAL_SERVER_ERROR_CODE).send({ msg: err.message })
+		}
 	};
 
-	drop = function (req, res) {
-		const deleteDeviceQuery = "DELETE FROM DEVICE WHERE ID = ?";
-		const deviceID = req.params.id;
-
-		handler(res, async () => {
-			await dbRun(deleteDeviceQuery, [deviceID]);
-
-			const files = fs
-				.readdirSync(JSON_PATH)
-				.filter((fn) => fn.slice(9, 17) === deviceID);
-			const unlinkPromises = files.map((file) =>
-				unlink(JSON_PATH + "/" + file)
-			);
-			await Promise.allSettled(unlinkPromises);
-
-			res.json({
-				key: deviceID,
-			});
-		});
+	drop = async function (req, res) {
+		const deviceID = req.query.id;
+		try {
+			await dbRun("BEGIN TRANSACTION")
+			await deviceModel.drop(deviceID)
+			res.json({ key: deviceID });
+			await dbRun("COMMIT")
+		} catch (err) {
+			await dbRun("ROLLBACK TRANSACTION")
+			logError(err.message)
+			res.status(INTERNAL_SERVER_ERROR_CODE).json({ msg: err.message })
+		}
 	};
 }
 

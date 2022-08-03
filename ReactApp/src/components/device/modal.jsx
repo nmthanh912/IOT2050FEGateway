@@ -68,14 +68,15 @@ export default function DeviceModal({ show, onHide, device, mode }) {
   useEffect(() => {
     if (mode === "edit") {
       DeviceService.getConfigInfoById(device.ID, device.protocol)
-        .then((res) => {
+        .then(res => {
           setDraftInfo({
             ...device,
             protocol: deviceProtocolConfig.find(
-              (cInfo) => cInfo.value.toUpperCase() === device.protocol
+              configInfo => configInfo.value.toUpperCase() === device.protocol
             ),
             config: res.data,
           });
+          console.log(res.data)
         })
         .catch((err) => {
           console.log(err);
@@ -93,6 +94,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
       confirmDuplicate = window.confirm(
         "Have you checked out the config infomation ?"
       );
+      console.log(confirmDuplicate)
     }
     confirmDuplicate &&
       DeviceService.add(newDevice, replicateNumber)

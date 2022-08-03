@@ -1,63 +1,60 @@
-const { dbAll } = require("./database")
+
+const { dbAll, dbRun } = require("./database")
+const { JSON_PATH } = require("../constants/paths")
+
+const fs = require("fs")
+const util = require("util");
+const { protocolTypes } = require("../constants/protocolTypes");
+
+const unlink = util.promisify(fs.unlink.bind(fs));
+
+const createInsertTagSQL = (numOfTags, protocolName) => {
+    let numOfTagAttributes = 0
+
+    if (protocolName === protocolTypes.MODBURTU || protocolName === protocolTypes.MODBUSTCP) {
+        numOfTagAttributes = 7
+    } else if (protocolName === protocolTypes.OPC_UA) {
+        numOfTagAttributes = 4
+    }
+
+    const tagValueBracket = "(?,?)"
+    // Generate "(?, ?, ... ?)""
+    const protocolTagValueBracket = "(" + ",?".repeat(numOfTagAttributes).slice(1) + ")"
+
+    // 
+    const insertTagQuery = "INSERT INTO TAG VALUES " +
+        (tagValueBracket + ", ").repeat(numOfTags).slice(0, -2);
+    const insertProtocolTagQuery = `INSERT INTO ${protocolName}_TAG ` +
+        (protocolTagValueBracket + ", ").repeat(numOfTags).slice(0, -2)
+
+    return { insertTagQuery, insertProtocolTagQuery }
+}
 
 const deviceModel = {
     getAll: async function () {
         return await dbAll("SELECT * FROM DEVICE", []);
     },
-    create: async function (deviceData) {
-        const deviceId = uniqueId();
-        const deviceQuery = `INSERT INTO DEVICE 
-            (ID, name, description, protocolType, byteOrder, wordOrder, scanningCycle, minRespTime) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-        const deviceParams = [
-            id,
-            deviceData.name,
-            deviceData.description,
-            deviceData.protocol.toUpperCase(),
-            deviceData.byteOrder,
-            deviceData.wordOrder,
-            deviceData.scanningCycle,
-            deviceData.minRespTime,
-        ];
-        const protocolName = deviceData.protocol.toUpperCase()
-        const tagList = data.tagList;
 
-        if (protocolParams.length === 0) {
-            const proInfoQuery = `PRAGMA table_info(${protocolName})`;
-            const infoProTable = await dbAll(proInfoQuery);
-            protocolParams = Array(infoProTable.length - 1).fill(null);
-        }
-        protocolParams.push(id);
-        const protocolQuery = `INSERT INTO ${protocolName} VALUES (${",?"
-            .repeat(protocolParams.length)
-            .slice(1)})`;
+    update: async function () {
+        return createInsertTagSQL(3, protocolTypes.MODBURTU)
+    },
 
-        if (tagList.length !== 0 && Object.keys(tagList[0]).length !== 0) {
-            const { proTagQuery, proTagParams, tagQuery, tagParams } =
-                this.setupTagSql(tagList, protocolName, id);
+    getConfig: async function (deviceID, protocolName) {
+        return dbAll(`
+            SELECT * FROM ${protocolName} 
+            WHERE ${protocolName}.deviceID = ?
+        `, [deviceID]);
+    },
 
-            try {
-                await Promise.all([
-                    dbRun(deviceQuery, deviceParams),
-                    dbRun(protocolQuery, protocolParams),
-                    dbRun(tagQuery, tagParams),
-                    dbRun(proTagQuery, proTagParams),
-                ]);
-            } catch (err) {
-                await this.handleErrCreate(id);
-                throw err;
-            }
-        } else {
-            try {
-                await Promise.all([
-                    dbRun(deviceQuery, deviceParams),
-                    dbRun(protocolQuery, protocolParams),
-                ]);
-            } catch (err) {
-                await this.handleErrCreate(id);
-                throw err;
-            }
-        }
+    drop: async function (deviceID) {
+        await dbRun("DELETE FROM DEVICE WHERE ID = ?", [deviceID]);
+
+        const files = fs
+            .readdirSync(JSON_PATH)
+            .filter(filename => filename.slice(9, 17) === deviceID);
+        const unlinkPromises = files.map(file => unlink(JSON_PATH + "/" + file));
+
+        await Promise.allSettled(unlinkPromises);
     }
 }
 

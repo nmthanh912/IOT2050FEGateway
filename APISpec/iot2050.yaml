@@ -63,7 +63,7 @@ paths:
         500:
           description: Query Fail
   
-  /devices/config?id={id}&protocol={protocolName}:
+  /devices/configs?id={id}&protocol={protocolName}:
     get:
       tags:
         - device
@@ -256,7 +256,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/SubscribedDeviceInfo"
 
-  /gateways/devices/configs?gatewayId={gatewayId}&deviceId={deviceId}:
+  /gateways/subscribed-devices/configs?gatewayId={gatewayId}&deviceId={deviceId}:
     put:
       tags:
         - gateway

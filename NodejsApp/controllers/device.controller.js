@@ -1,6 +1,6 @@
 require("dotenv").config();
 
-const { INTERNAL_SERVER_ERROR_CODE } = require("../constants/errCode");
+const { INTERNAL_SERVER_ERROR_CODE } = require("../constants/error");
 const { dbRun, dbAll } = require("../models/database");
 const { uniqueId, renameObjectKey, logError, handler } = require("../utils")
 const deviceModel = require("../models/device.model");
@@ -47,10 +47,12 @@ class DeviceController {
 
 	getAll = async function (req, res) {
 		try {
+			// await deviceModel.create()
 			const devices = await deviceModel.getAll();
 			const data = devices.map(device => renameObjectKey(
 				device, "protocolType", "protocol"
 			));
+			console.log(data.length)
 			res.json(data);
 		} catch (err) {
 			// Log message

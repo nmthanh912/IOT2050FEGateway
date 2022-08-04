@@ -1,157 +1,125 @@
 
 const { dbAll, dbRun } = require("./database")
 const { JSON_PATH } = require("../constants/paths")
+const { protocolTypes } = require("../constants/protocolTypes");
 
 const fs = require("fs")
 const util = require("util");
-const { protocolTypes } = require("../constants/protocolTypes");
-
 const unlink = util.promisify(fs.unlink.bind(fs));
 
-const createInsertTagSQL = (numOfTags, protocolName) => {
-    let numOfTagAttributes = 0
-
-    if (protocolName === protocolTypes.MODBURTU || protocolName === protocolTypes.MODBUSTCP) {
-        numOfTagAttributes = 7
-    } else if (protocolName === protocolTypes.OPC_UA) {
-        numOfTagAttributes = 4
-    }
-
-    const tagValueBracket = "(?,?)"
-    // Generate "(?, ?, ... ?)""
-    const protocolTagValueBracket = "(" + ",?".repeat(numOfTagAttributes).slice(1) + ")"
-
-    // 
-    const insertTagSQL = "INSERT INTO TAG VALUES " +
-        (tagValueBracket + ", ").repeat(numOfTags).slice(0, -2);
-    const insertProtocolTagSQL = `INSERT INTO ${protocolName}_TAG VALUES ` +
-        (protocolTagValueBracket + ", ").repeat(numOfTags).slice(0, -2)
-
-    return { insertTagSQL, insertProtocolTagSQL }
-}
+const { generateInsertTagSQL, generateInsertDeviceConfigSQL } = require("./sqlGenerator");
+const { convertDeviceConfigToQueryParams, convertDeviceDataToQueryParams, convertTagListToParams, convertTagListToProtocolParams } = require("./adapter");
+const { uniqueId } = require("../utils");
 
 const deviceModel = {
     getAll: async function () {
-        return await dbAll("SELECT * FROM DEVICE", []);
+        return await dbAll("SELECT * FROM DEVICE");
     },
 
-    
+    /** This function does the following steps
+     * 1. Create new device (in DEVICE table)
+     * 2. Create config of device (in @param {*} protocolName table) 
+     * 3. If fully update (request body include tag),
+     * 		3.1. Delete all tag of device
+     * 		3.2. Insert all tag to TAG tables
+     * 		3.3. Insert all tag info to "@param {*} protocolName"_"TAG" table
+     */
+
+    createOne: async function (deviceData, deviceConfig, tagList, protocolName) {
+        const deviceID = uniqueId()
+
+        const insertDeviceParams = convertDeviceDataToQueryParams(deviceData)
+        insertDeviceParams.shift(deviceID)
+        insertDeviceParams.push(protocolName)
+
+        const insertDeviceConfigParams = convertDeviceConfigToQueryParams(deviceConfig, protocolName)
+        insertDeviceConfigParams.push(deviceID)
+
+        try {
+            await dbRun("BEGIN TRANSACTION")
+
+            await dbRun(`INSERT INTO device (
+                    ID, name, description, byteOrder, 
+                    wordOrder, scanningCycle, minRespTime,
+                    protocolType
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                insertDeviceParams
+            );
+
+            await dbRun(generateInsertDeviceConfigSQL(protocolName), insertDeviceConfigParams)
+            
+            for(tag of tagList) {
+                await dbRun(`INSERT INTO TAG VALUES (?, ?)`, [deviceID, tag.name])
+                // Must refactor
+                // await dbRun(`INSERT INTO ${protocolName}_TAG `)
+            }
+
+            await dbRun("COMMIT")
+        } catch (err) {
+            console.log(err)
+            await dbRun("ROLLBACK TRANSACTION")
+        }
+    },
 
     /** This function does the following steps
-	 * 1. Update data of device (in DEVICE table)
-	 * 2. Update config of device (in @param {*} protocolName table) 
-	 * 3. If fully update (request body include tag),
-	 * 		3.1. Delete all tag of device
-	 * 		3.2. Insert all tag to TAG tables
-	 * 		3.3. Insert all tag info to "@param {*} protocolName"_"TAG" table
-	 */
+     * 1. Update data of device (in DEVICE table)
+     * 2. Update config of device (in @param {*} protocolName table) 
+     * 3. If fully update (request body include tag),
+     * 		3.1. Delete all tag of device
+     * 		3.2. Insert all tag to TAG tables
+     * 		3.3. Insert all tag info to "@param {*} protocolName"_"TAG" table
+     */
     update: async function (deviceID, deviceData, deviceConfig, tagList, protocolName) {
         try {
             await dbRun("BEGIN TRANSACTION")
-            const updateDeviceSQL = `
-                UPDATE DEVICE 
-                SET 
-                    name = ?,
-                    description = ?,
-                    byteOrder = ?,
-                    wordOrder = ?,
-                    scanningCycle = ?,
-                    minRespTime = ?
-                WHERE ID = ?
-            `
+            // 1. Update data of device (in DEVICE table)
+            const updateDeviceSQL = ` UPDATE DEVICE SET name = ?, description = ?, 
+                byteOrder = ?, wordOrder = ?, scanningCycle = ?, minRespTime = ?
+                WHERE ID = ?`
+            const updateDeviceParams = convertDeviceDataToQueryParams(deviceConfig)
+            updateDeviceParams.push(deviceID)
+            await dbRun(
+                updateDeviceSQL,
+                updateDeviceParams
+            )
+
+            // 2. Update config of device (in @param {*} protocolName table) 
             let updateDeviceProtocolSQL = ''
-            let updateDeviceProtocolQueryParams = []
             if (protocolName === protocolTypes.MODBUSTCP) {
-                updateDeviceProtocolSQL = `
-                    UPDATE MODBUSTCP
-                    SET
-                        IP = ?,
-                        port = ?,
-                        slaveid = ?
-                    WHERE deviceID = ?
-                `
-                updateDeviceProtocolQueryParams.push(...[
-                    deviceConfig.ip,
-                    deviceConfig.port,
-                    deviceConfig.slaveid,
-                    deviceID
-                ])
+                updateDeviceProtocolSQL = `UPDATE MODBUSTCP SET IP = ?, port = ?, slaveid = ? WHERE deviceID = ?`
             } else if (protocolName === protocolTypes.MODBURTU) {
-                updateDeviceProtocolSQL = `
-                    UPDATE MODBUSRTU
-                    SET
-                        com_port_num = ?,
-                        parity = ?,
-                        slaveid = ?,
-                        baudrate = ?,
-                        stopbits = ?,
-                        databits = ?
-                    WHERE deviceID = ?
-                `
-                updateDeviceProtocolQueryParams.push(...[
-                    deviceConfig.com_port_num,
-                    deviceConfig.parity,
-                    deviceConfig.slaveid,
-                    deviceConfig.baudrate,
-                    deviceConfig.stopbits,
-                    deviceConfig.databits,
-                    deviceID
-                ])
+                updateDeviceProtocolSQL = `UPDATE MODBUSRTU SET com_port_num = ?, parity = ?,
+                    slaveid = ?, baudrate = ?, stopbits = ?, databits = ?
+                    WHERE deviceID = ?`
             } else if (protocolName === protocolTypes.OPC_UA) {
-                updateDeviceProtocolSQL = `
-                    UPDATE OPC_UA
-                    SET
-                        url = ?
-                    WHERE deviceID = ?
-                `
-                updateDeviceProtocolQueryParams.push(...[
-                    deviceConfig.url,
-                    deviceID
-                ])
+                updateDeviceProtocolSQL = ` OPC_UA SET url = ? WHERE deviceID = ?`
             }
-
-            await dbRun(updateDeviceSQL, [
-                deviceData.name,
-                deviceData.description,
-                deviceData.byteOrder,
-                deviceData.wordOrder,
-                deviceData.scanningCycle,
-                deviceData.minRespTime,
-                deviceID
-            ])
-
+            const updateDeviceProtocolQueryParams = convertDeviceConfigToQueryParams(
+                deviceConfig,
+                protocolName
+            )
+            updateDeviceProtocolQueryParams.push(deviceID)
             await dbRun(updateDeviceProtocolSQL, updateDeviceProtocolQueryParams)
 
             if (tagList.length !== 0 && tagList[0].name !== "") {
-                const { insertTagSQL, insertProtocolTagSQL } = createInsertTagSQL(
-                    tagList.length, 
+                // 3.1. Delete all tag of device
+                await dbRun(`DELETE FROM TAG WHERE deviceID = ?`, deviceID);
+
+                const { insertTagSQL, insertProtocolTagSQL } = generateInsertTagSQL(
+                    tagList.length,
                     protocolName
                 )
 
-                await dbRun(`DELETE FROM TAG WHERE deviceID = ?`, deviceID);
+                // 3.2. Insert all tag to TAG tables
+                await dbRun(insertTagSQL, convertTagListToParams(deviceID, tagList))
 
-                const insertTagParams = tagList.map(tag => [deviceID, tag.name]).flat()
-                
-                await dbRun(insertTagSQL, insertTagParams)
-
-                let insertProtocolTagParams = []
-                if (protocolName === protocolTypes.MODBURTU || protocolName === protocolTypes.MODBUSTCP) {
-                    insertProtocolTagParams = tagList.map(tag => [
-                        tag.name, tag.address, tag.unit,
-                        tag.dataType, tag.PF, tag.size,
-                        deviceID
-                    ]).flat()
-                } else if (protocolName === protocolTypes.OPC_UA) {
-                    insertProtocolTagParams = tagList.map(tag => [
-                        tag.name,
-                        tag.nodeid,
-                        tag.unit,
-                        deviceID
-                    ])
-                }
-                console.log(insertProtocolTagParams)
-                console.log(insertProtocolTagSQL)
-                await dbRun(insertProtocolTagSQL, insertProtocolTagParams)
+                // 3.3. Insert all tag info to "@param {*} protocolName"_"TAG" table
+                await dbRun(insertProtocolTagSQL, convertTagListToProtocolParams(
+                    deviceID,
+                    tagList,
+                    protocolName
+                ))
                 await dbRun("COMMIT")
             }
         } catch (err) {

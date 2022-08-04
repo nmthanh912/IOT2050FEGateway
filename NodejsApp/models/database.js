@@ -28,6 +28,11 @@ let db = new sqlite3.Database(DB_PATH, (err) => {
         db.run(ddl.CREATE_OPCUA)
         db.run(ddl.CREATE_OPCUA_TAG)
         db.run(ddl.CREATE_SUBSCRIBES);
+        
+        db.run('PRAGMA synchronous=OFF')
+        db.run('PRAGMA count_changes=OFF')
+        db.run('PRAGMA journal_mode=MEMORY')
+        db.run('PRAGMA temp_store=MEMORY')
 
         db.run('PRAGMA foreign_keys = ON', (err) => {
             if (err) {

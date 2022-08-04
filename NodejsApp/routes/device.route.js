@@ -1,5 +1,5 @@
 const express = require('express')
-const { BAD_REQUEST_CODE } = require('../constants/errCode')
+const { BAD_REQUEST_CODE } = require('../constants/error')
 const router = express.Router()
 const deviceController = require('../controllers/device.controller')
 const Tag = require('../controllers/tag.controller')

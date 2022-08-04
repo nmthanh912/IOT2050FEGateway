@@ -35,6 +35,16 @@ const deviceModel = {
         return await dbAll("SELECT * FROM DEVICE", []);
     },
 
+    
+
+    /** This function does the following steps
+	 * 1. Update data of device (in DEVICE table)
+	 * 2. Update config of device (in @param {*} protocolName table) 
+	 * 3. If fully update (request body include tag),
+	 * 		3.1. Delete all tag of device
+	 * 		3.2. Insert all tag to TAG tables
+	 * 		3.3. Insert all tag info to "@param {*} protocolName"_"TAG" table
+	 */
     update: async function (deviceID, deviceData, deviceConfig, tagList, protocolName) {
         try {
             await dbRun("BEGIN TRANSACTION")

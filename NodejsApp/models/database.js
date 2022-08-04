@@ -4,7 +4,6 @@ const util = require('util')
 const ddl = require('../constants/ddl')
 
 const redis = require('../redis/redisClient')
-redis.pubConnection()
 
 const DB_PATH = process.env.DB_PATH
 

@@ -1,20 +1,9 @@
 require("dotenv").config();
-const util = require("util");
-const fs = require("fs");
 
-const { dbRun, dbAll } = require("../models/database");
-
-const uniqueId = require("../utils/uniqueId");
-const deviceModel = require("../models/device.model");
 const { INTERNAL_SERVER_ERROR_CODE } = require("../constants/errCode");
-
-const { renameObjectKey } = require("../utils/renameKey");
-const handler = require("../utils/handler");
-const { logError } = require("../utils/logger");
-
-const unlink = util.promisify(fs.unlink.bind(fs));
-
-const JSON_PATH = process.env.CUSTOM_JSON_PATH;
+const { dbRun, dbAll } = require("../models/database");
+const { uniqueId, renameObjectKey, logError, handler } = require("../utils")
+const deviceModel = require("../models/device.model");
 
 class DeviceController {
 	handleErrCreate = async (id) => {
@@ -170,25 +159,28 @@ class DeviceController {
 
 	// Refactor
 	create(req, res) {
-		const id = uniqueId();
+		const deviceID = uniqueId();
 		const { data } = req.body;
-		const deviceQuery = `INSERT INTO DEVICE (
+		const deviceQuery = `
+			INSERT INTO DEVICE (
 				ID, name, description, protocolType, 
 				byteOrder, wordOrder, scanningCycle, minRespTime
 			) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+		`;
+		const protocolName = data.protocol.toUpperCase();
+
 		const deviceParams = [
-			id,
+			deviceID,
 			data.name,
 			data.description,
-			data.protocol.toUpperCase(),
+			protocolName,
 			data.byteOrder,
 			data.wordOrder,
 			data.scanningCycle,
 			data.minRespTime,
 		]
 
-		const protocolName = data.protocol.toUpperCase();
 		let protocolParams = Object.values(data.config);
 
 		const tagList = data.tagList;
@@ -199,14 +191,14 @@ class DeviceController {
 				protocolParams = Array(infoProTable.length - 1).fill(null);
 			}
 
-			protocolParams.push(id);
+			protocolParams.push(deviceID);
 			const protocolQuery = `INSERT INTO ${protocolName} VALUES (${",?"
 				.repeat(protocolParams.length)
 				.slice(1)})`;
 
 			if (tagList.length !== 0 && Object.keys(tagList[0]).length !== 0) {
 				const { proTagQuery, proTagParams, tagQuery, tagParams } =
-					this.setupTagSql(tagList, protocolName, id);
+					this.setupTagSql(tagList, protocolName, deviceID);
 
 				try {
 					await Promise.all([
@@ -216,7 +208,7 @@ class DeviceController {
 						dbRun(proTagQuery, proTagParams),
 					]);
 				} catch (err) {
-					await this.handleErrCreate(id);
+					await this.handleErrCreate(deviceID);
 					throw err;
 				}
 			} else {
@@ -226,12 +218,12 @@ class DeviceController {
 						dbRun(protocolQuery, protocolParams),
 					]);
 				} catch (err) {
-					await this.handleErrCreate(id);
+					await this.handleErrCreate(deviceID);
 					throw err;
 				}
 			}
 			res.json({
-				keyList: [id],
+				keyList: [deviceID],
 			});
 		});
 	}
@@ -249,14 +241,6 @@ class DeviceController {
 		}
 	};
 
-	/** This function does the following steps
-	 * 1. Update data of device (in DEVICE table)
-	 * 2. Update config of device (in @param {*} protocolName table) 
-	 * 3. If fully update (request body include tag),
-	 * 		3.1. Delete all tag of device
-	 * 		3.2. Insert all tag to TAG tables
-	 * 		3.3. Insert all tag info to "@param {*} protocolName"_"TAG" table
-	 */
 	updateById = async (req, res) => {
 		const deviceID = req.query.id;
 		const protocolName = req.body.protocol.toUpperCase();

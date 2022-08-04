@@ -13,6 +13,7 @@ router.put('/', deviceController.updateById)
 router.delete('/', deviceController.drop)
 router.get('/configs', deviceController.getConfigById)
 
+
 router.get('/:id/tags', Tag.getAll)
 // ?
 router.put('/:id/tags/edit', Tag.editAttribute)

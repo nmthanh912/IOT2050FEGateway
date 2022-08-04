@@ -38,14 +38,14 @@ class DeviceController {
 			`INSERT INTO ${protocolName}_TAG VALUES ` +
 			bracketValue.repeat(tagList.length).slice(0, -2);
 
-		const proTagParams = tagList.map((tag) => Object.values(tag)).flat();
+		const proTagParams = tagList.map(tag => Object.values(tag)).flat();
 
 		const bracketValueTag = "(" + ",?".repeat(2).slice(1) + "), ";
 		const tagQuery =
 			`INSERT INTO TAG VALUES ` +
 			bracketValueTag.repeat(tagList.length).slice(0, -2);
 		const values = [];
-		tagList.forEach((tag) =>
+		tagList.forEach(tag =>
 			values.push({
 				deviceID: tag.deviceID,
 				name: tag.name,
@@ -57,7 +57,6 @@ class DeviceController {
 	};
 
 	getAll = async function (req, res) {
-		console.log(await deviceModel.update())
 		try {
 			const devices = await deviceModel.getAll();
 			const data = devices.map(device => renameObjectKey(
@@ -173,8 +172,10 @@ class DeviceController {
 	create(req, res) {
 		const id = uniqueId();
 		const { data } = req.body;
-		const deviceQuery = `INSERT INTO DEVICE 
-            (ID, name, description, protocolType, byteOrder, wordOrder, scanningCycle, minRespTime) 
+		const deviceQuery = `INSERT INTO DEVICE (
+				ID, name, description, protocolType, 
+				byteOrder, wordOrder, scanningCycle, minRespTime
+			) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 		const deviceParams = [
 			id,
@@ -185,7 +186,7 @@ class DeviceController {
 			data.wordOrder,
 			data.scanningCycle,
 			data.minRespTime,
-		];
+		]
 
 		const protocolName = data.protocol.toUpperCase();
 		let protocolParams = Object.values(data.config);
@@ -194,8 +195,7 @@ class DeviceController {
 
 		handler(res, async () => {
 			if (protocolParams.length === 0) {
-				const proInfoQuery = `PRAGMA table_info(${protocolName})`;
-				const infoProTable = await dbAll(proInfoQuery);
+				const infoProTable = await dbAll(`PRAGMA table_info(${protocolName})`);
 				protocolParams = Array(infoProTable.length - 1).fill(null);
 			}
 
@@ -257,65 +257,15 @@ class DeviceController {
 	 * 		3.2. Insert all tag to TAG tables
 	 * 		3.3. Insert all tag info to "@param {*} protocolName"_"TAG" table
 	 */
-	// Must refactor
 	updateById = async (req, res) => {
 		const deviceID = req.query.id;
-		const deviceQuery = `UPDATE DEVICE 
-            SET name = ?, 
-            description = ?,
-            byteOrder = ?,
-            wordOrder = ?,
-            scanningCycle = ?,
-            minRespTime = ?
-        WHERE ID = ?`;
-		const deviceParams = [
-			req.body.name,
-			req.body.description,
-			req.body.byteOrder,
-			req.body.wordOrder,
-			req.body.scanningCycle,
-			req.body.minRespTime,
-			deviceID,
-		];
-
-		var setString = "SET ";
-		const keys = Object.keys(req.body.config);
-		keys.forEach((key) => {
-			setString += key + " = ?, ";
-		});
 		const protocolName = req.body.protocol.toUpperCase();
-		const protocolQuery = `UPDATE ${protocolName} ${setString.slice(
-			0,
-			setString.length - 2
-		)} WHERE deviceID = ?`;
-		const protocolParams = Object.values(req.body.config);
-		protocolParams.push(deviceID);
-
 		const tagList = req.body.tagList;
 
 		try {
-			await dbRun(`BEGIN TRANSACTION`)
-			await Promise.all([
-				dbRun(deviceQuery, deviceParams),
-				dbRun(protocolQuery, protocolParams),
-			]);
-			if (tagList.length !== 0 && tagList[0].name !== "") {
-				await dbRun(`DELETE FROM TAG WHERE deviceID = ?`, deviceID);
-				const {
-					proTagQuery,
-					proTagParams,
-					tagQuery,
-					tagParams
-				} = this.setupTagSql(tagList, protocolName, deviceID);
-				await Promise.all([
-					dbRun(tagQuery, tagParams),
-					dbRun(proTagQuery, proTagParams),
-				]);
-			}
+			await deviceModel.update(deviceID, req.body, req.body.config, tagList, protocolName)
 			res.json({ key: deviceID });
-			await dbRun(`COMMIT`)
 		} catch (err) {
-			await dbRun("ROLLBACK TRANSACTION")
 			logError(err.message)
 			console.error(err)
 			res.status(INTERNAL_SERVER_ERROR_CODE).send({ msg: err.message })
@@ -325,12 +275,9 @@ class DeviceController {
 	drop = async function (req, res) {
 		const deviceID = req.query.id;
 		try {
-			await dbRun("BEGIN TRANSACTION")
 			await deviceModel.drop(deviceID)
 			res.json({ key: deviceID });
-			await dbRun("COMMIT")
 		} catch (err) {
-			await dbRun("ROLLBACK TRANSACTION")
 			logError(err.message)
 			res.status(INTERNAL_SERVER_ERROR_CODE).json({ msg: err.message })
 		}

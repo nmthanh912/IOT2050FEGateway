@@ -7,8 +7,8 @@ const fs = require("fs")
 const util = require("util");
 const unlink = util.promisify(fs.unlink.bind(fs));
 
-const { generateInsertTagSQL, generateInsertDeviceConfigSQL } = require("./sqlGenerator");
-const { convertDeviceConfigToQueryParams, convertDeviceDataToQueryParams, convertTagListToParams, convertTagListToProtocolParams } = require("./adapter");
+const { generateInsertTagSQL, generateInsertDeviceConfigSQL, generateInsertProtocolTagSQL } = require("./sqlGenerator");
+const { convertDeviceConfigToQueryParams, convertDeviceDataToQueryParams, convertTagListToParams, convertTagListToProtocolParams, convertTagToProtocolParams } = require("./adapter");
 const { uniqueId } = require("../utils");
 
 const deviceModel = {
@@ -24,12 +24,11 @@ const deviceModel = {
      * 		3.2. Insert all tag to TAG tables
      * 		3.3. Insert all tag info to "@param {*} protocolName"_"TAG" table
      */
-
     createOne: async function (deviceData, deviceConfig, tagList, protocolName) {
         const deviceID = uniqueId()
 
         const insertDeviceParams = convertDeviceDataToQueryParams(deviceData)
-        insertDeviceParams.shift(deviceID)
+        insertDeviceParams.unshift(deviceID)
         insertDeviceParams.push(protocolName)
 
         const insertDeviceConfigParams = convertDeviceConfigToQueryParams(deviceConfig, protocolName)
@@ -46,19 +45,79 @@ const deviceModel = {
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
                 insertDeviceParams
             );
-
             await dbRun(generateInsertDeviceConfigSQL(protocolName), insertDeviceConfigParams)
-            
-            for(tag of tagList) {
+
+            for (tag of tagList) {
                 await dbRun(`INSERT INTO TAG VALUES (?, ?)`, [deviceID, tag.name])
-                // Must refactor
-                // await dbRun(`INSERT INTO ${protocolName}_TAG `)
+                await dbRun(
+                    generateInsertProtocolTagSQL(protocolName),
+                    convertTagToProtocolParams(deviceID, tag, protocolName)
+                )
             }
 
             await dbRun("COMMIT")
+            return [deviceID]
         } catch (err) {
-            console.log(err)
             await dbRun("ROLLBACK TRANSACTION")
+            throw err
+        }
+    },
+
+    /** This function does the following steps
+     * 1. Create new device (in DEVICE table)
+     * 2. Create config of device (in @param {*} protocolName table) 
+     * 3. If fully update (request body include tag),
+     * 		3.1. Delete all tag of device
+     * 		3.2. Insert all tag to TAG tables
+     * 		3.3. Insert all tag info to "@param {*} protocolName"_"TAG" table
+     * 4. If done replicate number loop times, terminate, otherwise back to step 1 
+     */
+    createMany: async function (deviceData, deviceConfig, tagList, replicateNumber, protocolName) {
+        const insertDeviceParams = convertDeviceDataToQueryParams(deviceData)
+        insertDeviceParams.push(protocolName)
+
+        const insertDeviceConfigParams = convertDeviceConfigToQueryParams(deviceConfig, protocolName)
+
+        const keyList = []
+        const deviceName = deviceData.name
+        try {
+            await dbRun("BEGIN TRANSACTION")
+
+            for (let i = 0; i < replicateNumber; ++i) {
+                const deviceID = uniqueId()
+                insertDeviceParams.unshift(deviceID)
+                // Convert name of device by concat serial after name
+                insertDeviceParams[1] = deviceName + "_" + (i + 1).toString()
+
+                insertDeviceConfigParams.push(deviceID)
+                await dbRun(`
+                    INSERT INTO device (
+                        ID, name, description, byteOrder, 
+                        wordOrder, scanningCycle, minRespTime,
+                        protocolType
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                    insertDeviceParams
+                );
+                await dbRun(generateInsertDeviceConfigSQL(protocolName), insertDeviceConfigParams)
+
+                for (tag of tagList) {
+                    await dbRun(`INSERT INTO TAG VALUES (?, ?)`, [deviceID, tag.name])
+                    await dbRun(
+                        generateInsertProtocolTagSQL(protocolName),
+                        convertTagToProtocolParams(deviceID, tag, protocolName)
+                    )
+                }
+                insertDeviceParams.shift()
+                insertDeviceConfigParams.pop()
+                keyList.push(deviceID)
+            }
+
+            await dbRun("COMMIT")
+            return keyList
+        } catch (err) {
+            await dbRun("ROLLBACK TRANSACTION")
+            throw err
         }
     },
 
@@ -77,7 +136,7 @@ const deviceModel = {
             const updateDeviceSQL = ` UPDATE DEVICE SET name = ?, description = ?, 
                 byteOrder = ?, wordOrder = ?, scanningCycle = ?, minRespTime = ?
                 WHERE ID = ?`
-            const updateDeviceParams = convertDeviceDataToQueryParams(deviceConfig)
+            const updateDeviceParams = convertDeviceDataToQueryParams(deviceData)
             updateDeviceParams.push(deviceID)
             await dbRun(
                 updateDeviceSQL,

@@ -35,10 +35,12 @@ const convertDeviceDataToQueryParams = (deviceData) => {
     ]
 }
 
+// Deprecate
 const convertTagListToParams = (deviceID, tagList) => {
     return tagList.map(tag => [deviceID, tag.name]).flat()
 }
 
+// Deprecate
 const convertTagListToProtocolParams = (deviceID, tagList, protocolName) => {
     if (protocolName === protocolTypes.MODBURTU || protocolName === protocolTypes.MODBUSTCP) {
         return tagList.map(tag => [
@@ -52,7 +54,25 @@ const convertTagListToProtocolParams = (deviceID, tagList, protocolName) => {
             tag.nodeid,
             tag.unit,
             deviceID
-        ])
+        ]).flat()
+    }
+    throw new Error("Incorrect protocol type !")
+}
+
+const convertTagToProtocolParams = (deviceID, tag, protocolName) => {
+    if (protocolName === protocolTypes.MODBURTU || protocolName === protocolTypes.MODBUSTCP) {
+        return [
+            tag.name, tag.address, tag.unit,
+            tag.dataType, tag.PF, tag.size,
+            deviceID
+        ]
+    } else if (protocolName === protocolTypes.OPC_UA) {
+        return [
+            tag.name,
+            tag.nodeid,
+            tag.unit,
+            deviceID
+        ]
     }
     throw new Error("Incorrect protocol type !")
 }
@@ -61,5 +81,7 @@ module.exports = {
     convertDeviceConfigToQueryParams,
     convertDeviceDataToQueryParams,
     convertTagListToParams,
-    convertTagListToProtocolParams
+    convertTagListToProtocolParams,
+
+    convertTagToProtocolParams
 }

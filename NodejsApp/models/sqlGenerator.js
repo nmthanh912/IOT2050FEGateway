@@ -41,7 +41,25 @@ const generateInsertDeviceConfigSQL = (protocolName) => {
     throw new Error(INCORRECT_PROTOCOL_MESSAGE)
 }
 
-module.exports = { 
+const generateInsertProtocolTagSQL = (protocolName) => {
+    if (protocolName === protocolTypes.MODBURTU || protocolName === protocolTypes.MODBUSTCP) {
+        return `INSERT INTO ${protocolName}_TAG (
+            name, address, unit,
+            dataType, PF, size, deviceID
+        ) VALUES (?, ?, ?, ? ,? ,?, ?)`
+    } else if(protocolTypes === protocolTypes.OPC_UA) {
+        return `INSERT INTO ${protocolName}_TAG (
+            name, nodeid, unit, deviceID
+        ) VALUES (?, ?, ?, ?)`
+    }
+    throw new Error(INCORRECT_PROTOCOL_MESSAGE)
+}
+
+module.exports = {
+    // must replace
     generateInsertTagSQL,
-    generateInsertDeviceConfigSQL
+    // must replace
+    generateInsertDeviceConfigSQL,
+
+    generateInsertProtocolTagSQL
 }

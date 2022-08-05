@@ -4,6 +4,18 @@ class Service {
     get() {
         return configHttp.get('/gateways')
     }
+    add(data) {
+        return configHttp.post('/gateways', data)
+    }
+    delete(gatewayId) {
+        return configHttp.delete(`/gateways/delete?id=${gatewayId}`)
+    }
+    update(gatewayId, data) {
+        return configHttp.put(`/gateways/update?id=${gatewayId}`, data)
+    }
+    updateSubcribedDeviceConfig(gatewayId, deviceId, data) {
+        return configHttp.put(`/gateways/${gatewayId}/${deviceId}`, data)
+    }
     getSubcribedDevices(gatewayId) {
         return configHttp.get(`/gateways/devices?id=${gatewayId}`)
     }
@@ -17,18 +29,7 @@ class Service {
     getSubcribedDeviceConfig(gatewayId, deviceId, protocol) {
         return configHttp.get(`/gateways/devices/config?gid=${gatewayId}&did=${deviceId}&dp=${protocol}`)
     }
-    add(data) {
-        return configHttp.post('/gateways', data)
-    }
-    delete(gatewayId) {
-        return configHttp.delete(`/gateways/delete?id=${gatewayId}`)
-    }
-    update(gatewayId, data) {
-        return configHttp.put(`/gateways/update?id=${gatewayId}`, data)
-    }
-    updateSubcribedDeviceConfig(gatewayId, deviceId, data) {
-        return configHttp.put(`/gateways/${gatewayId}/${deviceId}`, data)
-    }
+    
 
 }
 const GatewayService = new Service()

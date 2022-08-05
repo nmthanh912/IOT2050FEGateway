@@ -18,7 +18,7 @@ class Service {
         return configHttp.get(`/gateways/devices/config?gid=${gatewayId}&did=${deviceId}&dp=${protocol}`)
     }
     add(data) {
-        return configHttp.post('/gateways/new', data)
+        return configHttp.post('/gateways', data)
     }
     delete(gatewayId) {
         return configHttp.delete(`/gateways/delete?id=${gatewayId}`)

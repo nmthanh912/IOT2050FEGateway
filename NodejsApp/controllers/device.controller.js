@@ -1,12 +1,15 @@
 require("dotenv").config();
 
-const { INTERNAL_SERVER_ERROR_CODE, BAD_REQUEST_CODE, INVALID_REPLICATE_NUMBER } = require("../constants/error");
-const { dbRun, dbAll } = require("../models/database");
-const { uniqueId, renameObjectKey, logError, handler } = require("../utils")
+const {
+	INTERNAL_SERVER_ERROR_CODE,
+	BAD_REQUEST_CODE,
+	INVALID_REPLICATE_NUMBER 
+} = require("../constants/error");
+const { renameObjectKey, logError } = require("../utils")
 const deviceModel = require("../models/device.model");
 
 class DeviceController {
-	getAll = async function (req, res) {
+	getAll = async (req, res) => {
 		try {
 			const devices = await deviceModel.getAll();
 			const data = devices.map(device => renameObjectKey(
@@ -47,7 +50,7 @@ class DeviceController {
 		}
 	}
 
-	getConfigById = async function (req, res) {
+	getConfigById = async (req, res) => {
 		const deviceID = req.query.id;
 		const protocolName = req.query.protocol.toUpperCase();
 		try {

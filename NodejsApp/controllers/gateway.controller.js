@@ -107,7 +107,6 @@ class GatewayController {
     addSubscribeDevices(req, res) {
         const { gatewayID, deviceIDList } = req.body
 
-        console.log(req.body)
         const addSubsQuery = `
             INSERT INTO SUBSCRIBES VALUES 
             ${"(?, ?, ?),".repeat(deviceIDList.length).slice(0, -1)}

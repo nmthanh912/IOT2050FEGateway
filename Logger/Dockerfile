@@ -1,9 +1,13 @@
-FROM node:17-buster
+FROM node:16-alpine as builder
 WORKDIR /usr/src/app/logger
-
 COPY . .
-RUN rm package-lock.json
-RUN mkdir LogFolder
-RUN npm install
+RUN npm ci --omit=dev
+RUN npm i --location=global @vercel/ncc
+RUN ncc build index.js -o dist
+COPY .env dist/
 
-CMD node index.js
+FROM node:16-alpine
+WORKDIR /usr/src/app/logger
+COPY --from=builder /usr/src/app/logger/dist/ .
+
+CMD ["node", "index.js"]

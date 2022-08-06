@@ -1,19 +1,15 @@
-FROM node:17-buster
-# Create app directory (physical path in host)
+FROM node:16 AS builder
 WORKDIR /usr/src/app/modbusrtu
+COPY . .
+RUN npm ci --omit=dev
+RUN npm i --location=global @vercel/ncc
+RUN ncc build index.js -o dist
+COPY .env dist
 
-COPY package*.json ./
-RUN rm package-lock.json
-
+FROM node:16-slim
+WORKDIR /usr/src/app/modbusrtu
+COPY --from=builder /usr/src/app/modbusrtu/dist/ .
 RUN mkdir Database
 RUN mkdir customJSON
-
-RUN npm install
-RUN npm uninstall sqlite3
-RUN npm install sqlite3@4.2.0
-
-COPY . .
-
 EXPOSE 4002
-
-CMD [ "node", "index.js" ]
+CMD ["node", "index.js"]

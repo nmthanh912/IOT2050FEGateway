@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, current } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import DeviceService from "../../services/configserver/device";
 
 const deviceSlice = createSlice({
@@ -21,7 +21,6 @@ const deviceSlice = createSlice({
             const idx = state.findIndex(val => val.ID === id)
             delete updatedData.ID
             state[idx] = { ...state[idx], ...updatedData }
-            console.log(state[idx])
             return state
         },
         removeDevice: (state, action) => {
@@ -42,10 +41,8 @@ const deviceSlice = createSlice({
         },
         editTagCell: (state, action) => {
             const { deviceID, tagName, attr, newValue } = action.payload
-            console.log(action.payload)
             const device = state.find(val => val.ID === deviceID)
             const tag = device.tagList.find(val => val.name === tagName)
-            console.log(current(tag))
             tag[attr] = newValue
             return state
         },
@@ -90,7 +87,6 @@ const deviceSlice = createSlice({
             const device = state.find(val => val.ID === deviceID)
             device.tagList = []
             action.payload.data.forEach(val => device.tagList.push(val))
-            console.log(action.payload.data)
             return state
         })
     }

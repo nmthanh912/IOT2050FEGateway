@@ -21,7 +21,7 @@ function DataFormat(byteOrder, wordOrder) {
 }
 
 function DataDecode(dataFormat, dataType, PF, buf) {
-    var value = null
+    let value = null
 
     if (dataFormat === 'Invalid Data Format!') {
         value = 'Invalid Data Format!'

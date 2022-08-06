@@ -35,7 +35,7 @@ class DeviceConnection {
             const listRegEncoded = RegEncode(this.tagList)
             const queue = new Queue(listRegEncoded)
             const dataFormat = DataFormat(this.deviceConfig.byteOrder, this.deviceConfig.wordOrder)
-            this.#getData(client, dataFormat, queue)
+            this.#getData(client, dataFormat, queue, this.tagList.length)
         })
 
         socket.on('error', (err) => {
@@ -60,38 +60,37 @@ class DeviceConnection {
         })
     }
 
-    #getData(client, dataFormat, queue) {
+    #getData(client, dataFormat, queue, tagNumber) {
         if (this.valueLoopRef) {
             clearInterval(this.valueLoopRef)
         }
-        
+
         const dataList = []
         const deviceName = removeAccents(this.deviceConfig.name)
-
-        let buf
-        let i
-        let regEncoded
-        let bufDecoded
-        let valueDecoded
+        let buf, i, regEncoded, tagBuf, valueDecoded, position = 0
 
         this.valueLoopRef = setInterval(() => {
             regEncoded = queue.dequeue()
             client
                 .readHoldingRegisters(regEncoded.init.address, regEncoded.init.size)
                 .then((resp) => {
-                    buf = Buffer.allocUnsafe(regEncoded.init.size * 2)
+                    if (position >= tagNumber) position = 0
                     buf = resp.response._body._valuesAsBuffer
 
                     i = 0
-                    regEncoded.tagList.forEach((tag, index) => {
-                        bufDecoded = buf.slice(i, tag.size * 2 + i)
+                    regEncoded.tagList.forEach((tag) => {
+                        tagBuf = buf.slice(i, tag.size * 2 + i)
                         i += tag.size * 2
-                        valueDecoded = DataDecode(dataFormat, tag.dataType, tag.PF, bufDecoded)
-                        dataList[index] = {
-                            name: tag.name,
-                            unit: tag.unit,
-                            value: valueDecoded,
+                        valueDecoded = DataDecode(dataFormat, tag.dataType, tag.PF, tagBuf)
+                        if (position < tagNumber) {
+                            dataList[position] = {
+                                name: tag.name,
+                                unit: tag.unit,
+                                value: valueDecoded,
+                            }
                         }
+
+                        position += 1
                     })
                 })
                 .catch((err) => {
@@ -103,7 +102,7 @@ class DeviceConnection {
 
         this.dataLoopRef = setInterval(() => {
             redis.pub2Redis(`data/${deviceName}`, dataList)
-            console.log(`${deviceName}`, dataList.length)
+            console.log(`${deviceName}`, dataList.length, tagNumber)
         }, this.deviceConfig.scanningCycle * 1000)
     }
 

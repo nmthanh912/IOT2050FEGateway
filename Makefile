@@ -8,12 +8,13 @@ build_prod:
 	docker-compose build logger
 
 publish:
-	docker tag
-
-switch_mode_production:
+	docker tag iot2050fegateway_logger:latest 1915940/logger:1.0
+	docker push 1915940/logger:1.0
+	
+production_env:
 	bash mode.sh production
 
-switch_mode_development:
+development_env:
 	bash mode.sh development
 
 bootstrap:

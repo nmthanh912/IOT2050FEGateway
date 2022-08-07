@@ -3,7 +3,7 @@ const handler = require('../utils/handler')
 
 class Tag {
     getAll = async function (req, res) {
-        const tagQuery = `SELECT * FROM ${req.query.protocol}_TAG WHERE deviceID = ?`
+        const tagQuery = `SELECT * FROM ${req.query.protocol}_TAG WHERE deviceID = ? ORDER BY address ASC`
         const tagParams = [req.params.id]
 
         handler(res, async () => {

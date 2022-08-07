@@ -4,6 +4,7 @@ const { dbRun, dbAll, db } = require('../models/database')
 const handler = require('../utils/handler')
 const fs = require('fs')
 const util = require('util')
+const { logError } = require('../utils')
 
 const writeFile = util.promisify(fs.writeFile.bind(fs))
 const readFile = util.promisify(fs.readFile.bind(fs))
@@ -16,8 +17,8 @@ class GatewayController {
         const configData = req.body.config
         const ID = uniqueId()
         let gatewayData = [
-            ID, 
-            req.body.description, 
+            ID,
+            req.body.description,
             req.body.name,
             configData.username,
             configData.password,
@@ -104,25 +105,22 @@ class GatewayController {
         })
     }
 
-    addSubscribeDevices(req, res) {
+    async addSubscribeDevices(req, res) {
         const { gatewayID, deviceIDList } = req.body
 
-        const addSubsQuery = `
-            INSERT INTO SUBSCRIBES VALUES 
-            ${"(?, ?, ?),".repeat(deviceIDList.length).slice(0, -1)}
-        `
-        const subsParams = deviceIDList.map(deviceID => [gatewayID, deviceID, null]).flat(1)
-
-        const addConfigQuery = `
-            INSERT INTO CONFIGS VALUES 
-            ${'(?, ?, ?),'.repeat(deviceIDList.length).slice(0, -1)}
-        `
-        const configParams = deviceIDList.map(deviceID => [gatewayID, deviceID, 0]).flat(1)
-        handler(res, async () => {
-            await dbRun(addSubsQuery, subsParams)
-            await dbRun(addConfigQuery, configParams)
-            res.json({ msg: 'OKE' })
-        })
+        try {
+            await dbRun("BEGIN TRANSACTION")
+            for (let deviceID of deviceIDList) {
+                await dbRun(`INSERT INTO subscribes VALUES (?, ?, ?)`, [gatewayID, deviceID, null])
+                await dbRun(`INSERT OR IGNORE INTO configs VALUES (?, ?, ?)`, [gatewayID, deviceID, 0])
+            }
+            await dbRun("COMMIT")
+            res.json({ msg: "OKE" })
+        } catch (err) {
+            logError(err.message)
+            await dbRun("ROLLBACK TRANSACTION")
+            res.status(500).json({ msg: err.message })
+        }
     }
 
     removeSubscribeDevice(req, res) {
@@ -177,33 +175,40 @@ class GatewayController {
         })
     }
 
-    updateSubcribedDeviceConfig(req, res) {
+    async updateSubcribedDeviceConfig(req, res) {
         const { gid: gatewayID, did: deviceID } = req.params
         const data = req.body // code, tagList, toggle
-        handler(res, async () => {
+        try {
+            await dbRun("BEGIN TRANSACTION")
             const updateToggleQuery = `UPDATE configs SET toggle = ? WHERE gatewayID = ? AND deviceID = ?`
             await dbRun(updateToggleQuery, [data.toggle, gatewayID, deviceID])
 
             const customJSON = data.code.slice(data.code.indexOf('{'))
             await writeFile(`${JSON_PATH}/${gatewayID}_${deviceID}.json`, customJSON, 'utf-8')
 
-            db.serialize(() => {
-                let deleteSqlQuery = `DELETE FROM subscribes WHERE
+
+            let deleteSqlQuery = `DELETE FROM subscribes WHERE
                     gatewayID = ?
                     AND deviceID = ?
                 `
-                db.run(deleteSqlQuery, [gatewayID, deviceID])
-                if (data.tagList.length > 0) {
-                    let insertSqlQuery = `INSERT INTO subscribes
-                        VALUES ${'(?, ?, ?),'.repeat(data.tagList.length).slice(0, -1)}
-                    `
-                    db.run(insertSqlQuery, data.tagList.map((val) => [gatewayID, deviceID, val.name]).flat())
-                } else {
-                    db.run('INSERT INTO subscribes VALUES (?, ?, ?)', [gatewayID, deviceID, null])
+            await dbRun(deleteSqlQuery, [gatewayID, deviceID])
+
+            if (data.tagList.length > 0) {
+                for (let tag of data.tagList) {
+                    await dbRun("INSERT INTO subscribes VALUES (?, ?, ?)", [gatewayID, deviceID, tag.name])
                 }
-            })
+            } else {
+                await dbRun('INSERT INTO subscribes VALUES (?, ?, ?)', [gatewayID, deviceID, null])
+            }
+            await dbRun("COMMIT")
             res.json({ msg: 'OK' })
-        })
+
+        } catch (err) {
+            logError(err.message)
+            console.log(err)
+            await dbRun("ROLLBACK TRANSACTION")
+            res.status(500).json({ msg: err.message })
+        }
     }
 }
 

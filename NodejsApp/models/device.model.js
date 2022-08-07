@@ -143,7 +143,7 @@ const deviceModel = {
                 updateDeviceParams
             )
 
-            // 2. Update config of device (in @param {*} protocolName table) 
+            // 2. Update config of device (in ${protocolName} table) 
             let updateDeviceProtocolSQL = ''
             if (protocolName === protocolTypes.MODBUSTCP) {
                 updateDeviceProtocolSQL = `UPDATE MODBUSTCP SET IP = ?, port = ?, slaveid = ? WHERE deviceID = ?`
@@ -160,10 +160,15 @@ const deviceModel = {
             )
             updateDeviceProtocolQueryParams.push(deviceID)
             await dbRun(updateDeviceProtocolSQL, updateDeviceProtocolQueryParams)
-
+            
+            console.log(tagList)
             if (tagList.length !== 0 && tagList[0].name !== "") {
                 // 3.1. Delete all tag of device
+                const currSubscribe = await dbRun("SELECT * FROM SUBSCRIBES WHERE deviceID = ?", [deviceID])
+                console.log(currSubscribe)
+                
                 await dbRun(`DELETE FROM TAG WHERE deviceID = ?`, deviceID);
+                await dbRun(`DELETE FROM ${protocolName}_TAG WHERE deviceID = ?`, deviceID);
 
                 const { insertTagSQL, insertProtocolTagSQL } = generateInsertTagSQL(
                     tagList.length,
@@ -173,7 +178,7 @@ const deviceModel = {
                 // 3.2. Insert all tag to TAG tables
                 await dbRun(insertTagSQL, convertTagListToParams(deviceID, tagList))
 
-                // 3.3. Insert all tag info to "@param {*} protocolName"_"TAG" table
+                // 3.3. Insert all tag info to ${protocolName}_"TAG" table
                 await dbRun(insertProtocolTagSQL, convertTagListToProtocolParams(
                     deviceID,
                     tagList,

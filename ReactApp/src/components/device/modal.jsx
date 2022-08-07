@@ -47,7 +47,8 @@ export default function DeviceModal({ show, onHide, device, mode }) {
       const data = {
         ...draftInfo,
         protocol: draftInfo.protocol.value.toUpperCase(),
-        tagList: draftInfo.tagList.length !== 0 ? draftInfo.tagList : tagList,
+        // tagList: draftInfo.tagList.length !== 0 ? draftInfo.tagList : tagList,
+        tagList: draftInfo.tagList.length !== 0 ? draftInfo.tagList : [],
       };
 
       await DeviceService.editDevice(device.ID, data);
@@ -109,7 +110,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
             delete newDevice.name;
             const deviceList = keyList.map((key, idx) => ({
               ID: key,
-              name: name + `_${idx}`,
+              name: name + `_${idx + 1}`,
               ...newDevice,
             }));
             console.log(deviceList);

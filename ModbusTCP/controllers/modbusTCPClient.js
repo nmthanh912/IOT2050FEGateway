@@ -89,7 +89,6 @@ class DeviceConnection {
                                 value: valueDecoded,
                             }
                         }
-
                         position += 1
                     })
                 })

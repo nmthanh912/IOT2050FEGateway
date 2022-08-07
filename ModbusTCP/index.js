@@ -24,7 +24,7 @@ let promises = deviceIdList.map(async (deviceId) => {
 
 Promise.all(promises)
     .catch(err => {
-        redis.pub2Redis('log', { erviceName: 'ModbusTCP', level: 'err', errMsg: err, })
+        redis.pub2Redis('log', { serviceName: 'ModbusTCP', level: 'err', errMsg: err, })
         console.log(err)
     })
 
@@ -34,7 +34,7 @@ app.get('/poweron', async function (req, res) {
         /** turn on device, append new deviceId */
         fs.appendFile('./deviceOn.txt', `${req.query.deviceID},`, 'utf8', (err) => {
             if (err) {
-                redis.pub2Redis('log', { erviceName: 'ModbusTCP', level: 'err', errMsg: err, })
+                redis.pub2Redis('log', { serviceName: 'ModbusTCP', level: 'err', errMsg: err, })
                 console.log(err)
             }
         })
@@ -51,12 +51,12 @@ app.get('/shutdown', function (req, res) {
     /** turn off device, replace deviceId to empty string */
     fs.readFile('deviceOn.txt', 'utf8', (err, data) => {
         if (err) {
-            redis.pub2Redis('log', { erviceName: 'ModbusTCP', level: 'err', errMsg: err, })
+            redis.pub2Redis('log', { serviceName: 'ModbusTCP', level: 'err', errMsg: err, })
             console.log(err)
         } else {
             fs.writeFile('deviceOn.txt', data.replace(`${req.query.deviceID},`, ''), 'utf-8', (err) => {
                 if (err) {
-                    redis.pub2Redis('log', { erviceName: 'ModbusTCP', level: 'err', errMsg: err, })
+                    redis.pub2Redis('log', { serviceName: 'ModbusTCP', level: 'err', errMsg: err, })
                     console.log(err)
                 }
             })

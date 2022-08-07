@@ -2,8 +2,8 @@ const modbusRTU = require('modbus-serial')
 
 const getConfig = require('./configInfo')
 const Queue = require('../utils/queue')
-const {DataFormat, DataDecode} = require('../dataParser/index')
-const {RegEncode} = require('./handleRegister')
+const { DataFormat, DataDecode } = require('../dataParser/index')
+const { RegEncode } = require('./handleRegister')
 const removeAccents = require('../utils/removeAccents')
 const redis = require('../redis/redisClient')
 redis.pubConnection()
@@ -18,61 +18,60 @@ class DeviceConnection {
     }
 
     #run() {
-        const tagNumber = this.tagList.length
         const listRegEncoded = RegEncode(this.tagList)
         const queue = new Queue(listRegEncoded)
         const dataFormat = DataFormat(this.deviceConfig.byteOrder, this.deviceConfig.wordOrder)
-        const dataList = []
-        const deviceName = removeAccents(this.deviceConfig.name)
-        this.#getData(this.deviceConfig, dataFormat, queue, tagNumber, dataList)
-
-        this.dataLoopRef = setInterval(() => {
-            redis.pub2Redis(`data/${deviceName}`, dataList)
-            console.log(dataList)
-        }, this.deviceConfig.scanningCycle * 1000)
+        this.#getData(this.deviceConfig, dataFormat, queue, this.tagList.length)
     }
 
-    #getData(deviceConfig, dataFormat, queue, tagNumber, dataList) {
+    #getData(deviceConfig, dataFormat, queue, tagNumber) {
         if (this.valueLoopRef) {
             clearInterval(this.valueLoopRef)
         }
-        var position = 0
+
+        const dataList = []
+        const deviceName = removeAccents(this.deviceConfig.name)
+        let buf, i, regEncoded, tagBuf, valueDecoded, position = 0
 
         this.valueLoopRef = setInterval(async () => {
-            if (position === tagNumber) {
-                position = 0
-            }
-            const regEncoded = queue.dequeue()
+            regEncoded = queue.dequeue()
             try {
                 await this.client.setID(deviceConfig.slaveid)
                 await this.client
                     .readHoldingRegisters(regEncoded.init.address, regEncoded.init.size)
                     .then((data) => {
-                        var buf = Buffer.allocUnsafe(regEncoded.init.size * 2)
+                        if (position >= tagNumber) position = 0
                         buf = data.buffer
 
-                        var i = 0
+                        i = 0
                         regEncoded.tagList.forEach((tag) => {
-                            const bufDecoded = buf.slice(i, tag.size * 2 + i)
+                            tagBuf = buf.slice(i, tag.size * 2 + i)
                             i += tag.size * 2
-                            const valueDecoded = DataDecode(dataFormat, tag.dataType, tag.PF, bufDecoded)
-                            dataList[position] = {
-                                name: tag.name,
-                                unit: tag.unit,
-                                value: valueDecoded,
+                            valueDecoded = DataDecode(dataFormat, tag.dataType, tag.PF, bufDecoded)
+                            if (position < tagNumber) {
+                                dataList[position] = {
+                                    name: tag.name,
+                                    unit: tag.unit,
+                                    value: valueDecoded,
+                                }
                             }
                             position += 1
                         })
                     })
                     .catch((err) => {
-                        redis.pub2Redis('log', {serviceName: 'ModbusRTU', level: 'error', errMsg: err})
+                        redis.pub2Redis('log', { serviceName: 'ModbusRTU', level: 'error', errMsg: err })
                         console.error('Read registers error!', err)
                     })
             } catch (err) {
-                redis.pub2Redis('log', {serviceName: 'ModbusRTU', level: 'error', errMsg: err})
+                redis.pub2Redis('log', { serviceName: 'ModbusRTU', level: 'error', errMsg: err })
             }
             queue.enqueue(regEncoded)
         }, 250)
+
+        this.dataLoopRef = setInterval(() => {
+            redis.pub2Redis(`data/${deviceName}`, dataList)
+            console.log(`${deviceName}`, dataList.length)
+        }, this.deviceConfig.scanningCycle * 1000)
     }
 
     poweron() {
@@ -105,7 +104,7 @@ class DeviceConnectionPool {
                 await this.client.connectRTUBuffered(comPortNum, options)
                 this.client.setTimeout(500)
             } catch (err) {
-                redis.pub2Redis('log', {serviceName: 'ModbusRTU', level: 'error', errMsg: err})
+                redis.pub2Redis('log', { serviceName: 'ModbusRTU', level: 'error', errMsg: err })
                 console.log('Error connection!', err)
             }
         }
@@ -128,7 +127,7 @@ class DeviceConnectionPool {
                 throw new Error('No tags provided!')
             }
         } catch (err) {
-            redis.pub2Redis('log', {serviceName: 'ModbusRTU', level: 'error', errMsg: err})
+            redis.pub2Redis('log', { serviceName: 'ModbusRTU', level: 'error', errMsg: err })
             console.log(err)
             throw err
         }

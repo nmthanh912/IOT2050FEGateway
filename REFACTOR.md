@@ -41,10 +41,10 @@ To-do list:
 - [ ] Refactor API convention
 - [ ] Separate controller logic into controller & model
 - [x] Replace hardcode by variables which are declared in folder `constants`
-- [ ] Validate & cast type some input (if necessary)
-- [ ] Seperate partial update device & fully update device
+- [x] Validate & cast type some input (if necessary)
+- [x] Seperate partial update device & fully update device
 - [ ] Resolve function `deviceController.editInfo` (lead to lost data in `SUBSCRIBES` table)
-- [ ] Wrap many queries in controllers into a transaction
+- [x] Wrap many queries in controllers into a transaction
 - [ ] Fix bug create OPC_UA tag
 
 ## Refactor React App
@@ -58,3 +58,13 @@ In the current version in branch `version2`, we faced off performance problems. 
 Current problems:
 
 - RAM
+
+## Rebuild optimize docker images
+
+- Use multi-stage build
+- Restruct repository
+
+Result:
+
+- Images' size decrease 6 times compared to old images' size
+- RAM usage of each container decreases by 30MB, there are 7 container => Decrease 210MB RAM usage

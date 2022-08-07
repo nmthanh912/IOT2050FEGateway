@@ -26,5 +26,5 @@ then
     switch_mode $DEV_DATABASE_PATH $DEV_REDIS_HOST $DEV_CUSTOM_JSON_PATH
 else
     echo "Incorrect mode !"
-    echo "Use \"development\" for \"production\"" 
+    echo "Evironment must be \"development\" or \"production\"." 
 fi

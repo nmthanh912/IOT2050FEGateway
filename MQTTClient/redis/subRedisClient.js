@@ -10,7 +10,7 @@ const JSON_PATH = process.env.CUSTOM_JSON_PATH
 class RedisClient {
     constructor() {
         this.options = {
-            host: process.env.REDIS_H,
+            host: process.env.REDIS_HOST,
             port: 6379,
             maxRetriesPerRequest: null,
             retryStrategy(times) {

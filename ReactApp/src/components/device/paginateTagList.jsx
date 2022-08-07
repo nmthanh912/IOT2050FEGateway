@@ -39,10 +39,10 @@ export default function PaginateTagList({ deviceID, protocol, Table, readOnly })
 
   useEffect(() => {
     if (tagList.length === 0) {
-      console.log("FETCH FROM DB")
+      // FETCH FROM DB
       dispatch(fetchTags({ deviceID, protocol }))
-    } else console.log("LOAD FROM STORE")
-  }, [])
+    }
+  }, [dispatch, deviceID, protocol, tagList.length])
 
   const resetState = (newItemsPerPage) => {
     // Set page to 0
@@ -97,7 +97,6 @@ export function TagTable({ data, deviceID, protocol, readOnly }) {
   const dispatch = useDispatch()
   const rawColumns = useMemo(() => {
     let tagDataFormat = tagDataFormats.find(format => format.protocol === protocol)
-    console.log(tagDataFormat)
     return tagDataFormat
   }, [protocol])
 

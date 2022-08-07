@@ -32,7 +32,6 @@ export default function DevicePage() {
 					fulfilled_arr = fulfilled_arr.concat(results[i].value.data)
 				}
 			}
-			console.log(fulfilled_arr)
 			setRunningDevices(fulfilled_arr)
 		})
 	}, [])

@@ -20,8 +20,6 @@ services:
       context: ./ReactApp
       dockerfile: Dockerfile
     restart: always
-    depends_on:
-      - configserver
     ports:
       - 3000:3000
   
@@ -35,7 +33,7 @@ services:
       - customJSON:/usr/src/app/mqttclient/customJSON
     restart: always
     depends_on:
-      - configserver
+      # - configserver
       - redis
     ports:
       - 4005:4005
@@ -50,7 +48,7 @@ services:
       - customJSON:/usr/src/app/opc_ua/customJSON
     restart: always
     depends_on:
-      - configserver
+      # - configserver
       - redis
     ports:
       - 4004:4004
@@ -65,7 +63,7 @@ services:
       - customJSON:/usr/src/app/modbustcp/customJSON
     restart: always
     depends_on:
-      - configserver
+      # - configserver
       - redis
     ports:
       - 4001:4001
@@ -80,7 +78,7 @@ services:
       - customJSON:/usr/src/app/modbusrtu/customJSON
     restart: always
     depends_on:
-      - configserver
+      # - configserver
       - redis
     ports:
       - 4002:4002

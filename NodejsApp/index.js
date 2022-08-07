@@ -5,8 +5,6 @@ const redis = require('./redis/redisClient')
 
 const PORT = 4000
 
-redis.pubConnection()
-
 const cors = require('cors')
 app.use(cors({ origin: true }))
 

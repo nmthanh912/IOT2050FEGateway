@@ -1,5 +1,4 @@
 const redis = require('../redis/redisClient')
-redis.pubConnection()
 
 const handler = async function (res, callback) {
     try {

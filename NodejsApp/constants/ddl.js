@@ -82,6 +82,7 @@ db.CREATE_MODBUS_RTU_TAG = `CREATE TABLE IF NOT EXISTS MODBUSRTU_TAG (
     PF       INTEGER,
     size     INTEGER,
     deviceID TEXT,
+    
     FOREIGN KEY (
         name,
         deviceID

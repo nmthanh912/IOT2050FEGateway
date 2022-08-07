@@ -1,43 +1,32 @@
 require('dotenv').config()
 const Redis = require('ioredis')
 
-class RedisClient {
-    constructor() {
-        this.options = {
-            host: process.env.REDIS_PATH,
-            port: 6379,
-            maxRetriesPerRequest: null,
-            retryStrategy(times) {
-                const delay = Math.min(times * 50, 2000)
-                return delay
-            },
-            reconnectOnError() {
-                return true
-            },
-        }
-        this.redisPub = null
+const redis = new Redis({
+    host: process.env.REDIS_HOST,
+    port: 6379,
+    maxRetriesPerRequest: null,
+    retryStrategy(times) {
+        const delay = Math.min(times * 50, 2000)
+        return delay
+    },
+    reconnectOnError() {
+        return true
     }
+})
 
-    pubConnection() {
-        const options = this.options
-        this.redisPub = new Redis(options)
+redis.on('connect', () => {
+    console.log('Server container connected to Redis Broker successfully!')
+})
 
-        this.redisPub.on('connect', () => {
-            console.log('Server container connected to Redis Broker successfully!')
-        })
+redis.on('error', (err) => {
+    console.log('Could not connect to Redis Broker!' + err.toString())
+})
 
-        this.redisPub.on('error', (err) => {
-            console.log('Could not connect to Redis Broker!' + err.toString())
-        })
-    }
-
-    pub2Redis(channel, msg) {
-        this.redisPub.publish(channel, JSON.stringify(msg))
-    }
-
-    pubDisconnect() {
-        this.redisPub.disconnect()
-    }
+module.exports = {
+    pub2Redis: (channel, obj) => {
+        const data = (typeof obj === "object" && obj != null) ?
+            JSON.stringify(obj) : obj
+        redis.publish(channel, data)
+    },
+    pubDisconnect: () => redis.disconnect()
 }
-
-module.exports = new RedisClient()

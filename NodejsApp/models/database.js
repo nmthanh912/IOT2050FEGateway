@@ -4,7 +4,6 @@ const util = require('util')
 const ddl = require('../constants/ddl')
 
 const redis = require('../redis/redisClient')
-redis.pubConnection()
 
 const DB_PATH = process.env.DB_PATH
 
@@ -18,6 +17,12 @@ let db = new sqlite3.Database(DB_PATH, (err) => {
     redis.pub2Redis('log', { serviceName: 'Server', level: 'info', errMsg: 'Connected to the SQLite database!' })
 
     db.serialize(() => {
+        db.run('PRAGMA foreign_keys = ON', (err) => {
+            if (err) {
+                redis.pub2Redis('log', { serviceName: 'Server', level: 'error', errMsg: err.message })
+                console.log(err)
+            }
+        })
         db.run(ddl.CREATE_DEVICE)
         db.run(ddl.CREATE_TAG)
         db.run(ddl.CREATE_MQTT_CLIENT)
@@ -29,13 +34,11 @@ let db = new sqlite3.Database(DB_PATH, (err) => {
         db.run(ddl.CREATE_OPCUA)
         db.run(ddl.CREATE_OPCUA_TAG)
         db.run(ddl.CREATE_SUBSCRIBES);
-
-        db.run('PRAGMA foreign_keys = ON', (err) => {
-            if (err) {
-                redis.pub2Redis('log', { serviceName: 'Server', level: 'error', errMsg: err })
-                console.log(err)
-            }
-        })
+        
+        db.run('PRAGMA synchronous=OFF')
+        db.run('PRAGMA count_changes=OFF')
+        db.run('PRAGMA journal_mode=MEMORY')
+        db.run('PRAGMA temp_store=MEMORY')
     })
 })
 

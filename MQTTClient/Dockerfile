@@ -4,6 +4,7 @@ COPY . .
 RUN npm ci --omit=dev
 RUN npm i --location=global @vercel/ncc
 RUN ncc build index.js -o dist
+RUN touch dist/mqttOn.txt
 COPY .env dist
 
 FROM node:16-slim

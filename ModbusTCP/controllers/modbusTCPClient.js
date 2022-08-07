@@ -102,12 +102,12 @@ class DeviceConnection {
 
         this.dataLoopRef = setInterval(() => {
             redis.pub2Redis(`data/${deviceName}`, dataList)
-            console.log(`${deviceName}`, dataList.length, tagNumber)
+            console.log(`${deviceName}`, dataList.length)
         }, this.deviceConfig.scanningCycle * 1000)
     }
 
     poweron() {
-        if (this.configInfo !== null) {
+        if (typeof this.configInfo !== 'null') {
             this.#setup()
             this.#connect()
         }
@@ -151,7 +151,7 @@ class DeviceConnectionPool {
 
     shutdown(deviceID) {
         const connection = this.#pool.find((conn) => conn.deviceConfig.ID === deviceID)
-        if (connection !== undefined) {
+        if (typeof connection !== 'undefined') {
             connection.shutdown()
             this.#pool.splice(this.#pool.indexOf(connection), 1)
         }

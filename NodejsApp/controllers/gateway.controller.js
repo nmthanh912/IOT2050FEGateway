@@ -9,7 +9,7 @@ const writeFile = util.promisify(fs.writeFile.bind(fs))
 const readFile = util.promisify(fs.readFile.bind(fs))
 const unlink = util.promisify(fs.unlink.bind(fs))
 
-const JSON_PATH = process.env.MODE === 'development' ? '../customJSON' : './customJSON'
+const JSON_PATH = process.env.CUSTOM_JSON_PATH
 
 class GatewayController {
     create(req, res) {
@@ -100,14 +100,14 @@ class GatewayController {
         `
         handler(res, async () => {
             const deviceList = await dbAll(sqlQuery, [req.query.id])
-            console.log(deviceList)
             res.json(deviceList)
         })
     }
 
     addSubscribeDevices(req, res) {
         const { gatewayID, deviceIDList } = req.body
-        // console.log(gatewayID, deviceIDList)
+
+        console.log(req.body)
         const addSubsQuery = `
             INSERT INTO SUBSCRIBES VALUES 
             ${"(?, ?, ?),".repeat(deviceIDList.length).slice(0, -1)}
@@ -167,20 +167,20 @@ class GatewayController {
             const useCustomQuery = `SELECT toggle FROM configs WHERE gatewayID = ? AND deviceID = ?`
             let useCustom = await dbAll(useCustomQuery, [gatewayId, deviceId])
 
+            // Can be rewrite by try catch
             let exists = fs.existsSync(`${JSON_PATH}/${gatewayId}_${deviceId}.json`)
             let code = null
             if (exists) code = await readFile(`${JSON_PATH}/${gatewayId}_${deviceId}.json`, 'utf-8')
+            // ==============
 
-            res.json({ tagList: list, code, toggle: useCustom[0].toggle })
+            const result = { tagList: list, code, toggle: useCustom[0].toggle }
+            res.json(result)
         })
     }
 
     updateSubcribedDeviceConfig(req, res) {
         const { gid: gatewayID, did: deviceID } = req.params
         const data = req.body // code, tagList, toggle
-
-        console.log(req.body)
-
         handler(res, async () => {
             const updateToggleQuery = `UPDATE configs SET toggle = ? WHERE gatewayID = ? AND deviceID = ?`
             await dbRun(updateToggleQuery, [data.toggle, gatewayID, deviceID])

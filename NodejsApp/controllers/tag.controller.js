@@ -22,13 +22,15 @@ class Tag {
 
                 delete tags[0].deviceID
             }
+            console.log(tags)
             res.json(tags)
         })
     }
     async editAttribute(req, res) {
-        console.log(req.query)
         const deviceID = req.params.id
         const { protocol, tagName, attr } = req.query
+        console.log(req.query)
+        console.log(req.body)
         const newValue = req.body.newValue
         const query = attr === 'name' ? {
             SQL: `UPDATE TAG SET ${attr} = ? WHERE deviceID = ? AND name = ?`,
@@ -45,7 +47,6 @@ class Tag {
     async deleteTag(req, res) {
         const deviceID = req.params.id
         const tagName = req.query.tagName
-        console.log(deviceID, tagName)
         const query = `DELETE FROM TAG WHERE deviceID = ? AND name = ?`
         handler(res, async () => {
             await dbRun(query, [deviceID, tagName])
@@ -55,6 +56,7 @@ class Tag {
     async addTag(req, res) {
         const deviceID = req.params.id
         const protocol = req.query.protocol
+        console.log()
         const data = [
             req.body.name,
             req.body.address,
@@ -64,12 +66,11 @@ class Tag {
             req.body.size,
             deviceID
         ]
+        console.log(req.body)
 
         const colNumber = data.length
         const query1 = `INSERT INTO TAG (deviceID, name) VALUES (?, ?)`
         const query2 = `INSERT INTO ${protocol}_TAG VALUES (${'?,'.repeat(colNumber).slice(0, -1)})`
-
-        // console.log(data)
 
         handler(res, async () => {
             try {

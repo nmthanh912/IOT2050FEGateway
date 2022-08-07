@@ -88,6 +88,8 @@ services:
   redis:
     container_name: redis
     image: redis:alpine
+    ports:
+      - 6379:6379
     restart: always
   
   logger:
@@ -96,7 +98,7 @@ services:
       context: ./Logger
       dockerfile: Dockerfile
     volumes:
-      - logfile:/usr/src/app/logger/LogFolder
+      - ./LogFolder:/usr/src/app/logger/LogFolder
     depends_on:
       - redis
     restart: always

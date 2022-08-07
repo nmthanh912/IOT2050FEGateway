@@ -20,7 +20,6 @@ export default function EdgeDevice({ data, onDetail, isRunning }) {
     const [disabledToggle, setDisableToggle] = useState(false)
 
     const exportToCSV = () => {
-
         const list = [
             ['DO NOT:'],
             [' *** LEAVE ANY BLANK CELLS IN A SUBTABLE  ***'],

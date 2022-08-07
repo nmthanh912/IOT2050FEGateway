@@ -4,7 +4,7 @@ const util = require('util')
 const redis = require('../redis/redisClient')
 redis.pubConnection()
 
-const DB_PATH = process.env.MODE === 'development' ? '../Database/database.db' : './Database/database.db'
+const DB_PATH = process.env.DB_PATH
 
 let db = new sqlite3.Database(DB_PATH, (err) => {
     if (err) {
@@ -13,22 +13,6 @@ let db = new sqlite3.Database(DB_PATH, (err) => {
     } else {
         redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'error', errMsg: 'Connected to the SQLite database!'})
         console.log('Connected to the SQLite database!')
-        // db.run(
-        //     `CREATE TABLE IF NOT EXISTS DEVICE (
-        //         ID            TEXT         PRIMARY KEY,
-        //         name          VARCHAR (50) UNIQUE,
-        //         description   TEXT,
-        //         protocolType  TEXT,
-        //         byteOrder     TEXT,
-        //         wordOrder     TEXT,
-        //         scanningCycle INTEGER,
-        //         minRespTime   INTEGER
-        //     )`,
-        //     (err) => {
-        //         redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'error', errMsg: 'Database already created!'})
-        //         console.log('Database already created!')
-        //     }
-        // )
     }
 })
 

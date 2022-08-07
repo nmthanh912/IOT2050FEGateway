@@ -1,5 +1,5 @@
 const express = require('express')
-const port = 4005
+const PORT = 4005
 const app = express()
 const cors = require('cors')
 
@@ -32,11 +32,11 @@ app.get('/active-gateways', function (req, res) {
     res.json(runningGateways)
 })
 
-app.listen(port, function () {
+app.listen(PORT, function () {
     pubRedis.pub2Redis('log', {
         serviceName: 'MQTTClient',
         level: 'info',
-        errMsg: `Server MQTT listening on port ${port}!`,
+        errMsg: `Server MQTT listening on port ${PORT}!`,
     })
-    console.log(`Server MQTT listening on port ${port}!`)
+    console.log(`Server MQTT listening on port ${PORT}!`)
 })

@@ -20,12 +20,10 @@ export default function DevicePage() {
 	const [runningDevices, setRunningDevices] = useState([])
 
 	useEffect(() => {
-		console.log("asdasd")
 		let protocols = ['ModbusTCP', 'ModbusRTU', 'OPC_UA']
 		const jobs = protocols.map(protocol => HardwareServices.getRunningDevices(protocol))
 		Promise.allSettled(jobs).then(results => {
 			let fulfilled_arr = []
-			// console.log(results)
 			for(let i in results) {
 				if(results[i].status === 'rejected') {
 					toast.error(protocols[i] + " occurs error")

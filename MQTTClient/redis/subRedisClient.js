@@ -5,12 +5,12 @@ const _ = require('lodash')
 
 const pubRedis = require('../redis/pubRedisClient')
 const removeAccents = require('../utils/removeAccents')
-const JSON_PATH = process.env.MODE === 'development' ? '../customJSON' : './customJSON'
+const JSON_PATH = process.env.CUSTOM_JSON_PATH
 
 class RedisClient {
     constructor() {
         this.options = {
-            host: process.env.MODE === 'development' ? '127.0.0.1' : 'redis',
+            host: process.env.REDIS_H,
             port: 6379,
             maxRetriesPerRequest: null,
             retryStrategy(times) {

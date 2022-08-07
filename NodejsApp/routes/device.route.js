@@ -1,20 +1,20 @@
-var express = require('express')
-var router = express.Router()
-var Device = require('../controllers/device.controller')
-var Tag = require('../controllers/tag.controller')
+const express = require('express')
+const router = express.Router()
+const deviceController = require('../controllers/device.controller')
+const Tag = require('../controllers/tag.controller')
 
-router.get('/', Device.getAll)
+router.get('/', deviceController.getAll)
 
 router.post('/new', function (req, res) {
-    const { repNum } = req.body
-    console.log(repNum)
-    parseInt(repNum) === 1 ? Device.create(req, res) : Device.createMany(req, res)
+    parseInt(req.body.repNum) === 1 ? 
+        deviceController.create(req, res) : 
+        deviceController.createMany(req, res)
 })
 
-router.get('/:id', Device.getById)
-router.get('/:id/config', Device.getConfigById)
-router.put('/:id/edit', Device.editInfo)
-router.delete('/:id', Device.drop)
+router.get('/:id/config', deviceController.getConfigById)
+router.put('/:id/edit', deviceController.updateById)
+router.delete('/:id', deviceController.drop)
+
 
 router.get('/:id/tags', Tag.getAll)
 router.put('/:id/tags/edit', Tag.editAttribute)

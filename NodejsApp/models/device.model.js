@@ -162,6 +162,8 @@ const deviceModel = {
             await dbRun(updateDeviceProtocolSQL, updateDeviceProtocolQueryParams)
             
             if (tagList.length !== 0 && tagList[0].name !== "") {
+                const gatewayList = await dbAll("SELECT DISTINCT gatewayID FROM subscribes WHERE deviceID = ?", deviceID)
+
                 // 3.1. Delete all tag of device
                 await dbRun(`DELETE FROM TAG WHERE deviceID = ?`, deviceID);
 
@@ -177,7 +179,6 @@ const deviceModel = {
                         protocolName
                     ))
                 }
-                const gatewayList = await dbAll("SELECT DISTINCT gatewayID FROM subscribes WHERE deviceID = ?", deviceID)
                 for(let gateway of gatewayList) {
                     await dbRun(`INSERT INTO subscribes VALUES (?, ?, ?)`, [gateway.gatewayID, deviceID, null])
                 }

@@ -29,7 +29,7 @@ class RedisClient {
             this.redis.subscribe(`data/${removeAccents(device.deviceName)}`, (err, count) => {
                 if (err) {
                     pubRedis.pub2Redis('log', { serviceName: 'MQTTClient', level: 'error', errMsg: err })
-                    console.log('Subscribe to topic has errror!')
+                    console.log('Subscribe to topic has error!')
                 }
             })
         })

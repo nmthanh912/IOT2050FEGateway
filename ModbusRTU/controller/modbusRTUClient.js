@@ -53,6 +53,7 @@ class DeviceConnection {
                                     name: tag.name,
                                     unit: tag.unit,
                                     value: valueDecoded,
+                                    timestamp: Date.now()
                                 }
                             }
                             position += 1

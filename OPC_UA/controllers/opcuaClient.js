@@ -154,6 +154,7 @@ function getData(deviceConfig, nodeList, client, callback) {
                                         name: node.name,
                                         value: dataValue.value.value,
                                         unit: node.unit,
+                                        timestamp: Date.now()
                                     }
                                 })
                             }

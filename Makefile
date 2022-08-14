@@ -49,5 +49,8 @@ node_server:
 application:
 	cd ReactApp; npm start
 
+modbustcp:
+	cd ModbusTCP ; npm start
+
 clean:
 	docker rmi $(docker images --filter "dangling=true" -q --no-trunc)

@@ -1,7 +1,6 @@
 require('dotenv').config()
 const Redis = require('ioredis')
 const fs = require('fs')
-const _ = require('lodash')
 
 const pubRedis = require('../redis/pubRedisClient')
 const removeAccents = require('../utils/removeAccents')
@@ -24,68 +23,64 @@ class RedisClient {
         this.redis = null
     }
 
-    sub2Redis(mqtt, listSub, pubOption) {
+    sub2Redis(mqtt, listDeviceSub, listTagSub, pubOption) {
         this.#subConnection()
-        listSub.forEach((item) => {
-            const deviceName = removeAccents(item.deviceName)
-            this.redis.subscribe(`data/${deviceName}`, (err, count) => {
+        listDeviceSub.forEach((device) => {
+            this.redis.subscribe(`data/${removeAccents(device.deviceName)}`, (err, count) => {
                 if (err) {
-                    pubRedis.pub2Redis('log', {serviceName: 'MQTTClient', level: 'error', errMsg: err})
+                    pubRedis.pub2Redis('log', { serviceName: 'MQTTClient', level: 'error', errMsg: err })
                     console.log('Subscribe to topic has errror!')
                 }
             })
-            if (item.onCustomMode) {
-                fs.readFile(`${JSON_PATH}/${item.mqttID}_${item.deviceID}.json`, 'utf-8', (err, content) => {
+        })
+
+        let dataList, dataOfTagSub, topic, device, deviceName
+        this.redis.on('message', (channel, message) => {
+            dataList = JSON.parse(message)
+            topic = channel.replace('data', '/iot2050fe')
+            deviceName = channel.slice(5)
+
+            device = listDeviceSub.find(device => device.deviceName === deviceName)
+            if (device.onCustomMode) {
+                fs.readFile(`${JSON_PATH}/${device.mqttID}_${device.deviceID}.json`, 'utf-8', (err, content) => {
                     let customJSON = content
                     let hasBeenRead = false
                     let jsonStr = ''
                     const obj = {}
 
-                    this.redis.on('message', (channel, message) => {
-                        const dataList = JSON.parse(message)
-                        dataList.forEach((data) => {
-                            obj[removeAccents(data.name)] = data
-                        })
-                        const objDataStr = `const obj = ${JSON.stringify(obj)}\n`
-                        if (!hasBeenRead) {
-                            hasBeenRead = true
-
-                            Object.keys(obj).forEach((key) => {
-                                jsonStr += `const ${key} = obj.${key}\n`
-                            })
-                            jsonStr += `const data = ${customJSON}\n` + 'return data'
-                        }
-                        const executeStr = objDataStr + jsonStr
-
-                        try {
-                            const getCustomJson = new Function(executeStr)
-                            mqtt.publish(`/iot2050fe/${deviceName}`, JSON.stringify(getCustomJson(-1)), pubOption)
-                            console.log(JSON.stringify(getCustomJson(-1)))
-                        } catch (err) {
-                            console.log(err.message)
-                        }
+                    dataList.forEach((data) => {
+                        obj[removeAccents(data.name)] = data
                     })
-                })
-            } else {
-                this.redis.on('message', (channel, message) => {
-                    const dataList = JSON.parse(message)
-                    if (!_.isNull(item.tagNameList)) {
-                        item.tagNameList.forEach((tagName) => {
-                            this.#normalPublish(mqtt, deviceName, tagName, dataList, pubOption)
+                    const objDataStr = `const obj = ${JSON.stringify(obj)}\n`
+                    if (!hasBeenRead) {
+                        hasBeenRead = true
+
+                        Object.keys(obj).forEach((key) => {
+                            jsonStr += `const ${key} = obj.${key}\n`
                         })
+                        jsonStr += `const data = ${customJSON}\n` + 'return data'
+                    }
+                    const executeStr = objDataStr + jsonStr
+
+                    try {
+                        const getCustomJson = new Function(executeStr)
+                        mqtt.publish(`${topic}`, JSON.stringify(getCustomJson(-1)), pubOption)
+
+                    } catch (err) {
+                        pubRedis.pub2Redis('log', { serviceName: 'MQTTClient', level: 'error', errMsg: err })
+                        console.log(err.message)
                     }
                 })
+            } else {
+                if (listTagSub.length !== 0) {
+                    dataOfTagSub = dataList.filter(data => listTagSub.includes(data.name))
+                    /** send all tag's data of a device */
+                    // mqtt.publish(topic, JSON.stringify(dataOfTagSub), pubOption)
+                    /** send data of each tag */
+                    dataOfTagSub.forEach(data => mqtt.publish(`${topic}/${removeAccents(data.name)}`, JSON.stringify(data), pubOption))
+                }
             }
         })
-    }
-
-    #normalPublish(mqtt, deviceName, tagName, dataList, pubOption) {
-        const tagData = dataList.find((data) => data.name === tagName)
-        if (tagData !== undefined) {
-            const topicPub = `/iot2050fe/${deviceName}/` + removeAccents(tagData.name)
-            mqtt.publish(topicPub, JSON.stringify(tagData), pubOption)
-            console.log(tagData)
-        }
     }
 
     #subConnection() {

@@ -1,5 +1,6 @@
-const {dbAll} = require('../models/dbConnect')
+const { dbAll } = require('../models/dbConnect')
 
+const removeAccents = require('../utils/removeAccents')
 const pubRedis = require('../redis/pubRedisClient')
 pubRedis.pubConnection()
 
@@ -18,18 +19,21 @@ const getConfig = async (id) => {
     try {
         const configInfo = await dbAll(getInfoQuery, id)
         const mqttConfig = []
-        const listSub = []
+        const listDeviceSub = []
+        let listTagSub = []
 
         if (configInfo.length > 0) {
             configInfo.forEach((config) => {
-                listSub.push({
-                    deviceName: config.deviceName,
+                listDeviceSub.push({
+                    deviceName: removeAccents(config.deviceName),
                     deviceID: config.deviceID,
                     mqttID: config.ID,
-                    tagNameList: config.tagName !== null ? config.tagName.split(',') : null,
                     onCustomMode: config.onCustomMode,
                 })
+
+                if (config.tagName !== null) listTagSub = listTagSub.concat(config.tagName.split(','))
             })
+
 
             delete configInfo[0].tagName
             delete configInfo[0].deviceName
@@ -37,11 +41,11 @@ const getConfig = async (id) => {
             delete configInfo[0].onCustomMode
             mqttConfig.push(configInfo[0])
 
-            return [{mqttConfig, listSub}]
+            return [{ mqttConfig, listDeviceSub, listTagSub }]
         }
         return []
     } catch (err) {
-        pubRedis.pub2Redis('log', {serviceName: 'MQTTClient', level: 'error', errMsg: err})
+        pubRedis.pub2Redis('log', { serviceName: 'MQTTClient', level: 'error', errMsg: err })
         console.log('Get config info errror!', err)
         return []
     }

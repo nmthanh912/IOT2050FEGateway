@@ -27,7 +27,7 @@ const getConfig = async (id) => {
                     deviceNameModified: removeAccents(config.deviceName),
                     deviceName: config.deviceName,
                     deviceID: config.deviceID,
-                    listTagSub: config.tagName ? config.tagName.split(',') : null,
+                    listTagSub: config.tagName ? config.tagName.split(',') : [],
                     mqttID: config.ID,
                     onCustomMode: config.onCustomMode,
                 })

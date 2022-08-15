@@ -8,8 +8,7 @@ class RedisClient {
             port: 6379,
             maxRetriesPerRequest: null,
             retryStrategy(times) {
-                const delay = Math.min(times * 50, 2000)
-                return delay
+                return Math.min(times * 50, 2000)
             },
             reconnectOnError() {
                 return true

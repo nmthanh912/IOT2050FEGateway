@@ -13,8 +13,7 @@ class RedisClient {
             port: 6379,
             maxRetriesPerRequest: null,
             retryStrategy(times) {
-                const delay = Math.min(times * 50, 2000)
-                return delay
+                return Math.min(times * 50, 2000)
             },
             reconnectOnError() {
                 return true
@@ -34,7 +33,9 @@ class RedisClient {
             })
         })
 
-        let dataList, dataOfTagSub, topic, device, deviceName, listTagSub
+        let dataList, dataOfTagSub, topic, device, deviceName, listTagSub, customJSON, hasBeenRead, jsonStr
+        let obj, objDataStr, executeStr, getCustomJson
+
         this.redis.on('message', (channel, message) => {
             dataList = JSON.parse(message)
             topic = channel.replace('data', '/iot2050fe')
@@ -44,15 +45,15 @@ class RedisClient {
             listTagSub = device.listTagSub
             if (device.onCustomMode) {
                 fs.readFile(`${JSON_PATH}/${device.mqttID}_${device.deviceID}.json`, 'utf-8', (err, content) => {
-                    let customJSON = content
-                    let hasBeenRead = false
-                    let jsonStr = ''
-                    const obj = {}
+                    customJSON = content
+                    hasBeenRead = false
+                    jsonStr = ''
+                    obj = {}
 
                     dataList.forEach((data) => {
                         obj[removeAccents(data.name)] = data
                     })
-                    const objDataStr = `const obj = ${JSON.stringify(obj)}\n`
+                    objDataStr = `const obj = ${JSON.stringify(obj)}\n`
                     if (!hasBeenRead) {
                         hasBeenRead = true
 
@@ -61,10 +62,10 @@ class RedisClient {
                         })
                         jsonStr += `const data = ${customJSON}\n` + 'return data'
                     }
-                    const executeStr = objDataStr + jsonStr
+                    executeStr = objDataStr + jsonStr
 
                     try {
-                        const getCustomJson = new Function(executeStr)
+                        getCustomJson = new Function(executeStr)
                         mqtt.publish(`${topic}`, JSON.stringify(getCustomJson(-1)), pubOption)
 
                     } catch (err) {

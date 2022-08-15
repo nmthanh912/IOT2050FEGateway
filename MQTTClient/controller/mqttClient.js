@@ -6,7 +6,7 @@ const pubRedis = require('../redis/pubRedisClient')
 pubRedis.pubConnection()
 
 class MQTTConnection {
-    constructor(mqttConfig, listDeviceSub, listTagSub) {
+    constructor(mqttConfig, listDeviceSub) {
         this.mqttID = mqttConfig.ID
         this.ip = mqttConfig.IP
         this.port = mqttConfig.port
@@ -20,7 +20,6 @@ class MQTTConnection {
             QoS: mqttConfig.QoS,
         }
         this.listDeviceSub = listDeviceSub
-        this.listTagSub = listTagSub
     }
 
     #connection() {
@@ -49,7 +48,7 @@ class MQTTConnection {
             })
             .on('connect', () => {
                 pubRedis.pub2Redis('log', { serviceName: 'MQTTClient', level: 'info', errMsg: 'Connected!' })
-                subRedis.sub2Redis(this.mqtt, this.listDeviceSub,this.listTagSub, this.pubOption)
+                subRedis.sub2Redis(this.mqtt, this.listDeviceSub, this.pubOption)
                 console.log('MQTT is connected to Broker!')
             })
     }

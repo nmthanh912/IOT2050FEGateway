@@ -20,18 +20,17 @@ const getConfig = async (id) => {
         const configInfo = await dbAll(getInfoQuery, id)
         const mqttConfig = []
         const listDeviceSub = []
-        let listTagSub = []
 
         if (configInfo.length > 0) {
             configInfo.forEach((config) => {
                 listDeviceSub.push({
-                    deviceName: removeAccents(config.deviceName),
+                    deviceNameModified: removeAccents(config.deviceName),
+                    deviceName: config.deviceName,
                     deviceID: config.deviceID,
+                    listTagSub: config.tagName ? config.tagName.split(',') : null,
                     mqttID: config.ID,
                     onCustomMode: config.onCustomMode,
                 })
-
-                if (config.tagName !== null) listTagSub = listTagSub.concat(config.tagName.split(','))
             })
 
 
@@ -41,7 +40,7 @@ const getConfig = async (id) => {
             delete configInfo[0].onCustomMode
             mqttConfig.push(configInfo[0])
 
-            return [{ mqttConfig, listDeviceSub, listTagSub }]
+            return [{ mqttConfig, listDeviceSub }]
         }
         return []
     } catch (err) {

@@ -23,7 +23,7 @@ class RedisClient {
         this.redis = null
     }
 
-    sub2Redis(mqtt, listDeviceSub, listTagSub, pubOption) {
+    sub2Redis(mqtt, listDeviceSub, pubOption) {
         this.#subConnection()
         listDeviceSub.forEach((device) => {
             this.redis.subscribe(`data/${removeAccents(device.deviceName)}`, (err, count) => {
@@ -34,13 +34,14 @@ class RedisClient {
             })
         })
 
-        let dataList, dataOfTagSub, topic, device, deviceName
+        let dataList, dataOfTagSub, topic, device, deviceName, listTagSub
         this.redis.on('message', (channel, message) => {
             dataList = JSON.parse(message)
             topic = channel.replace('data', '/iot2050fe')
             deviceName = channel.slice(5)
 
-            device = listDeviceSub.find(device => device.deviceName === deviceName)
+            device = listDeviceSub.find(device => device.deviceNameModified === deviceName)
+            listTagSub = device.listTagSub
             if (device.onCustomMode) {
                 fs.readFile(`${JSON_PATH}/${device.mqttID}_${device.deviceID}.json`, 'utf-8', (err, content) => {
                     let customJSON = content

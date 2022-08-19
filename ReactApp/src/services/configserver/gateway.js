@@ -8,29 +8,28 @@ class Service {
         return configHttp.post('/gateways', data)
     }
     delete(gatewayId) {
-        return configHttp.delete(`/gateways/delete?id=${gatewayId}`)
+        return configHttp.delete(`/gateways?id=${gatewayId}`)
     }
     update(gatewayId, data) {
-        return configHttp.put(`/gateways/update?id=${gatewayId}`, data)
+        return configHttp.put(`/gateways?id=${gatewayId}`, data)
     }
-    updateSubcribedDeviceConfig(gatewayId, deviceId, data) {
-        return configHttp.put(`/gateways/${gatewayId}/${deviceId}`, data)
-    }
+
     getSubcribedDevices(gatewayId) {
-        return configHttp.get(`/gateways/devices?id=${gatewayId}`)
-    }
-    addSubscribeDevices(gatewayID, deviceIDList) {
-        return configHttp.post(`/gateways/sub?`, { gatewayID, deviceIDList })
+        return configHttp.get(`/gateways/subscribes?gatewayId=${gatewayId}`)
     }
     removeSubscribedDevice(gatewayId, deviceId) {
-        return configHttp.delete(`/gateways/unsub?gid=${gatewayId}&did=${deviceId}`)
+        return configHttp.delete(`/gateways/subscribes?gatewayId=${gatewayId}&deviceId=${deviceId}`)
+    }
+    addSubscribeDevices(gatewayId, deviceIdList) {
+        return configHttp.post(`/gateways/subscribes?`, { gatewayId, deviceIdList })
     }
 
+    updateSubcribedDeviceConfig(gatewayId, deviceId, data) {
+        return configHttp.put(`/gateways/subscribes/config?gatewayId=${gatewayId}&deviceId=${deviceId}`, data)
+    }
     getSubcribedDeviceConfig(gatewayId, deviceId, protocol) {
-        return configHttp.get(`/gateways/devices/config?gid=${gatewayId}&did=${deviceId}&dp=${protocol}`)
+        return configHttp.get(`/gateways/subscribes/config?gatewayId=${gatewayId}&deviceId=${deviceId}&deviceProtocol=${protocol}`)
     }
-    
-
 }
 const GatewayService = new Service()
 export default GatewayService

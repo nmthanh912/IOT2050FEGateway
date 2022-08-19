@@ -60,6 +60,5 @@ module.exports = {
     generateInsertTagSQL,
     // must replace
     generateInsertDeviceConfigSQL,
-
     generateInsertProtocolTagSQL
 }

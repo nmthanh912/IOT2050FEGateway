@@ -1,29 +1,15 @@
-var express = require('express')
-var router = express.Router()
-var GatewayController = require('../controllers/gateway.controller')
+const express = require('express')
+const router = express.Router()
+const gatewayController = require('../controllers/gateway.controller')
 
-router.post('/', GatewayController.create)
-router.get('/', GatewayController.get)
-
-// ?
-router.put('/update', GatewayController.update)
-
-// ?
-router.delete('/delete', GatewayController.delete)
-
-// ?
-router.get('/devices', GatewayController.getSubcribedDevices)
-
-// ?
-router.get('/devices/config', GatewayController.getSubcribedDeviceConfig)
-
-// ?
-router.put('/:gid/:did', GatewayController.updateSubcribedDeviceConfig)
-
-// ?
-router.post('/sub', GatewayController.addSubscribeDevices)
-
-// ?
-router.delete('/unsub', GatewayController.removeSubscribeDevice)
+router.post('/', gatewayController.create)
+router.get('/', gatewayController.get)
+router.put('/', gatewayController.update)
+router.delete('/', gatewayController.delete)
+router.get('/subscribes', gatewayController.getSubcribedDevices)
+router.post('/subscribes', gatewayController.addSubscribedDevices)
+router.delete('/subscribes', gatewayController.removeSubscribedDevice)
+router.put('/subscribes/config', gatewayController.updateSubcribedDeviceConfig)
+router.get('/subscribes/config', gatewayController.getSubcribedDeviceConfig)
 
 module.exports = router

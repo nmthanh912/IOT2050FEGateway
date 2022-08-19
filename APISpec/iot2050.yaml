@@ -234,7 +234,7 @@ paths:
                     type: string
                     example: 343a4csd
 
-  /gateways/subscribed-devices?id={id}:
+  /gateways/subscribes?gatewayId={gatewayId}:
     get:
       description: Get all subscribed devices
       tags:
@@ -243,7 +243,7 @@ paths:
         - in: query
           schema:
             type: string
-          name: id
+          name: gatewayId
           description: Gateway's ID
           example: 343acbd
       responses:
@@ -255,21 +255,6 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/SubscribedDeviceInfo"
-
-  /gateways/subscribed-devices/configs?gatewayId={gatewayId}&deviceId={deviceId}:
-    put:
-      tags:
-        - gateway
-      summary: Get tag configs of a device, which is subscribed by a specific gateway
-      parameters:
-        - in: query
-          name: gatewayId
-          schema:
-            type: string
-          example: 343a4csd
-      responses:
-        200:
-          description: Return OK
   
   /gateways/subscribes:
     post:
@@ -293,8 +278,6 @@ paths:
       responses:
         200:
           description: Return message OKE
-    
-  /gateways/unsubscribes:
     delete:
       tags:
         - gateway
@@ -313,7 +296,47 @@ paths:
       responses:
         200:
           description: Return message OKE
+  /gateways/subscribes/config:
+    get:
+      deprecated: true
+      tags:
+        - gateway
+      summary: Get tag configs of a device, which is subscribed by a specific gateway
+      parameters:
+        - in: query
+          name: gatewayId
+          schema:
+            type: string
+          example: 343a4csd
+        - in: query
+          name: deviceId
+          schema:
+            type: string
+          example: 343a4csd
+      responses:
+        200:
+          description: Return OK
     
+    put:
+      deprecated: true
+      tags:
+        - gateway
+      summary: Get tag configs of a device, which is subscribed by a specific gateway
+      parameters:
+        - in: query
+          name: gatewayId
+          schema:
+            type: string
+          example: 343a4csd
+        - in: query
+          name: deviceId
+          schema:
+            type: string
+          example: 343a4csd
+      responses:
+        200:
+          description: Return OK
+
   # TAGS
   /devices/{id}/tags?protocol={protocol}:
     post:

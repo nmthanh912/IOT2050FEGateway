@@ -6,7 +6,6 @@ import {
   addDevice,
   addManyDevice,
   updateDevice,
-  updateTagList,
 } from "../../redux/slices/device";
 import CSVReader from "./CSVImporter";
 import { toast } from "react-toastify";
@@ -30,34 +29,22 @@ export default function DeviceModal({ show, onHide, device, mode }) {
 
   const updateToDB = async () => {
     try {
-      let tagList = [];
-      if (device.tagList.length === 0) {
-        const res = await DeviceService.getTags(device.ID, device.protocol);
-        dispatch(
-          updateTagList({
-            deviceID: device.ID,
-            data: res.data,
-          })
-        );
-        tagList = res.data;
-      } else {
-        tagList = device.tagList;
-      }
-
       const data = {
         ...draftInfo,
         protocol: draftInfo.protocol.value.toUpperCase(),
         // tagList: draftInfo.tagList.length !== 0 ? draftInfo.tagList : tagList,
-        tagList: draftInfo.tagList.length !== 0 ? draftInfo.tagList : [],
+        tagList: draftInfo.tagList,
       };
 
       await DeviceService.editDevice(device.ID, data);
       delete data.config;
       delete data.protocol;
+      console.log(data)
       dispatch(
         updateDevice({
           ID: device.ID,
           ...data,
+          tagList: draftInfo.tagList.length === 0 ? device.tagList : draftInfo.tagList
         })
       );
       toast.success("Update device successfully");
@@ -76,6 +63,7 @@ export default function DeviceModal({ show, onHide, device, mode }) {
               configInfo => configInfo.value.toUpperCase() === device.protocol
             ),
             config: res.data,
+            tagList: []
           });
           console.log(res.data)
         })

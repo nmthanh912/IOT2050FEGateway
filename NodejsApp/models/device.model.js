@@ -7,8 +7,8 @@ const fs = require("fs")
 const util = require("util");
 const unlink = util.promisify(fs.unlink.bind(fs));
 
-const { generateInsertTagSQL, generateInsertDeviceConfigSQL, generateInsertProtocolTagSQL } = require("./sqlGenerator");
-const { convertDeviceConfigToQueryParams, convertDeviceDataToQueryParams, convertTagListToParams, convertTagListToProtocolParams, convertTagToProtocolParams } = require("./adapter");
+const { generateInsertDeviceConfigSQL, generateInsertProtocolTagSQL } = require("./sqlGenerator");
+const { convertDeviceConfigToQueryParams, convertDeviceDataToQueryParams, convertTagToProtocolParams } = require("./adapter");
 const { uniqueId } = require("../utils");
 
 const deviceModel = {
@@ -161,31 +161,29 @@ const deviceModel = {
             updateDeviceProtocolQueryParams.push(deviceID)
             await dbRun(updateDeviceProtocolSQL, updateDeviceProtocolQueryParams)
             
-            console.log(tagList)
             if (tagList.length !== 0 && tagList[0].name !== "") {
+                const gatewayList = await dbAll("SELECT DISTINCT gatewayID FROM subscribes WHERE deviceID = ?", deviceID)
+
                 // 3.1. Delete all tag of device
-                const currSubscribe = await dbRun("SELECT * FROM SUBSCRIBES WHERE deviceID = ?", [deviceID])
-                console.log(currSubscribe)
-                
                 await dbRun(`DELETE FROM TAG WHERE deviceID = ?`, deviceID);
-                await dbRun(`DELETE FROM ${protocolName}_TAG WHERE deviceID = ?`, deviceID);
 
-                const { insertTagSQL, insertProtocolTagSQL } = generateInsertTagSQL(
-                    tagList.length,
-                    protocolName
-                )
+                const insertProtocolTagSQL = generateInsertProtocolTagSQL(protocolName)
+                for(let tag of tagList) {
+                    // 3.2. Insert all tag to TAG tables
+                    await dbRun(`INSERT INTO tag VALUES (?, ?)`, [deviceID, tag.name])
 
-                // 3.2. Insert all tag to TAG tables
-                await dbRun(insertTagSQL, convertTagListToParams(deviceID, tagList))
-
-                // 3.3. Insert all tag info to ${protocolName}_"TAG" table
-                await dbRun(insertProtocolTagSQL, convertTagListToProtocolParams(
-                    deviceID,
-                    tagList,
-                    protocolName
-                ))
-                await dbRun("COMMIT")
+                    // 3.3. Insert all tag info to ${protocolName}_"TAG" table
+                    await dbRun(insertProtocolTagSQL, convertTagToProtocolParams(
+                        deviceID,
+                        tag,
+                        protocolName
+                    ))
+                }
+                for(let gateway of gatewayList) {
+                    await dbRun(`INSERT INTO subscribes VALUES (?, ?, ?)`, [gateway.gatewayID, deviceID, null])
+                }
             }
+            await dbRun("COMMIT")
         } catch (err) {
             await dbRun("ROLLBACK TRANSACTION")
             throw err

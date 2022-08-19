@@ -34,6 +34,7 @@ class GatewayController {
             }
             res.status(INTERNAL_SERVER_ERROR_CODE).json({ msg: err.message })
         }
+
     }
 
     async get(req, res) {

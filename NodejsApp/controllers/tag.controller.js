@@ -6,12 +6,12 @@ class Tag {
     getAll = async function (req, res) {
         const protocolName = req.query.protocol
         const deviceId = req.params.id
-
         try {
             const tags = await tagModel.getAll(deviceId, protocolName)
             res.json(tags)
         } catch (err) {
             logError(err.message)
+            console.log(err)
             res.status(INTERNAL_SERVER_ERROR_CODE).json({ msg: err.message })
         }
     }

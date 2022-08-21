@@ -1,13 +1,12 @@
 
 const { dbAll, dbRun } = require("./database")
 const { JSON_PATH } = require("../constants/paths")
-const { protocolTypes } = require("../constants/protocolTypes");
 
 const fs = require("fs")
 const util = require("util");
 const unlink = util.promisify(fs.unlink.bind(fs));
 
-const { generateInsertDeviceConfigSQL, generateInsertProtocolTagSQL } = require("./sqlGenerator");
+const { generateInsertDeviceConfigSQL, generateInsertProtocolTagSQL, generateUpdateDeviceConfigSQL } = require("./sqlGenerator");
 const { convertDeviceConfigToQueryParams, convertDeviceDataToQueryParams, convertTagToProtocolParams } = require("./adapter");
 const { uniqueId } = require("../utils");
 
@@ -45,6 +44,7 @@ const deviceModel = {
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
                 insertDeviceParams
             );
+            
             await dbRun(generateInsertDeviceConfigSQL(protocolName), insertDeviceConfigParams)
 
             for (tag of tagList) {
@@ -144,16 +144,7 @@ const deviceModel = {
             )
 
             // 2. Update config of device (in ${protocolName} table) 
-            let updateDeviceProtocolSQL = ''
-            if (protocolName === protocolTypes.MODBUSTCP) {
-                updateDeviceProtocolSQL = `UPDATE MODBUSTCP SET IP = ?, port = ?, slaveid = ? WHERE deviceID = ?`
-            } else if (protocolName === protocolTypes.MODBURTU) {
-                updateDeviceProtocolSQL = `UPDATE MODBUSRTU SET com_port_num = ?, parity = ?,
-                    slaveid = ?, baudrate = ?, stopbits = ?, databits = ?
-                    WHERE deviceID = ?`
-            } else if (protocolName === protocolTypes.OPC_UA) {
-                updateDeviceProtocolSQL = ` OPC_UA SET url = ? WHERE deviceID = ?`
-            }
+            let updateDeviceProtocolSQL = generateUpdateDeviceConfigSQL(protocolName)
             const updateDeviceProtocolQueryParams = convertDeviceConfigToQueryParams(
                 deviceConfig,
                 protocolName

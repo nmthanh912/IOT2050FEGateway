@@ -1,13 +1,25 @@
+const { INCORRECT_PROTOCOL_MESSAGE } = require("../constants/error")
+const { protocolTypes } = require("../constants/protocolTypes")
 const { convertTagToProtocolParams } = require("./adapter")
 const { dbAll, dbRun } = require("./database")
 const { generateInsertProtocolTagSQL } = require("./sqlGenerator")
 
 const tagModel = {
     getAll: async function (deviceId, protocolName) {
-        const tags = await dbAll(`
-            SELECT * FROM ${protocolName}_TAG 
-            WHERE deviceID = ? ORDER BY address ASC
-        `, [deviceId])
+        let getTagDataSQL = ''
+        if (protocolName === protocolTypes.MODBURTU || protocolName === protocolTypes.MODBUSTCP) {
+            getTagDataSQL = `
+                SELECT * FROM ${protocolName}_TAG 
+                WHERE deviceID = ? ORDER BY address ASC
+            `
+        } else if (protocolName === protocolTypes.OPC_UA) {
+            getTagDataSQL = `
+                SELECT * FROM ${protocolName}_TAG 
+                WHERE deviceID = ? ORDER BY nodeid ASC
+            `
+        } else throw new Error(INCORRECT_PROTOCOL_MESSAGE)
+
+        const tags = await dbAll(getTagDataSQL, [deviceId])
 
         if (tags.length === 0) {
             const tagTableSchema = await dbAll(`PRAGMA table_info (${protocolName}_TAG)`)

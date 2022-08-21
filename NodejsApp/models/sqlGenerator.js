@@ -29,7 +29,21 @@ const generateInsertProtocolTagSQL = (protocolName) => {
     throw new Error(INCORRECT_PROTOCOL_MESSAGE)
 }
 
+const generateUpdateDeviceConfigSQL = (protocolName) => {
+    if (protocolName === protocolTypes.MODBUSTCP) {
+        return `UPDATE MODBUSTCP SET IP = ?, port = ?, slaveid = ? WHERE deviceID = ?`
+    } else if (protocolName === protocolTypes.MODBURTU) {
+        return `UPDATE MODBUSRTU SET com_port_num = ?, parity = ?,
+            slaveid = ?, baudrate = ?, stopbits = ?, databits = ?
+            WHERE deviceID = ?`
+    } else if (protocolName === protocolTypes.OPC_UA) {
+        return `UPDATE OPC_UA SET url = ? WHERE deviceID = ?`
+    }
+    throw new Error(INCORRECT_PROTOCOL_MESSAGE)
+}
+
 module.exports = {
+    generateUpdateDeviceConfigSQL,
     generateInsertDeviceConfigSQL,
     generateInsertProtocolTagSQL
 }

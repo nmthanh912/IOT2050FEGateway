@@ -1,84 +1,57 @@
-const { dbRun, dbAll } = require('../models/database.js')
-const handler = require('../utils/handler')
+const { INTERNAL_SERVER_ERROR_CODE } = require('../constants/error.js')
+const tagModel = require('../models/tag.model.js')
+const { logError } = require('../utils/logger.js')
 
 class Tag {
     getAll = async function (req, res) {
-        const tagQuery = `SELECT * FROM ${req.query.protocol}_TAG WHERE deviceID = ? ORDER BY address ASC`
-        const tagParams = [req.params.id]
+        const protocolName = req.query.protocol
+        const deviceId = req.params.id
 
-        handler(res, async () => {
-            const tags = await dbAll(tagQuery, tagParams)
-            tags.forEach((tag) => {
-                delete tag.deviceID
-            })
-
-            if (tags.length === 0) {
-                const infos = await dbAll(`PRAGMA table_info (${req.query.protocol}_TAG)`)
-                tags.push({})
-                infos.forEach((info) => {
-                    let key = info.name
-                    tags[0][key] = ''
-                })
-
-                delete tags[0].deviceID
-            }
+        try {
+            const tags = await tagModel.getAll(deviceId, protocolName)
             res.json(tags)
-        })
+        } catch (err) {
+            logError(err.message)
+            res.status(INTERNAL_SERVER_ERROR_CODE).json({ msg: err.message })
+        }
     }
     async editAttribute(req, res) {
-        const deviceID = req.params.id
-        const { protocol, tagName, attr } = req.query
+        const deviceId = req.params.id
+        const { protocol: protocolName, tagName, attrName } = req.query
         const newValue = req.body.newValue
-        const query = attr === 'name' ? {
-            SQL: `UPDATE TAG SET ${attr} = ? WHERE deviceID = ? AND name = ?`,
-            params: [newValue, deviceID, tagName]
-        } : {
-            SQL: `UPDATE ${protocol}_TAG SET ${attr} = ? WHERE deviceID = ? AND name = ?`,
-            params: [newValue, deviceID, tagName]
-        }
-        handler(res, async () => {
-            await dbRun(query.SQL, query.params)
+
+        try {
+            await tagModel.editAttribute(deviceId, protocolName, tagName, attrName, newValue)
             res.json({ msg: 'OK' })
-        })
+        } catch (err) {
+            logError(err.message)
+            res.status(INTERNAL_SERVER_ERROR_CODE).json({ msg: err.message })
+        }
     }
     async deleteTag(req, res) {
-        const deviceID = req.params.id
+        const deviceId = req.params.id
         const tagName = req.query.tagName
-        const query = `DELETE FROM TAG WHERE deviceID = ? AND name = ?`
-        handler(res, async () => {
-            await dbRun(query, [deviceID, tagName])
+        try {
+            await tagModel.delete(deviceId, tagName)
             res.json({ msg: 'OKE' })
-        })
+        } catch (err) {
+            logError(err.message)
+            res.status(INTERNAL_SERVER_ERROR_CODE).json({ msg: err.message })
+        }
     }
     async addTag(req, res) {
-        const deviceID = req.params.id
-        const protocol = req.query.protocol
-        const data = [
-            req.body.name,
-            req.body.address,
-            req.body.unit,
-            req.body.dataType,
-            req.body.PF,
-            req.body.size,
-            deviceID
-        ]
+        const deviceId = req.params.id
+        const protocolName = req.query.protocol
 
-        const colNumber = data.length
-        const query1 = `INSERT INTO TAG (deviceID, name) VALUES (?, ?)`
-        const query2 = `INSERT INTO ${protocol}_TAG VALUES (${'?,'.repeat(colNumber).slice(0, -1)})`
+        const tag = req.body
 
-        handler(res, async () => {
-            try {
-                await dbRun('BEGIN TRANSACTION')
-                await dbRun(query1, [deviceID, data[0]/*tag name*/])
-                await dbRun(query2, data)
-                await dbRun('COMMIT')
-                res.json({ msg: "OKE" })
-            } catch(err) {
-                await dbRun('ROLLBACK')
-                throw err
-            }
-        })
+        try {
+            await tagModel.add(deviceId, protocolName, tag)
+            res.json({ msg: "OKE" })
+        } catch (err) {
+            logError(err.message)
+            res.status(INTERNAL_SERVER_ERROR_CODE).json({ msg: err.message })
+        }
     }
 }
 

@@ -35,19 +35,19 @@ const convertDeviceDataToQueryParams = (deviceData) => {
     ]
 }
 
-const convertTagToProtocolParams = (deviceID, tag, protocolName) => {
+const convertTagToProtocolParams = (deviceId, tag, protocolName) => {
     if (protocolName === protocolTypes.MODBURTU || protocolName === protocolTypes.MODBUSTCP) {
         return [
             tag.name, tag.address, tag.unit,
             tag.dataType, tag.PF, tag.size,
-            deviceID
+            deviceId
         ]
     } else if (protocolName === protocolTypes.OPC_UA) {
         return [
             tag.name,
             tag.nodeid,
             tag.unit,
-            deviceID
+            deviceId
         ]
     }
     throw new Error("Incorrect protocol type !")

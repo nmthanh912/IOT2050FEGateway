@@ -49,5 +49,8 @@ node_server:
 application:
 	cd ReactApp; npm start
 
+logger:
+	cd Logger; npm start
+
 clean:
 	docker rmi $(docker images --filter "dangling=true" -q --no-trunc)

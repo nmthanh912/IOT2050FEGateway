@@ -25,8 +25,8 @@ class DeviceService {
         return configHttp.get(`/devices/${deviceID}/tags?protocol=${protocol}`)
     }
 
-    editTagCell(deviceID, protocol, tagName, attr, newValue) {
-        return configHttp.put(`/devices/${deviceID}/tags/edit?protocol=${protocol}&tagName=${tagName}&attr=${attr}`, { newValue })
+    editTagCell(deviceID, protocol, tagName, attrName, newValue) {
+        return configHttp.put(`/devices/${deviceID}/tags?protocol=${protocol}&tagName=${tagName}&attrName=${attrName}`, { newValue })
     }
 
     deleteTag(deviceID, tagName) {
@@ -34,7 +34,7 @@ class DeviceService {
     }
 
     addTag(deviceID, protocol, data) {
-        return configHttp.post(`/devices/${deviceID}/tags/add?protocol=${protocol}`, data)
+        return configHttp.post(`/devices/${deviceID}/tags?protocol=${protocol}`, data)
     }
 }
 

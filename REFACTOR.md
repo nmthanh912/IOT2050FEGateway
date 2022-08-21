@@ -43,7 +43,7 @@ To-do list:
 - [x] Replace hardcode by variables which are declared in folder `constants`
 - [x] Validate & cast type some input (if necessary)
 - [x] Seperate partial update device & fully update device
-- [ ] Resolve function `deviceController.editInfo` (lead to lost data in `SUBSCRIBES` table)
+- [x] Resolve function `deviceController.editInfo` (lead to lost data in `SUBSCRIBES` table)
 - [x] Wrap many queries in controllers into a transaction
 - [ ] Fix bug create OPC_UA tag
 

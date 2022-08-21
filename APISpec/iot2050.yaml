@@ -298,7 +298,6 @@ paths:
           description: Return message OKE
   /gateways/subscribes/config:
     get:
-      deprecated: true
       tags:
         - gateway
       summary: Get tag configs of a device, which is subscribed by a specific gateway
@@ -318,7 +317,6 @@ paths:
           description: Return OK
     
     put:
-      deprecated: true
       tags:
         - gateway
       summary: Get tag configs of a device, which is subscribed by a specific gateway
@@ -396,7 +394,7 @@ paths:
                     items:
                       $ref: "#/components/schemas/OPCUATag"
   
-  /devices/{id}/tags?protocol={protocol}&tagName={tagName}&attr={attr}:
+  /devices/{id}/tags?protocol={protocol}&tagName={tagName}&attrName={attrName}:
     put:
       tags:
         - tag

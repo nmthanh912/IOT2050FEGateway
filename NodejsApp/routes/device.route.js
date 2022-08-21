@@ -11,11 +11,8 @@ router.delete('/', deviceController.drop)
 router.get('/configs', deviceController.getConfigById)
 
 router.get('/:id/tags', Tag.getAll)
-// ?
-router.put('/:id/tags/edit', Tag.editAttribute)
-// ?
-router.delete('/:id/tag', Tag.deleteTag)
-// ?
-router.post('/:id/tags/add', Tag.addTag)
+router.put('/:id/tags', Tag.editAttribute)
+router.delete('/:id/tags', Tag.deleteTag)
+router.post('/:id/tags', Tag.addTag)
 
 module.exports = router

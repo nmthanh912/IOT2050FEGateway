@@ -102,7 +102,7 @@ class DeviceConnection {
 
         this.dataLoopRef = setInterval(() => {
             redis.pub2Redis(`data/${deviceName}`, dataList)
-            console.log(`${deviceName}`, dataList)
+            console.log(`${deviceName}`, dataList.length)
         }, this.deviceConfig.scanningCycle * 1000)
     }
 

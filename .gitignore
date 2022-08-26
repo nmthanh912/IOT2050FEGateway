@@ -1,5 +1,6 @@
 node_modules
 Database
 customJSON
+deviceOn
 .vscode
 */.env

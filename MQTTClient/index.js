@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express')
 const PORT = 4005
 const app = express()
@@ -11,14 +12,16 @@ pubRedis.pubConnection()
 const MQTTConnectionPool = require('./controller/mqttClient')
 const pool = new MQTTConnectionPool()
 
+const mqttOnPath = process.env.MQTT_ON_PATH
+
 app.use(cors({ origin: true }))
 
 /** turn on mqtt after container is off */
-let mqttIDList = fs.readFileSync('./mqttOn.txt', 'utf-8')
+let mqttIDList = fs.readFileSync(`${mqttOnPath}/mqtt.txt`, 'utf-8')
 mqttIDList = mqttIDList.split(',')
 mqttIDList.pop()
 
-let promises = mqttIDList.map(async (mqttID) => {
+const promises = mqttIDList.map(async (mqttID) => {
     if (mqttID) return await pool.poweron(mqttID)
 })
 
@@ -32,7 +35,7 @@ app.get('/poweron', async function (req, res) {
     try {
         await pool.poweron(req.query.mqttID)
         /** turn on mqtt, append new mqttID */
-        fs.appendFile('./mqttOn.txt', `${req.query.mqttID},`, 'utf8', (err) => {
+        fs.appendFile(`${mqttOnPath}/mqtt.txt`, `${req.query.mqttID},`, 'utf8', (err) => {
             if (err) {
                 redis.pub2Redis('log', { serviceName: 'MQTTClient', level: 'err', errMsg: err, })
                 console.log(err)
@@ -49,12 +52,12 @@ app.get('/poweron', async function (req, res) {
 app.get('/shutdown', function (req, res) {
     pool.shutdown(req.query.mqttID)
     /** turn off mqtt, replace mqttID to empty string */
-    fs.readFile('mqttOn.txt', 'utf8', (err, data) => {
+    fs.readFile(`${mqttOnPath}/mqtt.txt`, 'utf8', (err, data) => {
         if (err) {
             redis.pub2Redis('log', { serviceName: 'MQTTClient', level: 'err', errMsg: err, })
             console.log(err)
         } else {
-            fs.writeFile('mqttOn.txt', data.replace(`${req.query.mqttID},`, ''), 'utf-8', (err) => {
+            fs.writeFile(`${mqttOnPath}/mqtt.txt`, data.replace(`${req.query.mqttID},`, ''), 'utf-8', (err) => {
                 if (err) {
                     redis.pub2Redis('log', { serviceName: 'MQTTClient', level: 'err', errMsg: err, })
                     console.log(err)

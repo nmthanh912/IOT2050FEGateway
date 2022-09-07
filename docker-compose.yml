@@ -82,6 +82,10 @@ services:
       - redis
     ports:
       - 4002:4002
+    devices:
+      - "/dev/ttyS2:/dev/ttyS2"
+    tty: true
+
 
   redis:
     container_name: redis

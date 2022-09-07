@@ -4,7 +4,6 @@ const async = require('async')
 const getConfig = require('./configInfo')
 const removeAccents = require('../utils/removeAccents')
 const redis = require('../redis/redisClient')
-redis.pubConnection()
 
 function createClient() {
     return (client = OPCUAClient.create({

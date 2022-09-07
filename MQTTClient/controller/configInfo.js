@@ -2,7 +2,6 @@ const { dbAll } = require('../models/dbConnect')
 
 const removeAccents = require('../utils/removeAccents')
 const pubRedis = require('../redis/pubRedisClient')
-pubRedis.pubConnection()
 
 const getConfig = async (id) => {
     const getInfoQuery = `SELECT MQTT_CLIENT.*, 

@@ -6,7 +6,6 @@ const app = express()
 const fs = require('fs')
 
 const redis = require('./redis/redisClient')
-redis.pubConnection()
 
 const DeviceConnection = require('./controllers/opcuaClient')
 const pool = new DeviceConnection()

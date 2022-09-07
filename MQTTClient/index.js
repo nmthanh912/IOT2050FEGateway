@@ -12,7 +12,7 @@ pubRedis.pubConnection()
 const MQTTConnectionPool = require('./controller/mqttClient')
 const pool = new MQTTConnectionPool()
 
-const mqttOnPath = process.env.MQTT_ON_PATH
+const mqttOnPath = process.env.DEVICE_ON_PATH
 
 app.use(cors({ origin: true }))
 

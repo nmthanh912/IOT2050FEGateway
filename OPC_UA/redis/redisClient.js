@@ -38,5 +38,7 @@ class RedisClient {
         this.redisPub.disconnect()
     }
 }
+const redis = new RedisClient()
+redis.pubConnection()
 
-module.exports = new RedisClient()
+module.exports = redis

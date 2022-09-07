@@ -3,7 +3,6 @@ const mqttClient = require('mqtt')
 const getConfig = require('./configInfo')
 const subRedis = require('../redis/subRedisClient')
 const pubRedis = require('../redis/pubRedisClient')
-pubRedis.pubConnection()
 
 class MQTTConnection {
     constructor(mqttConfig, listDeviceSub) {

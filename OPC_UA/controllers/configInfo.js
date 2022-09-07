@@ -1,8 +1,6 @@
-const { config } = require('dotenv')
-const {dbAll} = require('../models/dbConnect')
+const { dbAll } = require('../models/dbConnect')
 
 const redis = require('../redis/redisClient')
-redis.pubConnection()
 
 const getConfig = async (protocolName, id) => {
     const getDeviceQuery = `SELECT DEVICE.*, 
@@ -39,12 +37,12 @@ const getConfig = async (protocolName, id) => {
                 })
             })
 
-            return [{deviceConfig, nodeInfo}]
+            return [{ deviceConfig, nodeInfo }]
         } else {
             return []
         }
     } catch (err) {
-        redis.pub2Redis('log', {serviceName: 'OPC_UA', level: 'error', errMsg: err})
+        redis.pub2Redis('log', { serviceName: 'OPC_UA', level: 'error', errMsg: err })
         console.log(err)
         return []
     }

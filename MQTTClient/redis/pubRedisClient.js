@@ -39,4 +39,7 @@ class RedisClient {
     }
 }
 
-module.exports = new RedisClient()
+const pubRedisClient = new RedisClient()
+pubRedisClient.pubConnection()
+
+module.exports = pubRedisClient

@@ -7,7 +7,6 @@ const port = 4001
 const app = express()
 
 const redis = require('./redis/redisClient')
-redis.pubConnection()
 
 const DeviceConnectionPool = require('./controllers/modbusTCPClient')
 const pool = new DeviceConnectionPool()

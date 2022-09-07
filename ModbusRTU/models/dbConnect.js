@@ -3,7 +3,6 @@ const util = require('util')
 var sqlite3 = require('sqlite3').verbose()
 
 const redis = require('../redis/redisClient')
-redis.pubConnection()
 
 const DB_PATH = process.env.DB_PATH;
 

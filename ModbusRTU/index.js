@@ -7,7 +7,6 @@ const app = express()
 const fs = require('fs')
 
 const redis = require('./redis/redisClient')
-redis.pubConnection()
 
 const DeviceConnectionPool = require('./controller/modbusRTUClient')
 const pool = new DeviceConnectionPool()

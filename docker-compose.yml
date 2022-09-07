@@ -59,6 +59,7 @@ services:
       context: ./ModbusTCP
       dockerfile: Dockerfile
     volumes:
+      - deviceStates:/usr/src/app/modbusrtu/deviceStates
       - sqlitedb:/usr/src/app/modbustcp/Database
       - customJSON:/usr/src/app/modbustcp/customJSON
     restart: always
@@ -74,6 +75,7 @@ services:
       context: ./ModbusRTU
       dockerfile: Dockerfile
     volumes:
+      - deviceStates:/usr/src/app/modbusrtu/deviceStates
       - sqlitedb:/usr/src/app/modbusrtu/Database
       - customJSON:/usr/src/app/modbusrtu/customJSON
     restart: always
@@ -105,3 +107,4 @@ volumes:
   sqlitedb:
   customJSON:
   logfile:
+  deviceStates:

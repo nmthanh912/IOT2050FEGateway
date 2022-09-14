@@ -41,6 +41,7 @@ bootstrap:
 	mkdir customJSON
 	mkdir deviceStates
 	cd deviceStates; touch modbusTCP.txt; touch modbusRTU.txt; touch opc_ua.txt; touch mqtt.txt
+
 downstrap:
 	docker-compose -f docker-compose.dev.yml down
 

@@ -29,6 +29,7 @@ services:
       context: ./MQTTClient
       dockerfile: Dockerfile
     volumes:
+      - deviceStates:/usr/src/app/modbusrtu/deviceStates
       - sqlitedb:/usr/src/app/mqttclient/Database
       - customJSON:/usr/src/app/mqttclient/customJSON
     restart: always
@@ -44,6 +45,7 @@ services:
       context: ./OPC_UA
       dockerfile: Dockerfile
     volumes:
+      - deviceStates:/usr/src/app/modbusrtu/deviceStates
       - sqlitedb:/usr/src/app/opc_ua/Database
       - customJSON:/usr/src/app/opc_ua/customJSON
     restart: always

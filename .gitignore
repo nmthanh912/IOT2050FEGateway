@@ -3,4 +3,5 @@ Database
 customJSON
 deviceStates
 .vscode
+LogFolder
 */.env

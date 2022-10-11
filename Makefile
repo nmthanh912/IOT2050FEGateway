@@ -37,6 +37,11 @@ development_env:
 
 bootstrap:
 	docker-compose -f docker-compose.dev.yml up -d
+	mkdir Database
+	mkdir customJSON
+	mkdir deviceStates
+	cd deviceStates; touch modbusTCP.txt; touch modbusRTU.txt; touch opc_ua.txt; touch mqtt.txt
+
 downstrap:
 	docker-compose -f docker-compose.dev.yml down
 
@@ -51,6 +56,15 @@ application:
 
 modbustcp:
 	cd ModbusTCP ; npm start
+
+modbusrtu:
+	cd ModbusTCP ; npm start
+
+opc_ua:
+	cd OPC_UA ; npm start
+
+mqttclient:
+	cd MQTTClient ; npm start
 
 clean:
 	docker rmi $(docker images --filter "dangling=true" -q --no-trunc)

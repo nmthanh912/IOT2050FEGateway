@@ -1,6 +1,7 @@
 node_modules
 Database
 customJSON
-deviceOn
+deviceStates
 .vscode
+LogFolder
 */.env

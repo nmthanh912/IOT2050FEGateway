@@ -1,6 +1,5 @@
 const {dbAll} = require('../models/dbConnect')
 const redis = require('../redis/redisClient')
-redis.pubConnection()
 
 const getConfig = async (protocolName, id) => {
     const getDeviceQuery = `SELECT DEVICE.*, 

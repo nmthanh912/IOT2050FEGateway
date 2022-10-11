@@ -3,7 +3,6 @@ var sqlite3 = require('sqlite3').verbose()
 const util = require('util')
 
 const pubRedis = require('../redis/pubRedisClient')
-pubRedis.pubConnection()
 const DB_PATH = process.env.DB_PATH
 
 let db = new sqlite3.Database(DB_PATH, (err) => {

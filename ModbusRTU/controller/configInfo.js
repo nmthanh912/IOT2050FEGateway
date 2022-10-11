@@ -1,6 +1,5 @@
-const {dbAll} = require('../models/dbConnect')
+const { dbAll } = require('../models/dbConnect')
 const redis = require('../redis/redisClient')
-redis.pubConnection()
 
 const getConfig = async (protocolName, id) => {
     const getDeviceQuery = `SELECT DEVICE.*, 
@@ -49,12 +48,12 @@ const getConfig = async (protocolName, id) => {
                 })
             })
 
-            return [{deviceConfig, tagInfo}]
+            return [{ deviceConfig, tagInfo }]
         } else {
             return []
         }
     } catch (err) {
-        redis.pub2Redis('log', {serviceName: 'ModbusRTU', level: 'error', errMsg: err})
+        redis.pub2Redis('log', { serviceName: 'ModbusRTU', level: 'error', errMsg: err })
         console.log(err)
         return []
     }

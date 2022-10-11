@@ -29,6 +29,7 @@ services:
       context: ./MQTTClient
       dockerfile: Dockerfile
     volumes:
+      - deviceStates:/usr/src/app/modbusrtu/deviceStates
       - sqlitedb:/usr/src/app/mqttclient/Database
       - customJSON:/usr/src/app/mqttclient/customJSON
     restart: always
@@ -44,6 +45,7 @@ services:
       context: ./OPC_UA
       dockerfile: Dockerfile
     volumes:
+      - deviceStates:/usr/src/app/modbusrtu/deviceStates
       - sqlitedb:/usr/src/app/opc_ua/Database
       - customJSON:/usr/src/app/opc_ua/customJSON
     restart: always
@@ -59,6 +61,7 @@ services:
       context: ./ModbusTCP
       dockerfile: Dockerfile
     volumes:
+      - deviceStates:/usr/src/app/modbusrtu/deviceStates
       - sqlitedb:/usr/src/app/modbustcp/Database
       - customJSON:/usr/src/app/modbustcp/customJSON
     restart: always
@@ -74,6 +77,7 @@ services:
       context: ./ModbusRTU
       dockerfile: Dockerfile
     volumes:
+      - deviceStates:/usr/src/app/modbusrtu/deviceStates
       - sqlitedb:/usr/src/app/modbusrtu/Database
       - customJSON:/usr/src/app/modbusrtu/customJSON
     restart: always
@@ -85,7 +89,7 @@ services:
 
   redis:
     container_name: redis
-    image: redis:alpine
+    image: redis
     ports:
       - 6379:6379
     restart: always
@@ -105,3 +109,4 @@ volumes:
   sqlitedb:
   customJSON:
   logfile:
+  deviceStates:

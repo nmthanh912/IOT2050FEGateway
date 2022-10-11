@@ -14,8 +14,10 @@ class DeviceConnection {
         this.deviceConfig = configInfo.deviceConfig[0]
         this.tagList = configInfo.tagInfo
         this.time = 1
+        this.dataList = []
         this.dataLoopRef = null
         this.valueLoopRef = null
+        this.resetLoopRef = null
     }
 
     #setup() {
@@ -34,7 +36,7 @@ class DeviceConnection {
             const listRegEncoded = RegEncode(this.tagList)
             const queue = new Queue(listRegEncoded)
             const dataFormat = DataFormat(this.deviceConfig.byteOrder, this.deviceConfig.wordOrder)
-            this.#getData(client, dataFormat, queue, this.tagList.length)
+            this.#handleDataCollection(client, dataFormat, queue, this.tagList.length)
         })
 
         socket.on('error', (err) => {
@@ -60,49 +62,69 @@ class DeviceConnection {
     }
 
     #getData(client, dataFormat, queue, tagNumber) {
+        let buf, i, regEncoded, tagBuf, valueDecoded, position = 0
+
+        regEncoded = queue.dequeue()
+        client
+            .readHoldingRegisters(regEncoded.init.address, regEncoded.init.size)
+            .then((resp) => {
+                if (position >= tagNumber) position = 0
+                buf = resp.response._body._valuesAsBuffer
+
+                i = 0
+                regEncoded.tagList.forEach((tag) => {
+                    tagBuf = buf.slice(i, tag.size * 2 + i)
+                    i += tag.size * 2
+                    valueDecoded = DataDecode(dataFormat, tag.dataType, tag.PF, tagBuf)
+                    if (position < tagNumber) {
+                        this.dataList[position] = {
+                            name: tag.name,
+                            unit: tag.unit,
+                            value: valueDecoded,
+                            timestamp: Date.now()
+                        }
+                    }
+                    position += 1
+                })
+            })
+            .catch((err) => {
+                redis.pub2Redis('log', { serviceName: 'ModbusTCP', level: 'error', errMsg: err })
+                console.log('Read register error!', err)
+            })
+        queue.enqueue(regEncoded)
+    }
+
+    #pubData() {
+        const deviceName = removeAccents(this.deviceConfig.name)
+        redis.pub2Redis(`data/${deviceName}`, dataList)
+        console.log(`${deviceName}`, dataList.length)
+    }
+
+    #handleDataCollection(client, dataFormat, queue, tagNumber) {
         if (this.valueLoopRef) {
             clearInterval(this.valueLoopRef)
         }
 
-        const dataList = []
-        const deviceName = removeAccents(this.deviceConfig.name)
-        let buf, i, regEncoded, tagBuf, valueDecoded, position = 0
-
         this.valueLoopRef = setInterval(() => {
-            regEncoded = queue.dequeue()
-            client
-                .readHoldingRegisters(regEncoded.init.address, regEncoded.init.size)
-                .then((resp) => {
-                    if (position >= tagNumber) position = 0
-                    buf = resp.response._body._valuesAsBuffer
-
-                    i = 0
-                    regEncoded.tagList.forEach((tag) => {
-                        tagBuf = buf.slice(i, tag.size * 2 + i)
-                        i += tag.size * 2
-                        valueDecoded = DataDecode(dataFormat, tag.dataType, tag.PF, tagBuf)
-                        if (position < tagNumber) {
-                            dataList[position] = {
-                                name: tag.name,
-                                unit: tag.unit,
-                                value: valueDecoded,
-                                timestamp: Date.now()
-                            }
-                        }
-                        position += 1
-                    })
-                })
-                .catch((err) => {
-                    redis.pub2Redis('log', { serviceName: 'ModbusTCP', level: 'error', errMsg: err })
-                    console.log('Read register error!', err)
-                })
-            queue.enqueue(regEncoded)
+            this.#getData(client, dataFormat, queue, tagNumber)
         }, 250)
 
         this.dataLoopRef = setInterval(() => {
-            redis.pub2Redis(`data/${deviceName}`, dataList)
-            console.log(`${deviceName}`, dataList.length)
+            this.#pubData()
         }, this.deviceConfig.scanningCycle * 1000)
+
+        this.resetLoopRef = setInterval(() => {
+            if (this.valueLoopRef) clearInterval(this.valueLoopRef)
+            if (this.dataLoopRef) clearInterval(this.dataLoopRef)
+
+            this.valueLoopRef = setInterval(() => {
+                this.#getData(client, dataFormat, queue, tagNumber)
+            }, 250)
+
+            this.dataLoopRef = setInterval(() => {
+                this.#pubData()
+            }, this.deviceConfig.scanningCycle * 1000)
+        }, 86400000)
     }
 
     poweron() {
@@ -116,12 +138,9 @@ class DeviceConnection {
         this.pool.socket.destroy()
         this.pool.socket.removeAllListeners('close', () => { })
         delete this.pool.socket
-        if (this.dataLoopRef) {
-            clearInterval(this.dataLoopRef)
-        }
-        if (this.valueLoopRef) {
-            clearInterval(this.valueLoopRef)
-        }
+        if (this.dataLoopRef) clearInterval(this.dataLoopRef)
+        if (this.valueLoopRef) clearInterval(this.valueLoopRef)
+        if (this.resetLoopRef) clearInterval(this.resetLoopRef)
     }
 }
 

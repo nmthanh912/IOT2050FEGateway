@@ -47,7 +47,7 @@ class DeviceConnection {
                         regEncoded.tagList.forEach((tag) => {
                             tagBuf = buf.slice(i, tag.size * 2 + i)
                             i += tag.size * 2
-                            valueDecoded = DataDecode(dataFormat, tag.dataType, tag.PF, bufDecoded)
+                            valueDecoded = DataDecode(dataFormat, tag.dataType, tag.PF, tagBuf)
                             if (position < tagNumber) {
                                 dataList[position] = {
                                     name: tag.name,
@@ -71,7 +71,7 @@ class DeviceConnection {
 
         this.dataLoopRef = setInterval(() => {
             redis.pub2Redis(`data/${deviceName}`, dataList)
-            console.log(`${deviceName}`, dataList.length)
+            console.log(`${deviceName}`, dataList)
         }, this.deviceConfig.scanningCycle * 1000)
     }
 
